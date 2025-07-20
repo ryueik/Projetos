@@ -1,0 +1,431 @@
+/* Resetando estilos padrões */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000;
+    color: #fff;
+}
+
+header {
+    background-color: #111;
+    padding: 20px;
+}
+
+nav .logo a {
+    color: #d32f2f;
+    font-size: 2rem;
+    text-decoration: none;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #d32f2f;
+}
+
+.banner {
+    text-align: center;
+    padding: 100px 20px;
+    background-image: url('assets/images/banner-bg.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.banner h1 {
+    font-size: 3rem;
+    color: #fff;
+}
+
+.banner p {
+    font-size: 1.2rem;
+    color: #ccc;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #d32f2f;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.features, .tutorials-list, .forum, .blog-posts {
+    padding: 50px 20px;
+}
+
+.feature-item, .tutorial-item, .discussion-item, .post-item {
+    background-color: #222;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #111;
+}
+
+footer p {
+    color: #ccc;
+}
+
+/* Estilo da página de login e cadastro */
+.login-form, .register-form {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #222;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-form h2, .register-form h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.login-form .form-group, .register-form .form-group {
+    margin-bottom: 20px;
+}
+
+.login-form label, .register-form label {
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+.login-form input, .register-form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.login-form input:focus, .register-form input:focus {
+    border-color: #d32f2f;
+    outline: none;
+}
+
+.login-form button, .register-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #d32f2f;
+    color: #fff;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-form button:hover, .register-form button:hover {
+    background-color: #c62828;
+}
+
+.login-form p, .register-form p {
+    text-align: center;
+    color: #ccc;
+}
+
+.login-form p a, .register-form p a {
+    color: #d32f2f;
+    text-decoration: none;
+}
+
+.login-form p a:hover, .register-form p a:hover {
+    text-decoration: underline;
+}
+/* Global */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: #fff;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Header */
+header {
+    background-color: #202020;
+    padding: 20px 0;
+}
+
+header .logo a {
+    color: #f44336;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 0 20px;
+}
+
+header .menu {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+}
+
+header .menu li {
+    margin: 0 20px;
+}
+
+header .menu a {
+    color: #fff;
+    font-size: 18px;
+}
+
+/* Blog List */
+.blog-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 40px 20px;
+}
+
+.post-card {
+    background-color: #181818;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.post-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.post-info {
+    padding: 20px;
+}
+
+.post-title {
+    color: #f44336;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.post-date {
+    font-size: 14px;
+    color: #bbb;
+    margin-bottom: 10px;
+}
+
+.post-description {
+    font-size: 16px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.btn {
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background-color: #d32f2f;
+}
+
+/* Footer */
+footer {
+    background-color: #202020;
+    text-align: center;
+    padding: 20px;
+    color: #bbb;
+}
+
+/* Global */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: #fff;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Header */
+header {
+    background-color: #202020;
+    padding: 20px 0;
+}
+
+header .logo a {
+    color: #f44336;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 0 20px;
+}
+
+header .menu {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+}
+
+header .menu li {
+    margin: 0 20px;
+}
+
+header .menu a {
+    color: #fff;
+    font-size: 18px;
+}
+
+/* Post Details */
+.post-detail {
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.post-header {
+    text-align: center;
+}
+
+.post-title {
+    color: #f44336;
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.post-meta {
+    font-size: 16px;
+    color: #bbb;
+}
+
+.post-content {
+    margin-top: 30px;
+}
+
+.post-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.content-text {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-top: 20px;
+}
+
+.post-footer {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.share-buttons .btn {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.share-buttons .btn:hover {
+    background-color: #d32f2f;
+}
+
+.author-info {
+    font-size: 16px;
+    color: #bbb;
+}
+
+/* Comments Section */
+.comments-section {
+    margin-top: 50px;
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.comment {
+    background-color: #292929;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.comment p {
+    color: #ccc;
+    font-size: 16px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    height: 100px;
+    background-color: #292929;
+    color: #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    font-size: 16px;
+}
+
+.comment-form button {
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.comment-form button:hover {
+    background-color: #d32f2f;
+}
+
+/* Footer */
+footer {
+    background-color: #202020;
+    text-align: center;
+    padding: 20px;
+    color: #bbb;
+}

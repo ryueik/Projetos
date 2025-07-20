@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - TechBlack</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin">
+    <div class="admin-panel">
+        <h1>Painel de <span class="gold">Controle</span></h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Pedido ID</th>
+                    <th>Cliente</th>
+                    <th>Produto</th>
+                    <th>Endereço</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="orders-table">
+                <!-- Pedidos serão carregados via Firebase -->
+            </tbody>
+        </table>
+    </div>
+    <script src="firebase.js"></script>
+    <script>
+        // Carregar pedidos do Firebase
+        async function loadOrders() {
+            const querySnapshot = await getDocs(collection(db, "pedidos"));
+            const tableBody = document.getElementById('orders-table');
+            
+            querySnapshot.forEach((doc) => {
+                const order = doc.data();
+                const row = `
+                    <tr>
+                        <td>${order.id}</td>
+                        <td>${order.cliente}</td>
+                        <td>${order.produto}</td>
+                        <td>${order.endereco}</td>
+                        <td><span class="status ${order.status.toLowerCase()}">${order.status}</span></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+        loadOrders();
+    </script>
+</body>
+</html>

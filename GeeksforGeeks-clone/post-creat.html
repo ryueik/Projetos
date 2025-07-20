@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Post - GFG Clone CMS</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#content',
+            plugins: 'link image code',
+            toolbar: 'undo redo | styleselect | bold italic | link image | code',
+            menubar: false
+        });
+
+        function savePost() {
+            const title = document.getElementById("title").value;
+            const content = tinymce.get("content").getContent();
+            const date = new Date().toLocaleDateString();
+
+            if (title && content) {
+                // Simula o salvamento local de um post
+                localStorage.setItem('post', JSON.stringify({
+                    title: title,
+                    content: content,
+                    date: date
+                }));
+
+                alert("Post salvo com sucesso!");
+            } else {
+                alert("Preencha todos os campos.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html">GFG Clone</a>
+            </div>
+            <ul class="menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="tutorials.html">Tutoriais</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="forum.html">Fórum</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="cms-post-form">
+        <h2>Criar Novo Post</h2>
+        <form action="javascript:void(0);">
+            <div class="form-group">
+                <label for="title">Título do Post</label>
+                <input type="text" id="title" name="title" placeholder="Digite o título do post" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Conteúdo do Post</label>
+                <textarea id="content" name="content" placeholder="Escreva o conteúdo aqui..." required></textarea>
+            </div>
+
+            <button type="button" class="btn" onclick="savePost()">Publicar Post</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Geeks for Geeks Clone</p>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

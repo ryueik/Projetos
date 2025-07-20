@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Detalhado - GFG Clone</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html">GFG Clone</a>
+            </div>
+            <ul class="menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="tutorials.html">Tutoriais</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="forum.html">Fórum</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="post-detail">
+        <h1 class="post-title">Título do Post</h1>
+        <p class="post-date">Publicado em 01/05/2025</p>
+        <div class="post-content">
+            <p>Conteúdo completo do post...</p>
+        </div>
+
+        <div class="comments-section">
+            <h3>Comentários</h3>
+            <div class="comment">
+                <p><strong>João Silva:</strong> Ótimo post! Muito útil, aprendi bastante!</p>
+            </div>
+            <div class="comment">
+                <p><strong>Maria Oliveira:</strong> Excelente explicação! Vou tentar aplicar no meu projeto.</p>
+            </div>
+
+            <h4>Deixe seu comentário</h4>
+            <form action="javascript:void(0);" class="comment-form">
+                <textarea name="comment" placeholder="Escreva seu comentário..." required></textarea>
+                <button type="button" class="btn" onclick="addComment()">Comentar</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Geeks for Geeks Clone</p>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Função para adicionar comentário
+        function addComment() {
+            const commentText = document.querySelector('.comment-form textarea').value;
+            if (commentText) {
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment');
+                newComment.innerHTML = `<p><strong>Usuário:</strong> ${commentText}</p>`;
+                document.querySelector('.comments-section').appendChild(newComment);
+                document.querySelector('.comment-form textarea').value = ''; // Limpa o campo de comentário
+            }
+        }
+    </script>
+</body>
+</html>

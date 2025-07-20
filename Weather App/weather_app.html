@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to right, #000000, #2c3e50);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .weather-info {
+            padding: 30px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            color: #e74c3c;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+        }
+
+        p {
+            font-size: 1.6em;
+            color: #ecf0f1;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 15px 30px;
+            margin-top: 20px;
+            font-size: 1.3em;
+            background: linear-gradient(45deg, #ff3f34, #e74c3c);
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.4);
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.6);
+        }
+
+        .forecast {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .forecast div {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            width: 30%;
+            margin: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .forecast div:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .forecast p {
+            font-size: 1.4em;
+            margin: 10px 0;
+            color: #ecf0f1;
+        }
+
+        .five-day-forecast {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            width: 100%;
+        }
+
+        .forecast-item {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            width: 18%;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .forecast-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .forecast-item h3 {
+            font-size: 1.5em;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .forecast-item p {
+            font-size: 1.2em;
+            color: #fff;
+        }
+
+        /* Animação para o fundo */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://source.unsplash.com/1920x1080/?earth,space') no-repeat center center/cover;
+            filter: blur(8px);
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="weather-info">
+            <h1 id="city">Taubaté</h1>
+            <p id="temp">--°C</p>
+            <p id="weather">--</p>
+            <button onclick="fetchWeather()">Obter Clima</button>
+        </div>
+
+        <div class="forecast">
+            <div>
+                <p>Vento</p>
+                <p id="wind">-- km/h</p>
+            </div>
+            <div>
+                <p>Umidade</p>
+                <p id="humidity">--%</p>
+            </div>
+        </div>
+
+        <div class="five-day-forecast" id="five-day-forecast">
+            <!-- Previsões para os próximos 5 dias -->
+        </div>
+    </div>
+
+    <script>
+        async function fetchWeather() {
+            const city = "Taubaté";
+            const apiKey = "951f0088669e688faa330092f23e1ae5";  // Substitua com sua chave de API do OpenWeatherMap
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.cod === 200) {
+                document.getElementById('temp').textContent = data.main.temp + '°C';
+                document.getElementById('weather').textContent = data.weather[0].description;
+                document.getElementById('wind').textContent = data.wind.speed + ' km/h';
+                document.getElementById('humidity').textContent = data.main.humidity + '%';
+            } else {
+                alert("Erro ao obter dados do clima.");
+            }
+
+            // Previsão para os próximos 5 dias
+            const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`;
+            const forecastResponse = await fetch(forecastUrl);
+            const forecastData = await forecastResponse.json();
+
+            if (forecastData.cod === "200") {
+                const forecastElement = document.getElementById('five-day-forecast');
+                forecastElement.innerHTML = ''; // Limpa a previsão anterior
+
+                for (let i = 0; i < 5; i++) {
+                    const dayData = forecastData.list[i * 8];  // Pegando o dado a cada 3h
+
+                    const dayElement = document.createElement('div');
+                    dayElement.classList.add('forecast-item');
+                    dayElement.innerHTML = `
+                        <h3>${new Date(dayData.dt_txt).toLocaleDateString()}</h3>
+                        <p>${dayData.main.temp}°C</p>
+                        <p>${dayData.weather[0].description}</p>
+                    `;
+                    forecastElement.appendChild(dayElement);
+                }
+            } else {
+                alert("Erro ao obter a previsão do tempo.");
+            }
+        }
+
+        fetchWeather();
+    </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do App - CriaWeb</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #0d0d0d;
+      color: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      color: #ff0000;
+      margin-bottom: 20px;
+      font-size: 2.5rem;
+      animation: fadeInDown 1s ease;
+      text-align: center;
+    }
+
+    .todo-container {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+      width: 100%;
+      max-width: 500px;
+      animation: fadeInUp 1s ease;
+      position: relative;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"], select {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-size: 1rem;
+      background: #262626;
+      color: #f2f2f2;
+      margin-bottom: 10px;
+    }
+
+    button.add-btn {
+      padding: 12px 20px;
+      border: none;
+      background: #ff0000;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    button.add-btn:hover {
+      background: #e60000;
+      transform: scale(1.05);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      background: #262626;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s, transform 0.3s;
+      animation: slideIn 0.5s ease;
+    }
+
+    li.done {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .priority {
+      font-size: 0.8rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+
+    .priority-urgent {
+      background-color: #ff0000;
+      color: #fff;
+    }
+
+    .priority-important {
+      background-color: #ff9900;
+      color: #fff;
+    }
+
+    .priority-normal {
+      background-color: #00cc66;
+      color: #fff;
+    }
+
+    .actions button {
+      margin-left: 10px;
+      background: none;
+      border: none;
+      color: #ff0000;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.2s, color 0.3s;
+    }
+
+    .actions button:hover {
+      transform: scale(1.3);
+      color: #e60000;
+    }
+
+    .spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      border: 6px solid #262626;
+      border-top: 6px solid #ff0000;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: none;
+      z-index: 10;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-100px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .todo-container {
+        padding: 15px;
+      }
+
+      .input-group {
+        flex-direction: column;
+      }
+
+      input[type="text"], select, button.add-btn {
+        width: 100%;
+      }
+
+      li {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .actions {
+        margin-top: 8px;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+    <h1>Minha Lista de Afazeres</h1>
+    <div class="todo-container">
+      <div class="spinner" id="spinner"></div>
+  
+      <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Adicionar nova tarefa...">
+        <select id="priorityInput">
+          <option value="normal">Normal</option>
+          <option value="important">Importante</option>
+          <option value="urgent">Urgente</option>
+        </select>
+        <button class="add-btn" onclick="addTask()">Adicionar</button>
+      </div>
+  
+      <div class="filter-group">
+        <button class="add-btn" onclick="filterTasks('all')">Todas</button>
+        <button class="add-btn" onclick="filterTasks('urgent')">Urgentes</button>
+        <button class="add-btn" onclick="filterTasks('important')">Importantes</button>
+        <button class="add-btn" onclick="filterTasks('normal')">Normais</button>
+      </div>
+  
+      <ul id="taskList"></ul>
+    </div>
+  
+    <script>
+      const taskInput = document.getElementById('taskInput');
+      const priorityInput = document.getElementById('priorityInput');
+      const taskList = document.getElementById('taskList');
+      const spinner = document.getElementById('spinner');
+  
+      let allTasks = [];
+  
+      function loadTasks() {
+        showSpinner();
+        setTimeout(() => {
+          allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+          renderTasks('all');
+          hideSpinner();
+        }, 500);
+      }
+  
+      function saveTasks() {
+        showSpinner();
+        setTimeout(() => {
+          localStorage.setItem('tasks', JSON.stringify(allTasks));
+          hideSpinner();
+        }, 300);
+      }
+  
+      function addTask() {
+        const text = taskInput.value.trim();
+        const priority = priorityInput.value;
+        if (text !== '') {
+          allTasks.push({ text, done: false, priority });
+          saveTasks();
+          taskInput.value = '';
+          priorityInput.value = 'normal';
+          renderTasks('all');
+        }
+      }
+  
+      function createTaskElement(task) {
+        const li = document.createElement('li');
+        li.dataset.priority = task.priority;
+        if (task.done) li.classList.add('done');
+  
+        const span = document.createElement('span');
+        span.classList.add('text');
+        span.innerText = task.text;
+  
+        const priorityTag = document.createElement('span');
+        priorityTag.classList.add('priority', `priority-${task.priority}`);
+        priorityTag.innerText = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
+  
+        const actions = document.createElement('div');
+        actions.classList.add('actions');
+  
+        const doneBtn = document.createElement('button');
+        doneBtn.innerHTML = '&#10003;';
+        doneBtn.title = 'Concluir';
+        doneBtn.onclick = () => {
+          task.done = !task.done;
+          saveTasks();
+          renderTasks('all');
+        };
+  
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '&#10005;';
+        deleteBtn.title = 'Excluir';
+        deleteBtn.onclick = () => {
+          allTasks = allTasks.filter(t => t !== task);
+          saveTasks();
+          renderTasks('all');
+        };
+  
+        actions.appendChild(doneBtn);
+        actions.appendChild(deleteBtn);
+  
+        li.appendChild(span);
+        li.appendChild(priorityTag);
+        li.appendChild(actions);
+        taskList.appendChild(li);
+      }
+  
+      function sortTasks(tasks) {
+        return tasks.sort((a, b) => {
+          const priorityOrder = { urgent: 1, important: 2, normal: 3 };
+          if (a.done !== b.done) {
+            return a.done ? 1 : -1; // tarefas concluídas vão para o final
+          }
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
+        });
+      }
+  
+      function renderTasks(filter) {
+        taskList.innerHTML = '';
+        let filtered = filter === 'all' ? allTasks : allTasks.filter(task => task.priority === filter);
+        filtered = sortTasks(filtered);
+        filtered.forEach(createTaskElement);
+      }
+  
+      function filterTasks(filter) {
+        renderTasks(filter);
+      }
+  
+      function showSpinner() {
+        spinner.style.display = 'block';
+      }
+  
+      function hideSpinner() {
+        spinner.style.display = 'none';
+      }
+  
+      loadTasks();
+    </script>
+  </body>
+  </html>
+  

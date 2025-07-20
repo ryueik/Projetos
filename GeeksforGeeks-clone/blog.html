@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - GFG Clone</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html">GFG Clone</a>
+            </div>
+            <ul class="menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="tutorials.html">Tutoriais</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="forum.html">Fórum</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="blog-list">
+        <div class="post-card">
+            <img src="assets/images/post1.jpg" alt="Post 1" class="post-image">
+            <div class="post-info">
+                <h2 class="post-title">Título do Post 1</h2>
+                <p class="post-date">Publicado em 01/05/2025</p>
+                <p class="post-description">Resumo do conteúdo do post para dar uma ideia ao leitor sobre o que será abordado...</p>
+                <a href="post-details.html" class="btn">Leia mais</a>
+            </div>
+        </div>
+
+        <div class="post-card">
+            <img src="assets/images/post2.jpg" alt="Post 2" class="post-image">
+            <div class="post-info">
+                <h2 class="post-title">Título do Post 2</h2>
+                <p class="post-date">Publicado em 25/04/2025</p>
+                <p class="post-description">Resumo do conteúdo do post para dar uma ideia ao leitor sobre o que será abordado...</p>
+                <a href="post-details.html" class="btn">Leia mais</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Geeks for Geeks Clone</p>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Função para carregar o post salvo
+        window.onload = function() {
+            const post = JSON.parse(localStorage.getItem('post'));
+            if (post) {
+                document.getElementById('post-title').innerText = post.title;
+                document.getElementById('post-date').innerText = 'Publicado em ' + post.date;
+                document.getElementById('post-content').innerHTML = post.content;
+            }
+        }
+
+        // Função para adicionar um comentário
+        function addComment() {
+            const commentText = document.querySelector('.comment-form textarea').value;
+            if (commentText) {
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment');
+                newComment.innerHTML = `<p><strong>Usuário:</strong> ${commentText}</p>`;
+                document.getElementById('comments').appendChild(newComment);
+                document.querySelector('.comment-form textarea').value = ''; // Limpa o campo de comentário
+            }
+        }
+    </script>
+</body>
+</html>

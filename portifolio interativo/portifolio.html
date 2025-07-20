@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula - Portfólio Interativo</title>
+    <style>
+        /* CSS Reset e Configurações Gerais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            color: #fff;
+            overflow-x: hidden;
+            height: 100vh;
+            cursor: grab;
+        }
+
+        /* Cabeçalho */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(11, 13, 23, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #6e45e2, #88d3ce);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav li {
+            margin-left: 30px;
+        }
+
+        nav a {
+            color: #88d3ce;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #6e45e2;
+        }
+
+        /* Galáxia Interativa */
+        .galaxy {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            filter: drop-shadow(0 0 10px rgba(110, 69, 226, 0.5));
+        }
+
+        .planet:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 20px rgba(110, 69, 226, 0.8));
+        }
+
+        .planet-info {
+            position: fixed;
+            bottom: -300px;
+            left: 0;
+            width: 100%;
+            background: rgba(11, 13, 23, 0.9);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+            z-index: 90;
+        }
+
+        .planet-info.active {
+            bottom: 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #88d3ce;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Estrelas de Fundo */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Efeitos de Texto */
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #6e45e2, #88d3ce);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #a8b2d1;
+        }
+
+        /* Botão de Tema */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(110, 69, 226, 0.3);
+            border: 1px solid #6e45e2;
+            color: #88d3ce;
+            padding: 10px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(110, 69, 226, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">NEBULA</div>
+        <nav>
+            <ul>
+                <li><a href="#about">Sobre</a></li>
+                <li><a href="#projects">Projetos</a></li>
+                <li><a href="#contact">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="galaxy" id="galaxy">
+        <canvas class="stars"></canvas>
+        <!-- Planetas serão adicionados via JavaScript -->
+    </div>
+
+    <div class="planet-info" id="planetInfo">
+        <button class="close-btn" id="closeBtn">×</button>
+        <h1 id="projectTitle">Título do Projeto</h1>
+        <p id="projectDescription">Descrição do projeto aparecerá aqui.</p>
+    </div>
+
+    <button class="theme-toggle" id="themeToggle">Alternar Tema</button>
+
+    <script>
+        // Configurações iniciais
+        const projects = [
+            {
+                title: "Design de Interface",
+                description: "Projeto de UI/UX para aplicativo móvel com foco em experiência do usuário.",
+                color: "#6e45e2",
+                size: 80,
+                x: -200,
+                y: -100
+            },
+            {
+                title: "Desenvolvimento Web",
+                description: "Site responsivo com React.js e animações customizadas.",
+                color: "#88d3ce",
+                size: 100,
+                x: 150,
+                y: -50
+            },
+            {
+                title: "Ilustração Digital",
+                description: "Série de ilustrações em estilo futurista para campanha publicitária.",
+                color: "#ff7e5f",
+                size: 70,
+                x: -50,
+                y: 150
+            },
+            {
+                title: "Animação 3D",
+                description: "Modelagem e animação 3D para curta-metragem independente.",
+                color: "#fbc2eb",
+                size: 90,
+                x: 200,
+                y: 100
+            }
+        ];
+
+        // Elementos DOM
+        const galaxy = document.getElementById('galaxy');
+        const planetInfo = document.getElementById('planetInfo');
+        const projectTitle = document.getElementById('projectTitle');
+        const projectDescription = document.getElementById('projectDescription');
+        const closeBtn = document.getElementById('closeBtn');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Criar planetas
+        function createPlanets() {
+            projects.forEach((project, index) => {
+                const planet = document.createElement('div');
+                planet.className = 'planet';
+                planet.style.width = `${project.size}px`;
+                planet.style.height = `${project.size}px`;
+                planet.style.backgroundColor = project.color;
+                planet.style.left = `calc(50% + ${project.x}px)`;
+                planet.style.top = `calc(50% + ${project.y}px)`;
+                
+                planet.addEventListener('click', () => {
+                    showProjectInfo(project);
+                });
+                
+                galaxy.appendChild(planet);
+            });
+        }
+
+        // Mostrar informações do projeto
+        function showProjectInfo(project) {
+            projectTitle.textContent = project.title;
+            projectDescription.textContent = project.description;
+            planetInfo.classList.add('active');
+        }
+
+        // Fechar informações do projeto
+        closeBtn.addEventListener('click', () => {
+            planetInfo.classList.remove('active');
+        });
+
+        // Efeito de arrastar a galáxia
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        galaxy.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.pageX - galaxy.offsetLeft;
+            startY = e.pageY - galaxy.offsetTop;
+            scrollLeft = galaxy.scrollLeft;
+            scrollTop = galaxy.scrollTop;
+            galaxy.style.cursor = 'grabbing';
+        });
+
+        galaxy.addEventListener('mouseup', () => {
+            isDragging = false;
+            galaxy.style.cursor = 'grab';
+        });
+
+        galaxy.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - galaxy.offsetLeft;
+            const y = e.pageY - galaxy.offsetTop;
+            const walkX = (x - startX) * 2;
+            const walkY = (y - startY) * 2;
+            galaxy.scrollLeft = scrollLeft - walkX;
+            galaxy.scrollTop = scrollTop - walkY;
+        });
+
+        // Criar estrelas de fundo
+        function createStars() {
+            const canvas = document.querySelector('.stars');
+            const ctx = canvas.getContext('2d');
+            
+            // Ajustar canvas ao tamanho da tela
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Configurações das estrelas
+            const starsCount = 200;
+            const stars = [];
+            
+            for (let i = 0; i < starsCount; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    vx: Math.floor(Math.random() * 50) - 25,
+                    vy: Math.floor(Math.random() * 50) - 25
+                });
+            }
+            
+            function drawStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#FFF';
+                
+                stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+            
+            function updateStars() {
+                stars.forEach(star => {
+                    star.x += star.vx / 100;
+                    star.y += star.vy / 100;
+                    
+                    // Reset estrela quando sair da tela
+                    if (star.x < 0 || star.x > canvas.width) {
+                        star.x = Math.random() * canvas.width;
+                    }
+                    if (star.y < 0 || star.y > canvas.height) {
+                        star.y = Math.random() * canvas.height;
+                    }
+                });
+            }
+            
+            function animate() {
+                drawStars();
+                updateStars();
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+            
+            // Redimensionar canvas quando a janela for redimensionada
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // Alternar tema
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            
+            if (document.body.classList.contains('light-theme')) {
+                document.body.style.background = 'radial-gradient(ellipse at bottom, #E0E5EC 0%, #C8D0E7 100%)';
+                themeToggle.textContent = 'Tema Escuro';
+            } else {
+                document.body.style.background = 'radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%)';
+                themeToggle.textContent = 'Tema Claro';
+            }
+        });
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            createPlanets();
+            createStars();
+        });
+    </script>
+</body>
+</html>

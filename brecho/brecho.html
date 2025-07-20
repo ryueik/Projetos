@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brechó da Família Guimarães | Vintage & Afeto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:wght@300;500&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --verde-suave: #8BA888;
+            --dourado: #D4AF37;
+            --bege-claro: #F5F0E6;
+            --marrom-cafe: #6F4E37;
+        }
+        
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background-color: var(--bege-claro);
+            color: var(--marrom-cafe);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-image: url('textura-papel.png');
+            background-attachment: fixed;
+        }
+        
+        header {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px dashed var(--dourado);
+        }
+        
+        .logo {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: var(--marrom-cafe);
+            margin: 0;
+        }
+        
+        .logo span {
+            color: var(--dourado);
+        }
+        
+        nav {
+            margin-top: 1rem;
+        }
+        
+        nav a {
+            color: var(--marrom-cafe);
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--dourado);
+        }
+        
+        .banner {
+            background: linear-gradient(rgba(139, 168, 136, 0.7), rgba(139, 168, 136, 0.7)), url('banner-brecho.jpg');
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            animation: fadeIn 2s;
+        }
+        
+        .banner h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            background-color: var(--dourado);
+            color: var(--marrom-cafe);
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 30px;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--marrom-cafe);
+            color: var(--dourado);
+            transform: scale(1.05);
+        }
+        
+        .destaques {
+            padding: 3rem;
+            text-align: center;
+        }
+        
+        .destaques h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--marrom-cafe);
+            border-bottom: 2px solid var(--dourado);
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+        
+        .produtos {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .produto {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 250px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .produto:hover {
+            transform: translateY(-10px);
+        }
+        
+        .produto img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        
+        .produto-info {
+            padding: 1rem;
+        }
+        
+        .produto-info h3 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .preco {
+            color: var(--dourado);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            background-color: var(--marrom-cafe);
+            color: var(--bege-claro);
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .redes-sociais a {
+            color: var(--dourado);
+            margin: 0 0.5rem;
+            font-size: 1.5rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1.5s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="logo">Brechó da Família <span>Guimarães</span></h1>
+        <nav>
+            <a href="brecho.html">Home</a>
+            <a href="produtos.html">Produtos</a>
+            <a href="brecho.html#sobre">Sobre Nós</a>
+            <a href="brecho.html#contato">Contato</a>
+        </nav>
+    </header>
+    
+    <section class="banner" id="home">
+        <div>
+            <h1>Peças com história, carinho e elegância</h1>
+            <p>Descubra tesouros vintage que contam histórias</p>
+            <button class="btn"><a href="produtos.html">Conheça nosso brechó</button></a>
+        </div>
+    </section>
+    
+    <section class="destaques fade-in">
+        <h2>Destaques da Semana</h2>
+        <div class="produtos">
+            <div class="produto">
+                <img src="vestido-vintage.jpg" alt="Vestido Vintage Anos 50">
+                <div class="produto-info">
+                    <h3>Vestido Vintage Anos 50</h3>
+                    <p>Estampa floral, tecido leve</p>
+                    <p class="preco">R$ 189,90</p>
+                </div>
+            </div>
+            <div class="produto">
+                <img src="paletó-masculino.jpg" alt="Paletó Clássico em Lã">
+                <div class="produto-info">
+                    <h3>Paletó Clássico em Lã</h3>
+                    <p>Anos 70, perfeito para inverno</p>
+                    <p class="preco">R$ 249,90</p>
+                </div>
+            </div>
+            <div class="produto">
+                <img src="bolsa-couro.jpg" alt="Bolsa de Couro Retrô">
+                <div class="produto-info">
+                    <h3>Bolsa de Couro Retrô</h3>
+                    <p>Couro legítimo, anos 60</p>
+                    <p class="preco">R$ 159,90</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="sobre" class="fade-in" style="padding: 3rem; text-align: center; background-color: rgba(255, 255, 255, 0.7);">
+        <h2 style="font-family: 'Playfair Display', serif; color: var(--marrom-cafe);">Nossa História</h2>
+        <p style="max-width: 800px; margin: 0 auto; font-size: 1.2rem;">
+            O Brechó da Família Oliveira nasceu em 1985, quando Dona Maria começou a revender peças especiais que encontrava em suas viagens. 
+            Hoje, três gerações cuidam com carinho de cada item que passa por nossas mãos. 
+            Nosso acervo é composto por peças únicas, cheias de história e personalidade.
+        </p>
+    </section>
+    
+    <footer id="contato">
+        <h3>Entre em Contato</h3>
+        <p>contato@brechofamiliaoliveira.com.br</p>
+        <p>(11) 98765-4321</p>
+        <div class="redes-sociais">
+            <a href="#">📱</a>
+            <a href="#">📷</a>
+            <a href="#">💻</a>
+        </div>
+        <p>© 2023 Brechó da Família Oliveira - Todos os direitos reservados</p>
+    </footer>
+</body>
+</html>

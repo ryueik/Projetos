@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Praticar HTML e CSS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Desafios de HTML e CSS</h1>
+    <p>Leia a instrução, escreva o código e clique em "Testar Código"!</p>
+  </header>
+
+  <div class="barra-xp">
+  <div id="progresso">
+    <div id="progressoPreenchido"></div>
+  </div>
+  <p id="xp">XP: 0</p>
+</div>
+
+<div class="modo-escuro-container">
+  <button id="modoEscuro">🌙 Ativar Modo Escuro</button>
+</div>
+
+
+  <main>
+    <section class="instrucoes">
+      <h2>Instruções</h2>
+      <h3>HTML:</h3>
+      <p id="instrucaoHtml"></p>
+    
+      <h3>CSS:</h3>
+      <p id="instrucaoCss"></p>
+    
+      <button id="proximaInstrucao">Próxima Instrução</button>
+    </section>
+    
+
+    <div class="editor-container">
+      <section class="editor">
+        <h2>HTML</h2>
+        <textarea id="htmlCode" placeholder="Digite seu código HTML aqui..."></textarea>
+      </section>
+
+      <section class="editor">
+        <h2>CSS</h2>
+        <textarea id="cssCode" placeholder="Digite seu código CSS aqui..."></textarea>
+      </section>
+    </div>
+
+    <div class="botoes">
+      <button id="testarCodigo">Testar Código</button>
+      <button id="corrigirCodigo">Corrigir Código</button>
+    </div>
+
+    <section class="resultado">
+      <h2>Resultado</h2>
+      <iframe id="output"></iframe>
+    </section>
+  </main>
+
+  <footer>
+    <p>Crie e evolua todos os dias! 🚀</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

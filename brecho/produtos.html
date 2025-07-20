@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos | Brechó da Família Guimarães</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:wght@300;500&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --verde-suave: #8BA888;
+            --dourado: #D4AF37;
+            --bege-claro: #F5F0E6;
+            --marrom-cafe: #6F4E37;
+        }
+        
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background-color: var(--bege-claro);
+            color: var(--marrom-cafe);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-image: url('textura-papel.png');
+            background-attachment: fixed;
+        }
+        
+        header {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px dashed var(--dourado);
+        }
+        
+        .logo {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: var(--marrom-cafe);
+            margin: 0;
+        }
+        
+        .logo span {
+            color: var(--dourado);
+        }
+        
+        nav {
+            margin-top: 1rem;
+        }
+        
+        nav a {
+            color: var(--marrom-cafe);
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--dourado);
+        }
+        
+        .produtos-header {
+            background: linear-gradient(rgba(139, 168, 136, 0.7), rgba(139, 168, 136, 0.7)), url('banner-produtos.jpg');
+            background-size: cover;
+            height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .produtos-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .filtros {
+            background-color: white;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filtros h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--marrom-cafe);
+            border-bottom: 2px solid var(--dourado);
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+        
+        .categorias {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .categoria-btn {
+            background-color: var(--bege-claro);
+            color: var(--marrom-cafe);
+            border: 1px solid var(--dourado);
+            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .categoria-btn:hover, .categoria-btn.ativo {
+            background-color: var(--dourado);
+            color: white;
+        }
+        
+        .busca {
+            margin-top: 1rem;
+            display: flex;
+        }
+        
+        .busca input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid var(--dourado);
+            border-radius: 30px 0 0 30px;
+            font-family: 'Cormorant Garamond', serif;
+            outline: none;
+        }
+        
+        .busca button {
+            background-color: var(--dourado);
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 0 30px 30px 0;
+            cursor: pointer;
+        }
+        
+        .produtos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .produto-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .produto-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .produto-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        
+        .produto-info {
+            padding: 1rem;
+        }
+        
+        .produto-info h3 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .preco {
+            color: var(--dourado);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .etiqueta-vintage {
+            background-color: var(--dourado);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        
+        footer {
+            background-color: var(--marrom-cafe);
+            color: var(--bege-claro);
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .redes-sociais a {
+            color: var(--dourado);
+            margin: 0 0.5rem;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="logo">Brechó da Família <span>Guimarães</span></h1>
+        <nav>
+            <a href="brecho.html">Home</a>
+            <a href="produtos.html">Produtos</a>
+            <a href="brecho.html#sobre">Sobre Nós</a>
+            <a href="brecho.html#contato">Contato</a>
+        </nav>
+    </header>
+    
+    <section class="produtos-header">
+        <div>
+            <h1>Nossas Peças Especiais</h1>
+            <p>Cada item tem uma história para contar</p>
+        </div>
+    </section>
+    
+    <section class="filtros">
+        <h2>Encontre seu estilo</h2>
+        <div class="busca">
+            <input type="text" placeholder="Buscar por peças...">
+            <button><i class="fas fa-search"></i></button>
+        </div>
+        <div class="categorias">
+            <button class="categoria-btn ativo">Tudo</button>
+            <button class="categoria-btn">Feminino</button>
+            <button class="categoria-btn">Masculino</button>
+            <button class="categoria-btn">Acessórios</button>
+            <button class="categoria-btn">Decoração</button>
+            <button class="categoria-btn">Anos 50-70</button>
+            <button class="categoria-btn">Couro</button>
+        </div>
+    </section>
+    
+    <section class="produtos-grid">
+        <div class="produto-card">
+            <img src="vestido-floral.jpg" alt="Vestido Floral Anos 60">
+            <div class="produto-info">
+                <h3>Vestido Floral Anos 60</h3>
+                <p>Algodão, babados delicados</p>
+                <p class="preco">R$ 219,90</p>
+                <span class="etiqueta-vintage">Coleção Retrô</span>
+            </div>
+        </div>
+        
+        <div class="produto-card">
+            <img src="jaqueta-couro.jpg" alt="Jaqueta de Couro Vintage">
+            <div class="produto-info">
+                <h3>Jaqueta de Couro Vintage</h3>
+                <p>Couro legítimo, anos 80</p>
+                <p class="preco">R$ 399,90</p>
+                <span class="etiqueta-vintage">Peça Única</span>
+            </div>
+        </div>
+        
+        <div class="produto-card">
+            <img src="luminaria-retro.jpg" alt="Luminária de Mesa Retro">
+            <div class="produto-info">
+                <h3>Luminária de Mesa Retro</h3>
+                <p>Metal e vidro, anos 50</p>
+                <p class="preco">R$ 289,90</p>
+                <span class="etiqueta-vintage">Decoração</span>
+            </div>
+        </div>
+        
+        <div class="produto-card">
+            <img src="camisa-masculina.jpg" alt="Camisa Masculina Listrada">
+            <div class="produto-info">
+                <h3>Camisa Masculina Listrada</h3>
+                <p>Algodão egípcio, anos 70</p>
+                <p class="preco">R$ 159,90</p>
+                <span class="etiqueta-vintage">Clássico</span>
+            </div>
+        </div>
+        
+        <div class="produto-card">
+            <img src="bolsa-vintage.jpg" alt="Bolsa Vintage Bordada">
+            <div class="produto-info">
+                <h3>Bolsa Vintage Bordada</h3>
+                <p>Bordado manual, anos 60</p>
+                <p class="preco">R$ 179,90</p>
+                <span class="etiqueta-vintage">Raro</span>
+            </div>
+        </div>
+        
+        <div class="produto-card">
+            <img src="relogio.jpg" alt="Relógio de Pulso Retro">
+            <div class="produto-info">
+                <h3>Relógio de Pulso Retro</h3>
+                <p>Funcionando perfeitamente</p>
+                <p class="preco">R$ 349,90</p>
+                <span class="etiqueta-vintage">Colecionador</span>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <h3>Entre em Contato</h3>
+        <p>contato@brechofamiliaoliveira.com.br</p>
+        <p>(11) 98765-4321</p>
+        <div class="redes-sociais">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+        </div>
+        <p>© 2023 Brechó da Família Oliveira - Todos os direitos reservados</p>
+    </footer>
+</body>
+</html>
