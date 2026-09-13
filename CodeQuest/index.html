@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CodeQuest — jogo interativo de desafios de programação Web (HTML, CSS e JavaScript)." />
+  <meta name="theme-color" content="#06060d" />
+  <meta name="author" content="Matheus Macário" />
+  <title>CodeQuest · Desafios de Programação Web</title>
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;500;600;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ============================ HUD / CABEÇALHO ============================ -->
+    <header class="hud">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">&lt;/&gt;</span>
+        <div class="brand__text">
+          <h1>Code<span>Quest</span></h1>
+          <p>Desafios de Front-End</p>
+        </div>
+      </div>
+
+      <div class="stats" role="status" aria-live="polite">
+        <div class="stat">
+          <span class="stat__label">Nível</span>
+          <strong class="stat__value" id="levelValue">1</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Score</span>
+          <strong class="stat__value stat__value--cyan" id="scoreValue">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Recorde</span>
+          <strong class="stat__value stat__value--purple" id="highScoreValue">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Vidas</span>
+          <strong class="stat__value stat__value--red" id="livesValue">♥♥♥</strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================================ PALCO ================================= -->
+    <main class="stage">
+
+      <!-- ------------------------- Painel do Desafio ------------------------- -->
+      <section class="panel challenge" id="challengePanel" aria-labelledby="questionText">
+        <!-- Barra de tempo -->
+        <div class="timer" aria-hidden="true">
+          <div class="timer__track">
+            <div class="timer__fill" id="timerFill"></div>
+          </div>
+          <span class="timer__label" id="timerText">30s</span>
+        </div>
+
+        <!-- Metadados do desafio -->
+        <div class="challenge__meta">
+          <span class="badge badge--tech" id="techBadge" data-tech="HTML">HTML</span>
+          <span class="badge badge--diff" id="diffBadge" data-diff="Fácil">Fácil</span>
+          <span class="challenge__counter" id="challengeCounter">Desafio 01 / 10</span>
+        </div>
+
+        <!-- Enunciado -->
+        <h2 class="challenge__question" id="questionText">Carregando desafio…</h2>
+
+        <!-- Editor de código -->
+        <div class="editor">
+          <div class="editor__bar">
+            <span class="dot dot--red"></span>
+            <span class="dot dot--yellow"></span>
+            <span class="dot dot--green"></span>
+            <span class="editor__filename" id="editorFile">index.html</span>
+          </div>
+          <pre class="editor__code"><code id="codeBlock"></code></pre>
+        </div>
+
+        <!-- Alternativas -->
+        <div class="options" id="optionsList" role="group" aria-label="Alternativas de resposta"></div>
+      </section>
+
+      <!-- --------------------------- Painel Console -------------------------- -->
+      <aside class="panel console" aria-label="Console de resultados">
+        <div class="console__head">
+          <span class="console__title">// console</span>
+          <span class="console__hint">feedback em tempo real</span>
+        </div>
+
+        <div class="console__body" id="consoleBody" aria-live="polite"></div>
+
+        <div class="console__actions" id="consoleActions"></div>
+      </aside>
+
+    </main>
+
+    <!-- =============================== RODAPÉ ================================ -->
+    <footer class="footer">
+      <p>
+        Desenvolvido por <strong>Matheus Macário</strong> · CodeQuest © <span id="year">2025</span>
+      </p>
+      <nav class="footer__links" aria-label="Redes sociais">
+        <a href="https://github.com/ryueik/Projetos/tree/main" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://www.linkedin.com/in/dev-matheus-macario/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://dev-matheus-macario.vercel.app/" target="_blank" rel="noopener noreferrer">Portfólio</a>
+      </nav>
+    </footer>
+  </div>
+
+  <!-- ============================= MODAL FINAL ============================== -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal__card">
+      <div class="modal__icon" id="modalIcon" aria-hidden="true">🏆</div>
+      <h2 class="modal__title" id="modalTitle">Parabéns!</h2>
+      <p class="modal__text" id="modalText">Você concluiu todos os desafios.</p>
+
+      <div class="modal__stats">
+        <div>
+          <span>Pontuação</span>
+          <strong id="modalScore">0</strong>
+        </div>
+        <div>
+          <span>Acertos</span>
+          <strong id="modalHits">0/10</strong>
+        </div>
+        <div>
+          <span>Recorde</span>
+          <strong id="modalHigh">0</strong>
+        </div>
+      </div>
+
+      <button class="btn btn--primary" id="playAgainBtn" type="button">Jogar novamente</button>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
