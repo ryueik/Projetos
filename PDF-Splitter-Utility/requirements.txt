@@ -1,0 +1,11 @@
+# ---------- GUI ----------
+customtkinter>=5.2.2
+Pillow>=10.3.0
+
+# ---------- Core PDF ----------
+pypdf>=4.2.0
+cryptography>=42.0.0
+
+# ---------- Testes ----------
+pytest>=8.2.0
+reportlab>=4.2.0
