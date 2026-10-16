@@ -160,9 +160,9 @@ window.PROJECTS = [
   {
     slug: "codequest",
     title: "CodeQuest",
-    desc: "Jogo de desafios de programação web (HTML, CSS e JavaScript) com fases e pontuação.",
+    desc: "Jogo de 10 desafios de programação web com vidas, pontuação, atalhos de teclado e ranking final.",
     category: "jogos",
-    tags: ["JavaScript", "HTML", "CSS"],
+    tags: ["JavaScript", "Jogo", "HTML", "CSS"],
     path: "CodeQuest/",
     thumb: "assets/thumbs/codequest.jpg",
     cover: "assets/covers/codequest.jpg",
@@ -193,7 +193,7 @@ window.PROJECTS = [
   {
     slug: "cria-web",
     title: "CriaWeb · Criação de Sites",
-    desc: "Landing page de agência de criação de sites.",
+    desc: "Landing page de agência de sites com portfólio, planos e formulário que envia o pedido pelo WhatsApp ou e-mail.",
     category: "web",
     tags: ["HTML", "CSS", "JavaScript"],
     path: "Cria Web/",
@@ -204,7 +204,7 @@ window.PROJECTS = [
   {
     slug: "geeksforgeeks-clone",
     title: "GeeksforGeeks Clone",
-    desc: "Clone do portal com tutoriais, blog, fórum, login e cadastro.",
+    desc: "Clone do portal com tutoriais, blog com editor e prévia, fórum e comentários salvos no navegador, login e cadastro.",
     category: "web",
     tags: ["HTML", "CSS", "JavaScript"],
     path: "GeeksforGeeks-clone/",
@@ -215,7 +215,7 @@ window.PROJECTS = [
   {
     slug: "to-do-up",
     title: "To-Do Up",
-    desc: "Lista de tarefas com animações e armazenamento local.",
+    desc: "Lista de tarefas com prioridade, prazo, filtros, busca, arrastar para reordenar e desfazer exclusão.",
     category: "web",
     tags: ["JavaScript"],
     path: "to-do up/",
@@ -226,9 +226,9 @@ window.PROJECTS = [
   {
     slug: "weather-app",
     title: "Weather App",
-    desc: "Previsão do tempo por cidade consumindo a API do OpenWeather.",
+    desc: "Previsão do tempo com busca de cidade, localização, próximas 24 horas e 7 dias, via Open-Meteo.",
     category: "web",
-    tags: ["JavaScript", "API REST", "Python"],
+    tags: ["JavaScript", "Open-Meteo", "Geolocalização", "Python"],
     path: "Weather App/",
     thumb: "assets/thumbs/weather-app.jpg",
     cover: "assets/covers/weather-app.jpg",
