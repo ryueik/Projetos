@@ -1,60 +1,132 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - GFG Clone</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro · GFG Clone</title>
+  <meta name="description" content="Crie sua conta gratuita no GFG Clone.">
+  <meta name="theme-color" content="#0b0907">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e3b341'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial' font-weight='700' font-size='16' fill='%23160c03'%3EGC%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    try { var t = localStorage.getItem('gfg:theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
 </head>
-<body>
-    <header>
-        <nav>
-            <div class="logo">
-                <a href="index.html">GFG Clone</a>
-            </div>
-            <ul class="menu">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="tutorials.html">Tutoriais</a></li>
-                <li><a href="blog.html">Blog</a></li>
-                <li><a href="forum.html">Fórum</a></li>
-                <li><a href="login.html">Login</a></li>
-            </ul>
-        </nav>
-    </header>
+<body data-page="register">
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+  <header class="site-header">
+    <div class="container header__inner">
+      <a class="logo" href="index.html" aria-label="GFG Clone — página inicial">
+        <span class="logo__mark" aria-hidden="true">GC</span>
+        <span class="logo__text">GFG<b>Clone</b></span>
+      </a>
+      <nav class="nav" id="nav" aria-label="Principal">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="tutorials.html" data-nav="tutorials">Tutoriais</a>
+        <a href="blog.html" data-nav="blog">Blog</a>
+        <a href="forum.html" data-nav="forum">Fórum</a>
+        <a href="post-creat.html" data-nav="write">Escrever</a>
+        <div class="nav__auth" id="navAuth">
+          <a href="login.html" class="btn btn--ghost btn--sm" data-nav="login">Entrar</a>
+          <a href="register.html" class="btn btn--primary btn--sm" data-nav="register">Cadastrar</a>
+        </div>
+      </nav>
+      <div class="header__tools">
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Alternar tema claro/escuro">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-controls="nav" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <section class="register-form">
-        <h2>Cadastro de Usuário</h2>
-        <form action="#" method="POST">
-            <div class="form-group">
-                <label for="username">Nome de Usuário</label>
-                <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário" required>
+  <main id="conteudo">
+    <section class="section auth">
+      <div class="container auth__grid">
+        <aside class="auth__aside" aria-hidden="true">
+          <span class="logo__mark logo__mark--lg">GC</span>
+          <h2>Crie sua conta grátis</h2>
+          <p>Leva menos de um minuto e você já pode publicar no blog e no fórum.</p>
+          <ul>
+            <li>Salve seu progresso nos tutoriais</li>
+            <li>Publique artigos no blog</li>
+            <li>Participe do fórum</li>
+          </ul>
+        </aside>
+        <form class="card form auth__form" id="registerForm" novalidate>
+          <h1>Cadastro de usuário</h1>
+          <p class="muted">Já tem uma conta? <a href="login.html" class="link">Faça login aqui</a></p>
+          <div class="field">
+            <label for="username">Nome de usuário</label>
+            <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário" autocomplete="username" required minlength="3" maxlength="30">
+            <small class="field__error"></small>
+          </div>
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" autocomplete="email" required>
+            <small class="field__error"></small>
+          </div>
+          <div class="form__row">
+            <div class="field">
+              <label for="password">Senha</label>
+              <div class="pass">
+                <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
+                <button type="button" class="pass__toggle" data-toggle-pass="password" aria-label="Mostrar senha">Mostrar</button>
+              </div>
+              <div class="strength" aria-hidden="true"><i id="strengthBar"></i></div>
+              <small class="field__error"></small>
             </div>
-
-            <div class="form-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+            <div class="field">
+              <label for="confirm-password">Confirmar senha</label>
+              <input type="password" id="confirm-password" name="confirm-password" placeholder="Repita a senha" autocomplete="new-password" required>
+              <small class="field__error"></small>
             </div>
-
-            <div class="form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
-            </div>
-
-            <div class="form-group">
-                <label for="confirm-password">Confirmar Senha</label>
-                <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirme sua senha" required>
-            </div>
-
-            <button type="submit" class="btn">Cadastrar</button>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="terms" name="terms" required>
+            <span>Concordo em usar a plataforma com respeito à comunidade.</span>
+          </label>
+          <small class="field__error" id="termsError"></small>
+          <p class="form__msg" id="registerMsg" role="alert"></p>
+          <button type="submit" class="btn btn--primary btn--block">Cadastrar</button>
         </form>
-
-        <p>Já tem uma conta? <a href="login.html" class="link">Faça login aqui</a></p>
+      </div>
     </section>
+  </main>
 
-    <footer>
-        <p>&copy; 2025 Geeks for Geeks Clone</p>
-    </footer>
+  <footer class="site-footer">
+    <div class="container footer__grid">
+      <div>
+        <a class="logo" href="index.html"><span class="logo__mark" aria-hidden="true">GC</span><span class="logo__text">GFG<b>Clone</b></span></a>
+        <p class="muted">Projeto de estudo inspirado no GeeksforGeeks: tutoriais, blog e fórum para quem está aprendendo programação.</p>
+      </div>
+      <nav aria-label="Aprender">
+        <h3>Aprender</h3>
+        <a href="tutorials.html">Tutoriais</a>
+        <a href="blog.html">Blog</a>
+        <a href="forum.html">Fórum</a>
+      </nav>
+      <nav aria-label="Comunidade">
+        <h3>Comunidade</h3>
+        <a href="post-creat.html">Escrever um post</a>
+        <a href="register.html">Criar conta</a>
+        <a href="login.html">Entrar</a>
+      </nav>
+    </div>
+    <div class="container footer__bottom">
+      <span>© <span data-year>2025</span> GFG Clone · Desenvolvido por Matheus Macário</span>
+      <span class="muted">Projeto educacional sem vínculo com o GeeksforGeeks.</span>
+    </div>
+  </footer>
 
-    <script src="assets/js/main.js"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/main.js" defer></script>
+  <script src="../assets/js/hub.js" defer></script>
 </body>
 </html>
