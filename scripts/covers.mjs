@@ -38,13 +38,32 @@ const HIDE = "#mm-hub{display:none!important}.reveal{opacity:1!important;transfo
 
 async function shot(url, width, height) {
   const page = await browser.newPage({ viewport: { width, height }, colorScheme: "dark", deviceScaleFactor: 1 });
-  await page.route(/openweathermap|open-meteo/, (r) => r.abort());
+  await page.route(/openweathermap/, (r) => r.abort());
+  await page.route(/open-meteo/, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify(fakeWeather(r.request().url())) }));
   await page.goto(url, { waitUntil: "networkidle", timeout: 25000 }).catch(() => {});
   await page.addStyleTag({ content: HIDE }).catch(() => {});
   await page.waitForTimeout(700);
   const buf = await page.screenshot({ type: "jpeg", quality: 82 });
   await page.close();
   return "data:image/jpeg;base64," + buf.toString("base64");
+}
+
+// Previsão fictícia (Taubaté) para a capa do Weather App não depender da rede.
+function fakeWeather(url) {
+  if (url.includes("geocoding")) return { results: [{ id: 1, name: "Taubaté", admin1: "São Paulo", country: "Brasil", country_code: "BR", latitude: -23.03, longitude: -45.56, timezone: "America/Sao_Paulo" }] };
+  const now = new Date(); now.setMinutes(0, 0, 0);
+  const iso = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  const hours = Array.from({ length: 48 }, (_, i) => new Date(now.getTime() + i * 3600e3));
+  const days = Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + i));
+  const codes = [1, 2, 3, 61, 80, 0, 2];
+  return {
+    timezone: "America/Sao_Paulo", utc_offset_seconds: -10800,
+    current: { time: iso(now), temperature_2m: 26.4, relative_humidity_2m: 62, apparent_temperature: 27.8, is_day: 1, precipitation: 0, weather_code: 2, pressure_msl: 1014, wind_speed_10m: 11, wind_direction_10m: 120 },
+    hourly: { time: hours.map(iso), temperature_2m: hours.map((h) => +(21 + 6 * Math.sin(((h.getHours() - 9) / 24) * 2 * Math.PI)).toFixed(1)),
+      weather_code: hours.map((_, i) => [2, 2, 3, 3, 61, 80][i % 6]), precipitation_probability: hours.map((_, i) => (i * 7) % 60), is_day: hours.map((h) => (h.getHours() >= 6 && h.getHours() < 18 ? 1 : 0)) },
+    daily: { time: days.map((d) => iso(d).slice(0, 10)), weather_code: codes, temperature_2m_max: [28, 27, 25, 22, 24, 29, 30], temperature_2m_min: [17, 16, 16, 15, 15, 17, 18],
+      precipitation_probability_max: [10, 20, 40, 80, 60, 5, 10], sunrise: days.map((d) => iso(d).slice(0, 10) + "T05:48"), sunset: days.map((d) => iso(d).slice(0, 10) + "T18:21"), uv_index_max: [9, 8, 6, 3, 5, 10, 10] },
+  };
 }
 
 // Tons por área, sempre dentro da paleta dourado/laranja/vermelho.
