@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deleção em Lote no SharePoint · Projetos MM</title>
+  <meta name="description" content="Expurgo automatizado de listas do SharePoint com loops condicionais e controle de rate limit: até 5.000 itens por execução sem estourar a cota da API. Simulador de throughput e 429." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    :root { --s-ctrl: #b8892c; --s-raw: #c42433; }
+    [data-theme="light"] { --s-ctrl: #b7801a; --s-raw: #c62835; }
+    .param-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    .param-row output { font: 700 .9rem var(--font-mono); color: var(--gold); min-width: 4ch; text-align: right; }
+    input[type="range"] { width: 100%; accent-color: var(--orange); }
+    .modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .modes label { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 1px solid var(--line-strong); border-radius: 12px; font: 600 .85rem var(--font-body); color: var(--text-2); cursor: pointer; text-align: center; }
+    .modes input { position: absolute; opacity: 0; pointer-events: none; }
+    .modes label:has(input:checked) { background: var(--grad); color: #1a0f04; border-color: transparent; }
+    .modes label:has(input:focus-visible) { outline: 2px solid var(--orange); outline-offset: 2px; }
+    .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .kpi .num { font-size: 1.6rem; }
+    .chart-box { position: relative; }
+    .chart-box canvas { width: 100%; height: 240px; display: block; }
+    .chart-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin: 18px 0 6px; }
+    .chart-head h4 { margin: 0; font-size: .95rem; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: var(--text-2); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { display: inline-block; width: 18px; height: 0; border-top: 2px solid; }
+    .legend i.ctrl { border-color: var(--s-ctrl); }
+    .legend i.raw { border-color: var(--s-raw); border-top-style: dashed; }
+    .tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; padding: 8px 10px; font-size: .8rem; color: var(--text); box-shadow: var(--shadow); opacity: 0; transition: opacity .12s; white-space: nowrap; z-index: 2; }
+    .tip.on { opacity: 1; }
+    .tip b { font-family: var(--font-mono); }
+    .tip .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+    .log { height: 220px; overflow: auto; }
+    .log div { white-space: pre-wrap; }
+    .cmp td:first-child { color: var(--text-2); }
+    .cmp td.num { font-family: var(--font-mono); text-align: right; }
+    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid-2 { grid-template-columns: 1fr; } }
+    .notice code, .lead code, .step code, td { overflow-wrap: anywhere; }
+    @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="sharepoint-delecao-lote"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">RPA · Cloud Flow · Rate Limit</span>
+      <h1>Deleção em lote sem estourar a <span class="grad-text">cota</span></h1>
+      <p class="lead">Expurgo automatizado de listas do SharePoint: busca os itens que casam com um filtro, apaga em lotes e controla o ritmo para ficar abaixo do limite da API. Até 5.000 itens por execução, retomando de onde parou na noite seguinte.</p>
+      <div class="meta chips">
+        <span class="chip gold">Power Automate Cloud</span>
+        <span class="chip orange">API Rate Limit Control</span>
+        <span class="chip red">Batching Loops</span>
+        <span class="chip">Python · Graph $batch</span>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 20px;">
+      <div class="notice reveal"><strong>Simulador.</strong><span>Nada é apagado de verdade. O servidor é um modelo de cota (token bucket com punição para quem ignora o <code>Retry-After</code>), igual ao usado no <code>purge.py --dry-run</code>. O tempo é simulado.</span></div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 20px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Lista e cota</h3></div>
+        <div class="field"><label for="pTotal">Itens na lista</label>
+          <input class="input" type="number" id="pTotal" min="100" max="100000" step="100" value="12000" /></div>
+        <div class="field"><label for="pFilter">Itens que casam com o filtro</label>
+          <div class="param-row"><input type="range" id="pFilter" min="1" max="100" value="40" /><output id="oFilter">40%</output></div></div>
+        <div class="field"><label for="pLimit">Cota do servidor (requisições/min)</label>
+          <div class="param-row"><input type="range" id="pLimit" min="120" max="3000" step="60" value="600" /><output id="oLimit">600</output></div></div>
+        <label class="row" style="font-size:.9rem;color:var(--text-2);gap:8px"><input type="checkbox" id="pCap" checked style="accent-color:var(--orange)" /> Teto de 5.000 itens por execução</label>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title"><h3>Cliente</h3></div>
+        <div class="modes" role="radiogroup" aria-label="Modo">
+          <label><input type="radio" name="mode" value="ctrl" /> Com controle</label>
+          <label><input type="radio" name="mode" value="raw" /> Sem controle</label>
+          <label><input type="radio" name="mode" value="both" checked /> Comparar</label>
+        </div>
+        <div class="field"><label for="pBatch">DELETEs por $batch</label>
+          <div class="param-row"><input type="range" id="pBatch" min="1" max="20" value="20" /><output id="oBatch">20</output></div></div>
+        <div class="field"><label for="pConc">Lotes em paralelo</label>
+          <div class="param-row"><input type="range" id="pConc" min="1" max="16" value="6" /><output id="oConc">6</output></div></div>
+        <div class="field"><label for="pMargin">Com controle: usar % da cota</label>
+          <div class="param-row"><input type="range" id="pMargin" min="50" max="100" value="90" /><output id="oMargin">90%</output></div></div>
+        <button class="btn btn-primary" id="btnRun" type="button">Simular expurgo</button>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Resultado</h3><span class="chip" id="modeChip">—</span></div>
+        <div class="kpis">
+          <div class="kpi"><div class="num" id="kDel">0</div><div class="lbl">Deletados</div></div>
+          <div class="kpi"><div class="num" id="kBat">0</div><div class="lbl">Lotes</div></div>
+          <div class="kpi"><div class="num" id="k429">0</div><div class="lbl">429 recebidos</div></div>
+          <div class="kpi"><div class="num" id="kTime">0:00</div><div class="lbl">Tempo estimado</div></div>
+          <div class="kpi"><div class="num" id="kLeft">0</div><div class="lbl">Ficam p/ próxima</div></div>
+        </div>
+        <p class="muted mt-1" id="kpiNote" style="font-size:.85rem">Os KPIs mostram o modo “com controle” quando você compara os dois.</p>
+
+        <div class="chart-head"><h4>Itens apagados por minuto</h4>
+          <div class="legend"><span><i class="ctrl"></i>Com controle</span><span><i class="raw"></i>Sem controle</span></div></div>
+        <div class="chart-box"><canvas id="cThr" aria-label="Gráfico de itens apagados por minuto ao longo do tempo"></canvas><div class="tip" id="tThr"></div></div>
+
+        <div class="chart-head"><h4>Respostas 429 a cada 30 s</h4>
+          <div class="legend"><span><i class="ctrl"></i>Com controle</span><span><i class="raw"></i>Sem controle</span></div></div>
+        <div class="chart-box"><canvas id="c429" aria-label="Gráfico de respostas 429 ao longo do tempo"></canvas><div class="tip" id="t429"></div></div>
+
+        <div class="grid grid-2 mt-2">
+          <div>
+            <h4>Comparação</h4>
+            <div class="table-wrap"><table class="table cmp"><thead><tr><th>Métrica</th><th style="text-align:right">Com controle</th><th style="text-align:right">Sem controle</th></tr></thead><tbody id="cmpBody"><tr><td colspan="3" class="muted">Rode a simulação.</td></tr></tbody></table></div>
+          </div>
+          <div>
+            <h4>Log</h4>
+            <div class="log" id="log" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Rápido, mas dentro da regra</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Página de IDs</h4><p>Busca só o <code>id</code> dos itens que casam com o filtro (<code>$select=id&amp;$top=999</code>), seguindo o <code>@odata.nextLink</code> até o teto de 5.000.</p></div></div>
+            <div class="step"><div><h4>DELETE em $batch</h4><p>Agrupa 20 exclusões por chamada. Cada sub-requisição conta na cota, então o lote reduz a latência, não o consumo.</p></div></div>
+            <div class="step"><div><h4>Token bucket</h4><p>O cliente só envia quando tem fichas: a taxa fica em ~90% da cota e nunca dispara uma rajada maior que alguns segundos de consumo.</p></div></div>
+            <div class="step"><div><h4>Retry-After é lei</h4><p>Ao receber 429, todos os workers param pelo tempo pedido. Insistir durante o bloqueio só estende a punição, como mostra o modo “sem controle”.</p></div></div>
+            <div class="step"><div><h4>Checkpoint</h4><p>Após cada lote, os IDs pendentes vão para um JSON. Se a execução cair, a próxima continua de onde parou.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-delecao-lote/flow/definition.json" target="_blank" rel="noopener">flow/definition.json <small>Do-until + Apply to each</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-delecao-lote/python/purge.py" target="_blank" rel="noopener">python/purge.py <small>Expurgo via Graph $batch</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-delecao-lote/index.html" target="_blank" rel="noopener">index.html <small>Este simulador</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-delecao-lote/README.md" target="_blank" rel="noopener">README.md <small>Configuração</small></a></li>
+          </ul>
+          <pre class="code mt-2"># offline: lista e servidor simulados
+python purge.py --dry-run --itens 12000 --proporcao 0.4
+python purge.py --dry-run --sem-controle
+
+# real
+python purge.py --filtro "fields/Status eq 'Baixado'" --rpm 540</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      "use strict";
+      var $ = function (id) { return document.getElementById(id); };
+      var BIN = 30;           // segundos por ponto do gráfico
+      var MAX_T = 4 * 3600;   // segurança: 4 h simuladas
+      var results = null, reveal = 1, hover = { cThr: -1, c429: -1 };
+
+      // ---------- Modelo (espelha GraphSimulado + expurgar do purge.py) ----------
+      function simulate(o, controlled) {
+        var srv = { rate: o.limit / 60, tokens: o.limit / 6, cap: o.limit / 6, last: 0, block: 0 };
+        function consume(t) {
+          srv.tokens = Math.min(srv.cap, srv.tokens + (t - srv.last) * srv.rate); srv.last = Math.max(srv.last, t);
+          if (t < srv.block) { srv.block = Math.min(srv.block + 0.1, t + 30); return srv.block - t; }
+          if (srv.tokens >= 1) { srv.tokens -= 1; return null; }
+          srv.block = t + Math.max(1, (1 - srv.tokens) / srv.rate); return srv.block - t;
+        }
+        var cliRate = o.limit * o.margin / 60, cli = { tokens: cliRate * 5, cap: cliRate * 5, last: 0, paused: 0 };
+
+        var target = o.cap ? Math.min(o.matching, 5000) : o.matching;
+        var remaining = target, res = { deleted: 0, batches: 0, r429: 0, failed: 0, bins: [], events: [] };
+        var workers = []; for (var w = 0; w < o.conc; w++) workers.push({ t: 0.4 + w * 0.01, batch: 0, tries: 0 });
+        function bin(t) { var i = Math.floor(t / BIN); while (res.bins.length <= i) res.bins.push({ del: 0, r429: 0 }); return res.bins[i]; }
+        var lastPauseLog = -999;
+
+        while (true) {
+          var wk = null;
+          workers.forEach(function (x) { if (!x.done && (!wk || x.t < wk.t)) wk = x; });
+          if (!wk || wk.t > MAX_T) break;
+          if (!wk.batch) {
+            if (remaining <= 0) { wk.done = true; continue; }
+            wk.batch = Math.min(o.batch, remaining); remaining -= wk.batch; wk.tries = 0; res.batches++;
+          }
+          var n = wk.batch;
+          if (controlled) {
+            var t0 = Math.max(wk.t, cli.paused);
+            cli.tokens = Math.min(cli.cap, cli.tokens + Math.max(0, t0 - cli.last) * cliRate); cli.last = Math.max(cli.last, t0);
+            if (cli.tokens < n - 1e-6) { wk.t = t0 + Math.max((n - cli.tokens) / cliRate, 0.001); continue; }
+            cli.tokens = Math.max(0, cli.tokens - n); wk.t = t0;
+          }
+          var tArr = wk.t + 0.1, ok = 0, bad = 0, maxRa = 0;
+          for (var i = 0; i < n; i++) {
+            var ra = consume(tArr + i * 0.001);
+            if (ra === null) ok++; else { bad++; maxRa = Math.max(maxRa, Math.ceil(ra)); }
+          }
+          wk.t += 0.25 + 0.03 * n;
+          var b = bin(tArr); b.del += ok; b.r429 += bad;
+          res.deleted += ok; res.r429 += bad;
+          if (!bad) { wk.batch = 0; continue; }
+          wk.batch = bad; wk.tries++;
+          if (wk.tries > 8) { res.failed += bad; wk.batch = 0; res.events.push([wk.t, "err", bad + " item(ns) desistidos após 8 tentativas"]); continue; }
+          if (controlled) {
+            if (tArr + maxRa > cli.paused) {
+              cli.paused = tArr + maxRa; cli.tokens = 0;
+              if (tArr - lastPauseLog > 20) { res.events.push([tArr, "warn", "429 · Retry-After " + maxRa + "s → todos os workers pausados"]); lastPauseLog = tArr; }
+            }
+          } else {
+            wk.t += Math.min(0.5 * Math.pow(2, wk.tries), 30);
+            if (tArr - lastPauseLog > 30) { res.events.push([tArr, "warn", bad + " × 429 · reenviando após backoff cego de " + Math.min(0.5 * Math.pow(2, wk.tries), 30) + "s"]); lastPauseLog = tArr; }
+          }
+        }
+        res.time = workers.reduce(function (m, x) { return Math.max(m, x.t); }, 0);
+        res.left = o.matching - res.deleted;
+        res.target = target;
+        return res;
+      }
+
+      // ---------- Formatação ----------
+      function fmtTime(s) { s = Math.round(s); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(ss).padStart(2, "0"); }
+      function nf(n) { return Math.round(n).toLocaleString("pt-BR"); }
+      function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+      // ---------- Gráficos (canvas, 1 eixo cada) ----------
+      function series() {
+        var out = [];
+        if (!results) return out;
+        if (results.ctrl) out.push({ key: "ctrl", name: "Com controle", color: css("--s-ctrl"), dash: [], r: results.ctrl });
+        if (results.raw) out.push({ key: "raw", name: "Sem controle", color: css("--s-raw"), dash: [6, 4], r: results.raw });
+        return out;
+      }
+      function setup(cv) {
+        var dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+        if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+        var ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+        return { ctx: ctx, w: w, h: h, pad: { l: 52, r: 14, t: 12, b: 28 } };
+      }
+      function niceMax(v) { if (v <= 0) return 1; var p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+      function axes(g, nBins, yMax, yFmt) {
+        var ctx = g.ctx, p = g.pad, W = g.w - p.l - p.r, H = g.h - p.t - p.b;
+        ctx.font = "11px " + css("--font-mono"); ctx.fillStyle = css("--text-3"); ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+        for (var i = 0; i <= 4; i++) {
+          var y = p.t + H - H * i / 4;
+          ctx.beginPath(); ctx.moveTo(p.l, Math.round(y) + .5); ctx.lineTo(p.l + W, Math.round(y) + .5); ctx.stroke();
+          ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(yFmt(yMax * i / 4), p.l - 8, y);
+        }
+        var total = nBins * BIN, step = niceMax(total / 6 / 60) * 60 || 60;
+        ctx.textAlign = "center"; ctx.textBaseline = "top";
+        for (var t = 0; t <= total; t += step) ctx.fillText(Math.round(t / 60) + " min", p.l + W * t / total, p.t + H + 8);
+        return { W: W, H: H };
+      }
+      function drawThr() {
+        var cv = $("cThr"), g = setup(cv), ss = series();
+        var nBins = Math.max(1, ss.reduce(function (m, s) { return Math.max(m, s.r.bins.length); }, 0));
+        var yMax = niceMax(ss.reduce(function (m, s) { return Math.max(m, Math.max.apply(null, s.r.bins.map(function (b) { return b.del * 60 / BIN; }).concat([0]))); }, 0));
+        var a = axes(g, nBins, yMax, nf), p = g.pad, ctx = g.ctx;
+        var show = Math.ceil(nBins * reveal);
+        ss.forEach(function (s) {
+          ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.setLineDash(s.dash); ctx.beginPath();
+          s.r.bins.slice(0, show).forEach(function (b, i) {
+            var x = p.l + a.W * (i + .5) / nBins, y = p.t + a.H - a.H * (b.del * 60 / BIN) / yMax;
+            if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+          });
+          ctx.stroke(); ctx.setLineDash([]);
+        });
+        crosshair(g, a, nBins, "cThr", function (s, b) { return nf(b.del * 60 / BIN) + " itens/min"; }, function (s, b) { return b.del * 60 / BIN / yMax; });
+      }
+      function draw429() {
+        var cv = $("c429"), g = setup(cv), ss = series();
+        var nBins = Math.max(1, ss.reduce(function (m, s) { return Math.max(m, s.r.bins.length); }, 0));
+        var yMax = niceMax(ss.reduce(function (m, s) { return Math.max(m, Math.max.apply(null, s.r.bins.map(function (b) { return b.r429; }).concat([0]))); }, 0));
+        var a = axes(g, nBins, yMax, nf), p = g.pad, ctx = g.ctx, show = Math.ceil(nBins * reveal);
+        var slot = a.W / nBins, bw = Math.max(1, (slot - 2) / ss.length - (ss.length > 1 ? 1 : 0));
+        ss.forEach(function (s, k) {
+          ctx.fillStyle = s.color;
+          s.r.bins.slice(0, show).forEach(function (b, i) {
+            if (!b.r429) return;
+            var h = Math.max(2, a.H * b.r429 / yMax), x = p.l + slot * i + 1 + k * (bw + 1), y = p.t + a.H - h;
+            var r = Math.min(2, bw / 2);
+            ctx.beginPath(); ctx.moveTo(x, p.t + a.H); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.lineTo(x + bw - r, y); ctx.quadraticCurveTo(x + bw, y, x + bw, y + r); ctx.lineTo(x + bw, p.t + a.H); ctx.fill();
+          });
+        });
+        if (results && !ss.some(function (s) { return s.r.r429; })) {
+          ctx.fillStyle = css("--text-3"); ctx.font = "13px " + css("--font-body"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("Nenhum 429 recebido", p.l + a.W / 2, p.t + a.H / 2);
+        }
+        crosshair(g, a, nBins, "c429", function (s, b) { return nf(b.r429) + " × 429"; }, null);
+      }
+      function crosshair(g, a, nBins, id, label, yFrac) {
+        var tip = $(id === "cThr" ? "tThr" : "t429"), i = hover[id], ss = series();
+        if (i < 0 || !ss.length || reveal < 1) { tip.classList.remove("on"); return; }
+        var ctx = g.ctx, p = g.pad, x = p.l + a.W * (i + .5) / nBins;
+        ctx.strokeStyle = css("--text-3"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(x) + .5, p.t); ctx.lineTo(Math.round(x) + .5, p.t + a.H); ctx.stroke();
+        tip.textContent = "";
+        var head = document.createElement("div"); head.className = "muted"; head.textContent = fmtTime(i * BIN) + " – " + fmtTime((i + 1) * BIN); tip.append(head);
+        ss.forEach(function (s) {
+          var b = s.r.bins[i], row = document.createElement("div"), sw = document.createElement("span"), v = document.createElement("b");
+          sw.className = "sw"; sw.style.background = s.color;
+          v.textContent = b ? label(s, b) : "terminou";
+          row.append(sw, document.createTextNode(s.name + ": "), v); tip.append(row);
+          if (b && yFrac) {
+            ctx.fillStyle = s.color; ctx.strokeStyle = css("--surface"); ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(x, p.t + a.H - a.H * yFrac(s, b), 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          }
+        });
+        tip.classList.add("on");
+        var left = x + 12; if (left + tip.offsetWidth > g.w) left = x - tip.offsetWidth - 12;
+        tip.style.left = Math.max(0, left) + "px"; tip.style.top = p.t + "px";
+      }
+      function drawAll() { drawThr(); draw429(); }
+      ["cThr", "c429"].forEach(function (id) {
+        var cv = $(id);
+        cv.addEventListener("mousemove", function (e) {
+          var ss = series(); if (!ss.length) return;
+          var nBins = ss.reduce(function (m, s) { return Math.max(m, s.r.bins.length); }, 0);
+          var r = cv.getBoundingClientRect(), x = e.clientX - r.left, W = r.width - 52 - 14;
+          var i = Math.floor((x - 52) / W * nBins);
+          hover[id] = i >= 0 && i < nBins ? i : -1; drawAll();
+        });
+        cv.addEventListener("mouseleave", function () { hover[id] = -1; drawAll(); });
+      });
+
+      // ---------- Execução ----------
+      function opts() {
+        var total = Math.max(100, +$("pTotal").value || 12000);
+        return { total: total, matching: Math.round(total * $("pFilter").value / 100), limit: +$("pLimit").value, batch: +$("pBatch").value, conc: +$("pConc").value, margin: $("pMargin").value / 100, cap: $("pCap").checked };
+      }
+      function logLine(t, cls, msg) {
+        var d = document.createElement("div"), a = document.createElement("span"), m = document.createElement("span");
+        a.className = "info"; a.textContent = "[" + t + "] "; if (cls) m.className = cls; m.textContent = msg;
+        d.append(a, m); $("log").append(d);
+      }
+      function run() {
+        var o = opts(), mode = document.querySelector('input[name="mode"]:checked').value;
+        results = {};
+        if (mode !== "raw") results.ctrl = simulate(o, true);
+        if (mode !== "ctrl") results.raw = simulate(o, false);
+        var main = results.ctrl || results.raw;
+        $("modeChip").textContent = mode === "both" ? "comparando" : mode === "ctrl" ? "com controle" : "sem controle";
+        $("kpiNote").style.display = mode === "both" ? "" : "none";
+
+        // log
+        $("log").textContent = "";
+        logLine("0:00", "info", nf(o.matching) + " de " + nf(o.total) + " itens casam com o filtro · alvo desta execução: " + nf(main.target));
+        Object.keys(results).forEach(function (k) {
+          var r = results[k], tag = k === "ctrl" ? "[controle] " : "[sem controle] ";
+          r.events.slice(0, 6).forEach(function (e) { logLine(fmtTime(e[0]), e[1], tag + e[2]); });
+          if (r.events.length > 6) logLine(fmtTime(r.events[6][0]), "muted", tag + "… mais " + (r.events.length - 6) + " eventos");
+          logLine(fmtTime(r.time), r.failed ? "err" : "ok", tag + "fim: " + nf(r.deleted) + " deletados em " + fmtTime(r.time) + ", " + nf(r.r429) + " × 429" + (r.failed ? ", " + nf(r.failed) + " desistidos" : ""));
+        });
+        if (main.left > 0) logLine(fmtTime(main.time), "warn", nf(main.left) + " itens ficam para a próxima execução (checkpoint gravado)");
+
+        // tabela
+        var rows = [["Deletados", "deleted", nf], ["Lotes $batch", "batches", nf], ["Respostas 429", "r429", nf], ["Desistidos", "failed", nf], ["Tempo", "time", fmtTime], ["Itens/min", null, function (r) { return nf(r.time ? r.deleted / r.time * 60 : 0); }]];
+        var tb = $("cmpBody"); tb.textContent = "";
+        rows.forEach(function (row) {
+          var tr = document.createElement("tr"), td = document.createElement("td"); td.textContent = row[0]; tr.append(td);
+          ["ctrl", "raw"].forEach(function (k) {
+            var c = document.createElement("td"); c.className = "num";
+            var r = results[k]; c.textContent = r ? (row[1] ? row[2](r[row[1]]) : row[2](r)) : "—"; tr.append(c);
+          });
+          tb.append(tr);
+        });
+
+        // animação de contagem + revelação do gráfico
+        var t0 = performance.now(), dur = 1400;
+        (function frame(now) {
+          var f = Math.min(1, (now - t0) / dur); reveal = f;
+          var e = 1 - Math.pow(1 - f, 3);
+          $("kDel").textContent = nf(main.deleted * e); $("kBat").textContent = nf(main.batches * e);
+          $("k429").textContent = nf(main.r429 * e); $("kTime").textContent = fmtTime(main.time * e);
+          $("kLeft").textContent = nf(main.left);
+          drawAll();
+          if (f < 1) requestAnimationFrame(frame);
+        })(t0);
+      }
+
+      [["pFilter", "oFilter", "%"], ["pLimit", "oLimit", ""], ["pBatch", "oBatch", ""], ["pConc", "oConc", ""], ["pMargin", "oMargin", "%"]].forEach(function (p) {
+        $(p[0]).addEventListener("input", function () { $(p[1]).textContent = $(p[0]).value + p[2]; });
+      });
+      $("btnRun").addEventListener("click", run);
+      window.addEventListener("resize", drawAll);
+      new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      drawAll();
+    })();
+  </script>
+</body>
+</html>

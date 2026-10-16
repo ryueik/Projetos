@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Ponto Híbrido · Projetos MM</title>
+  <meta name="description" content="Sistema de registro de ponto com relógio em tempo real, cálculo de jornada e exportação CSV, com versão web e versão desktop em Python." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .clock { font: 800 clamp(3rem, 9vw, 6rem)/1 var(--font-display); letter-spacing: -0.03em; }
+    .clock small { font-size: .35em; color: var(--text-3); margin-left: .2em; }
+    .today { font-family: var(--font-mono); color: var(--text-3); text-transform: capitalize; }
+    .punch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+    .punch .btn { padding: 18px; font-size: 1rem; border-radius: 16px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--text-3); }
+    .status-dot.on { background: var(--ok); box-shadow: 0 0 0 6px color-mix(in srgb, var(--ok) 20%, transparent); }
+    .bar { height: 10px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+    .bar span { display: block; height: 100%; background: var(--grad); }
+    .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; height: 140px; margin-top: 12px; }
+    .week div { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; height: 100%; font: 500 .72rem var(--font-mono); color: var(--text-3); }
+    .week i { display: block; width: 100%; max-width: 34px; border-radius: 8px 8px 4px 4px; background: var(--grad); min-height: 3px; }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="registro-ponto"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">RPA · Cloud &amp; Desktop</span>
+      <h1>Registro de ponto <span class="grad-text">híbrido</span></h1>
+      <p class="lead">Marca entrada, pausa e saída em um clique, compara os horários em tempo real e calcula a jornada do dia, o saldo da semana e as horas extras. A versão web roda no navegador; a versão desktop em Python grava no mesmo formato de CSV.</p>
+      <div class="meta chips">
+        <span class="chip gold">Cloud &amp; Desktop Integration</span>
+        <span class="chip orange">DateTime Logic</span>
+        <span class="chip red">Dynamic Data Binding</span>
+        <span class="chip">Python · JavaScript</span>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="row"><span class="status-dot" id="dot"></span><strong id="statusText">Fora do expediente</strong></div>
+        <div class="clock mt-1" id="clock">00:00<small>:00</small></div>
+        <div class="today" id="today"></div>
+        <div class="punch">
+          <button class="btn btn-primary" id="btnIn">Registrar entrada</button>
+          <button class="btn btn-ghost" id="btnOut" disabled>Registrar saída</button>
+        </div>
+        <div class="field mt-2">
+          <label for="journey">Jornada diária (horas)</label>
+          <input class="input" id="journey" type="number" min="1" max="12" step="0.5" value="8" />
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title"><h3>Hoje</h3><span class="chip" id="todayCount">0 registros</span></div>
+        <div class="grid grid-2">
+          <div class="kpi"><div class="num" id="kWorked">0h00</div><div class="lbl">Trabalhado</div></div>
+          <div class="kpi"><div class="num" id="kLeft">8h00</div><div class="lbl">Falta / Extra</div></div>
+        </div>
+        <div class="bar mt-2"><span id="dayBar" style="width:0%"></span></div>
+        <h3 class="mt-2">Semana</h3>
+        <div class="week" id="week"></div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>Registros</h3>
+          <div class="row">
+            <button class="btn btn-ghost btn-sm" id="btnDemo">Gerar semana de exemplo</button>
+            <button class="btn btn-ghost btn-sm" id="btnCsv">Exportar CSV</button>
+            <label class="btn btn-ghost btn-sm" for="csvIn">Importar CSV</label>
+            <input type="file" id="csvIn" accept=".csv" class="sr-only" />
+            <button class="btn btn-danger btn-sm" id="btnClear">Limpar</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Duração</th><th>Origem</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p class="muted mt-1" style="font-size:.85rem">Os registros ficam salvos neste navegador. O CSV exportado usa o mesmo formato do script desktop (<code>data;entrada;saida;origem</code>).</p>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Uma regra, dois lugares</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Captura do horário</h4><p>Cada clique grava data e hora local em ISO 8601. No desktop, <code>ponto.py</code> faz o mesmo pela linha de comando.</p></div></div>
+            <div class="step"><div><h4>Comparação temporal</h4><p>Pares entrada/saída viram intervalos; um intervalo aberto conta até o instante atual e atualiza a cada segundo.</p></div></div>
+            <div class="step"><div><h4>Jornada e saldo</h4><p>A soma do dia é comparada com a jornada configurada, mostrando quanto falta ou quanto já é hora extra.</p></div></div>
+            <div class="step"><div><h4>Sincronização por CSV</h4><p>Exportar no navegador e importar no desktop (ou o contrário) junta os registros sem duplicar.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/registro-ponto/index.html" target="_blank" rel="noopener">index.html <small>App web</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/registro-ponto/ponto.py" target="_blank" rel="noopener">ponto.py <small>Versão desktop (CLI)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/registro-ponto/README.md" target="_blank" rel="noopener">README.md <small>Como usar</small></a></li>
+          </ul>
+          <pre class="code mt-2">python ponto.py entrada
+python ponto.py saida
+python ponto.py resumo --jornada 8</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      var KEY = "mm-ponto-registros";
+      var $ = function (id) { return document.getElementById(id); };
+      var records = load();
+
+      function load() {
+        try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
+      }
+      function save() {
+        try { localStorage.setItem(KEY, JSON.stringify(records)); } catch (e) {}
+      }
+      function pad(n) { return String(n).padStart(2, "0"); }
+      function dayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+      function hhmm(d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+      function fmtDur(ms) {
+        var neg = ms < 0; ms = Math.abs(ms);
+        var m = Math.floor(ms / 60000);
+        return (neg ? "-" : "") + Math.floor(m / 60) + "h" + pad(m % 60);
+      }
+      function open() { return records.find(function (r) { return !r.out; }); }
+      function duration(r, now) { return (r.out ? new Date(r.out) : now) - new Date(r.in); }
+
+      $("btnIn").onclick = function () {
+        if (open()) return;
+        records.push({ in: new Date().toISOString(), out: null, src: "web" });
+        save(); render();
+      };
+      $("btnOut").onclick = function () {
+        var r = open(); if (!r) return;
+        r.out = new Date().toISOString();
+        save(); render();
+      };
+      $("btnClear").onclick = function () {
+        if (!confirm("Apagar todos os registros deste navegador?")) return;
+        records = []; save(); render();
+      };
+      $("btnDemo").onclick = function () {
+        var base = new Date(); base.setHours(0, 0, 0, 0);
+        for (var i = 6; i >= 1; i--) {
+          var d = new Date(base); d.setDate(d.getDate() - i);
+          if (d.getDay() === 0 || d.getDay() === 6) continue;
+          var a = new Date(d); a.setHours(8, Math.floor(Math.random() * 20));
+          var b = new Date(d); b.setHours(12, Math.floor(Math.random() * 15));
+          var c = new Date(d); c.setHours(13, Math.floor(Math.random() * 15));
+          var e = new Date(d); e.setHours(17, 10 + Math.floor(Math.random() * 50));
+          records.push({ in: a.toISOString(), out: b.toISOString(), src: "demo" });
+          records.push({ in: c.toISOString(), out: e.toISOString(), src: "demo" });
+        }
+        dedupe(); save(); render();
+      };
+      $("btnCsv").onclick = function () {
+        var lines = ["data;entrada;saida;origem"].concat(records.map(function (r) {
+          var a = new Date(r.in), b = r.out ? new Date(r.out) : null;
+          return [dayKey(a), hhmm(a), b ? hhmm(b) : "", r.src].join(";");
+        }));
+        var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "ponto.csv";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      };
+      $("csvIn").onchange = function (ev) {
+        var file = ev.target.files[0]; if (!file) return;
+        file.text().then(function (txt) {
+          txt.split(/\r?\n/).slice(1).forEach(function (line) {
+            var p = line.split(";");
+            if (p.length < 2 || !/^\d{4}-\d{2}-\d{2}$/.test(p[0])) return;
+            var a = new Date(p[0] + "T" + p[1] + ":00");
+            var b = p[2] ? new Date(p[0] + "T" + p[2] + ":00") : null;
+            records.push({ in: a.toISOString(), out: b ? b.toISOString() : null, src: p[3] || "csv" });
+          });
+          dedupe(); save(); render();
+          ev.target.value = "";
+        });
+      };
+      $("journey").oninput = render;
+
+      function dedupe() {
+        var seen = {};
+        records = records.filter(function (r) {
+          var k = r.in.slice(0, 16);
+          if (seen[k]) return false;
+          seen[k] = true; return true;
+        }).sort(function (x, y) { return new Date(x.in) - new Date(y.in); });
+      }
+
+      function render() {
+        var now = new Date();
+        var o = open();
+        $("dot").classList.toggle("on", !!o);
+        $("statusText").textContent = o ? "Em expediente desde " + hhmm(new Date(o.in)) : "Fora do expediente";
+        $("btnIn").disabled = !!o;
+        $("btnOut").disabled = !o;
+
+        var today = dayKey(now);
+        var todays = records.filter(function (r) { return dayKey(new Date(r.in)) === today; });
+        var worked = todays.reduce(function (s, r) { return s + duration(r, now); }, 0);
+        var goal = (parseFloat($("journey").value) || 8) * 3600000;
+        $("todayCount").textContent = todays.length + (todays.length === 1 ? " registro" : " registros");
+        $("kWorked").textContent = fmtDur(worked);
+        var diff = worked - goal;
+        $("kLeft").textContent = (diff >= 0 ? "+" : "") + fmtDur(diff).replace("-", "");
+        $("kLeft").style.color = diff >= 0 ? "var(--ok)" : "";
+        $("dayBar").style.width = Math.min(100, worked / goal * 100) + "%";
+
+        var week = $("week"); week.innerHTML = "";
+        var names = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+        var maxH = goal * 1.4;
+        for (var i = 6; i >= 0; i--) {
+          var d = new Date(now); d.setDate(d.getDate() - i);
+          var k = dayKey(d);
+          var t = records.filter(function (r) { return dayKey(new Date(r.in)) === k; })
+            .reduce(function (s, r) { return s + duration(r, now); }, 0);
+          var col = document.createElement("div");
+          var bar = document.createElement("i");
+          bar.style.height = Math.min(100, t / maxH * 100) + "%";
+          bar.title = fmtDur(t);
+          var lbl = document.createElement("span");
+          lbl.textContent = names[d.getDay()];
+          col.append(bar, lbl);
+          week.append(col);
+        }
+
+        var tbody = $("rows"); tbody.innerHTML = "";
+        records.slice().reverse().slice(0, 60).forEach(function (r) {
+          var a = new Date(r.in), b = r.out ? new Date(r.out) : null;
+          var tr = document.createElement("tr");
+          [a.toLocaleDateString("pt-BR"), hhmm(a), b ? hhmm(b) : "em aberto", fmtDur(duration(r, now)), r.src]
+            .forEach(function (v) { var td = document.createElement("td"); td.textContent = v; tr.append(td); });
+          tbody.append(tr);
+        });
+        if (!records.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="muted">Nenhum registro ainda. Clique em “Registrar entrada”.</td></tr>';
+        }
+      }
+
+      function tick() {
+        var now = new Date();
+        $("clock").innerHTML = pad(now.getHours()) + ":" + pad(now.getMinutes()) + "<small>:" + pad(now.getSeconds()) + "</small>";
+        $("today").textContent = now.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+        if (open()) render();
+      }
+      render(); tick(); setInterval(tick, 1000);
+    })();
+  </script>
+</body>
+</html>

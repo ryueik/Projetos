@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consulta de Médicos via API · Projetos MM</title>
+  <meta name="description" content="Microsserviço que recebe nome, CRM e UF, consulta o provedor de validação médica e devolve um JSON normalizado em tempo real." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <script src="lib/medicos-core.js"></script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0 14px; }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr 1fr; } .form-grid .f-nome { grid-column: 1 / -1; } }
+    .field small { color: var(--text-3); font-size: .78rem; }
+    .field .err-msg { color: var(--err); font-size: .8rem; min-height: 1em; }
+    .input.invalid { border-color: var(--err); }
+    .examples { display: flex; flex-wrap: wrap; gap: 8px; }
+    .examples button { cursor: pointer; }
+    .chip.btnlike { cursor: pointer; transition: border-color .2s, color .2s; }
+    .chip.btnlike:hover { border-color: var(--orange); color: var(--orange); }
+    .status-line { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font: 500 .82rem var(--font-mono); color: var(--text-3); }
+    .http { padding: 3px 9px; border-radius: 6px; font: 700 .78rem var(--font-mono); }
+    .http.s2 { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+    .http.s4 { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+    .http.s5 { background: color-mix(in srgb, var(--err) 18%, transparent); color: var(--err); }
+    .doc { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; background: var(--surface-2); position: relative; overflow: hidden; }
+    .doc::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--grad); }
+    .doc.irregular::before { background: var(--err); }
+    .doc h4 { margin: 0 0 4px; font-size: 1.15rem; }
+    .doc dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 14px 0 0; font-size: .9rem; }
+    .doc dt { font: 600 .74rem var(--font-mono); color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; padding-top: 2px; }
+    .doc dd { margin: 0; color: var(--text); }
+    .results { display: grid; gap: 14px; }
+    .empty { text-align: center; padding: 30px 10px; color: var(--text-3); border: 1px dashed var(--line-strong); border-radius: var(--radius); }
+    pre.code { max-height: 420px; margin: 0; white-space: pre; }
+    pre.code .k { color: #f3d27a; } pre.code .s { color: #9fdc9f; } pre.code .n { color: #ff9e5e; } pre.code .b { color: #ff7a8a; }
+    .latency { font: 800 1.9rem/1 var(--font-display); }
+    .history td:last-child { text-align: right; }
+    .curl-wrap { position: relative; }
+    .curl-wrap .btn { position: absolute; top: 10px; right: 10px; }
+    #curl { padding-right: 96px; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="consulta-medicos-api"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">Integração · Microsserviço</span>
+      <h1>Consulta de médicos <span class="grad-text">via API</span></h1>
+      <p class="lead">Uma integração parametrizada que recebe <strong>Nome</strong>, <strong>CRM</strong> e <strong>UF</strong>, consome o endpoint de validação médica e devolve um payload JSON padronizado, com situação, especialidades e dados de inscrição, em tempo real.</p>
+      <div class="meta chips">
+        <span class="chip gold">REST APIs</span>
+        <span class="chip orange">JSON Parsing</span>
+        <span class="chip red">HTTP Requests</span>
+        <span class="chip">Cloud Integration</span>
+        <span class="chip">Python · JavaScript</span>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px; align-items: start;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Requisição</h3><span class="chip" id="modeChip">modo demonstração</span></div>
+        <form id="form" novalidate>
+          <div class="form-grid">
+            <div class="field f-nome">
+              <label for="nome">Nome</label>
+              <input class="input" id="nome" name="nome" autocomplete="off" placeholder="Opcional se informar o CRM" />
+              <span class="err-msg" id="err-nome"></span>
+            </div>
+            <div class="field">
+              <label for="crm">CRM</label>
+              <input class="input" id="crm" name="crm" inputmode="numeric" autocomplete="off" placeholder="123456" value="123456" />
+              <span class="err-msg" id="err-crm"></span>
+            </div>
+            <div class="field">
+              <label for="uf">UF</label>
+              <select class="input" id="uf" name="uf"></select>
+              <span class="err-msg" id="err-uf"></span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="apiUrl">URL da API</label>
+            <input class="input" id="apiUrl" type="url" placeholder="Vazio = modo demonstração (ex.: http://localhost:8000)" />
+            <small>Com o <code>app.py</code> rodando, informe <code>http://localhost:8000</code>. Vazio, a mesma lógica do provedor mock roda no navegador.</small>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" type="submit" id="btnSend">Consultar</button>
+            <button class="btn btn-ghost" type="button" id="btnClear">Limpar</button>
+          </div>
+        </form>
+        <div class="mt-2">
+          <div class="muted" style="font-size:.82rem; margin-bottom:8px">Exemplos rápidos</div>
+          <div class="examples">
+            <button type="button" class="chip btnlike" data-crm="123456" data-uf="SP">CRM 123456/SP · regular</button>
+            <button type="button" class="chip btnlike" data-crm="100002" data-uf="SP">CRM 100002/SP · irregular</button>
+            <button type="button" class="chip btnlike" data-crm="97" data-uf="SP">CRM 97/SP · não encontrado</button>
+            <button type="button" class="chip btnlike" data-nome="Maria Souza" data-uf="RJ">Só o nome · RJ</button>
+            <button type="button" class="chip btnlike" data-crm="12a" data-uf="XX">Dados inválidos</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title"><h3>Resultado</h3><div class="status-line" id="statusLine"><span>aguardando consulta</span></div></div>
+        <div class="results" id="results">
+          <div class="empty">Preencha CRM e UF (ou nome e UF) e clique em <strong>Consultar</strong>.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px; align-items: start;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Resposta JSON</h3><button class="btn btn-ghost btn-sm" id="btnCopyJson" type="button">Copiar</button></div>
+        <pre class="code" id="json">{ }</pre>
+      </div>
+      <div class="card reveal">
+        <div class="card-title"><h3>Latência</h3><span class="chip" id="reqCount">0 requisições</span></div>
+        <div class="grid grid-2">
+          <div class="kpi"><div class="latency" id="kLast">—</div><div class="lbl">Última (ms)</div></div>
+          <div class="kpi"><div class="latency" id="kAvg">—</div><div class="lbl">Média (ms)</div></div>
+        </div>
+        <h3 class="mt-2">Exemplo com curl</h3>
+        <div class="curl-wrap">
+          <pre class="code" id="curl"></pre>
+          <button class="btn btn-ghost btn-sm" id="btnCopyCurl" type="button">Copiar</button>
+        </div>
+        <h3 class="mt-2">Histórico</h3>
+        <div class="table-wrap" style="max-height: 220px">
+          <table class="table history">
+            <thead><tr><th>Hora</th><th>Consulta</th><th>Status</th><th>ms</th></tr></thead>
+            <tbody id="hist"><tr><td colspan="4" class="muted">Nenhuma requisição ainda.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Da query string ao payload</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Validação de entrada</h4><p>UF precisa ser uma sigla brasileira, CRM só aceita dígitos (1 a 8) e é obrigatório informar CRM ou nome. Erros voltam como HTTP 400 com o motivo por campo.</p></div></div>
+            <div class="step"><div><h4>Provedor plugável</h4><p><code>PROVIDER=cfm</code> consulta o endpoint público do portal do CFM com timeout configurável; <code>PROVIDER=mock</code> gera dados fictícios determinísticos para testes e demonstrações.</p></div></div>
+            <div class="step"><div><h4>Normalização</h4><p>Os campos crus do portal (<code>NM_MEDICO</code>, <code>NU_CRM</code>, <code>SITUACAO</code>…) viram um JSON estável: nome, CRM, UF, situação Regular/Irregular, especialidades e inscrição.</p></div></div>
+            <div class="step"><div><h4>Cache e CORS</h4><p>Respostas ficam em cache em memória por <code>CACHE_TTL</code> segundos e saem com cabeçalhos CORS, prontas para um front-end ou um robô RPA consumir.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/consulta-medicos-api/app.py" target="_blank" rel="noopener">app.py <small>Microsserviço (Python puro)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/consulta-medicos-api/api/medicos.js" target="_blank" rel="noopener">api/medicos.js <small>Função serverless (Vercel)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/consulta-medicos-api/lib/medicos-core.js" target="_blank" rel="noopener">lib/medicos-core.js <small>Validação + mock compartilhados</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/consulta-medicos-api/tests/test_app.py" target="_blank" rel="noopener">tests/test_app.py <small>Testes (unittest)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/consulta-medicos-api/README.md" target="_blank" rel="noopener">README.md <small>Como usar</small></a></li>
+          </ul>
+          <pre class="code mt-2">python app.py                    # mock na porta 8000
+PROVIDER=cfm python app.py       # portal do CFM
+python -m unittest discover -s tests</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      "use strict";
+      var $ = function (id) { return document.getElementById(id); };
+      var core = window.MedicosCore;
+      var stats = { n: 0, total: 0 };
+      var lastJson = "";
+
+      // UFs
+      var sel = $("uf");
+      var opt0 = document.createElement("option"); opt0.value = ""; opt0.textContent = "UF"; sel.append(opt0);
+      core.UFS.slice().sort().forEach(function (uf) {
+        var o = document.createElement("option"); o.value = uf; o.textContent = uf; sel.append(o);
+      });
+      sel.value = "SP";
+
+      try { $("apiUrl").value = localStorage.getItem("mm-medicos-api") || ""; } catch (e) {}
+
+      function apiBase() { return $("apiUrl").value.trim().replace(/\/+$/, ""); }
+      function endpoint() {
+        var b = apiBase() || "http://localhost:8000";
+        return /\/api\/medicos$/.test(b) ? b : b + "/api/medicos";
+      }
+      function params() {
+        return { nome: $("nome").value, crm: $("crm").value, uf: $("uf").value };
+      }
+      function queryString(p) {
+        var qs = new URLSearchParams();
+        ["nome", "crm", "uf"].forEach(function (k) { var v = String(p[k] || "").trim(); if (v) qs.set(k, v); });
+        return qs.toString();
+      }
+
+      function updateCurl() {
+        var url = endpoint() + "?" + queryString(params());
+        $("curl").textContent = 'curl -s "' + url + '"';
+        $("modeChip").textContent = apiBase() ? "API remota" : "modo demonstração";
+        $("modeChip").className = "chip " + (apiBase() ? "orange" : "gold");
+      }
+
+      ["nome", "crm", "uf", "apiUrl"].forEach(function (id) {
+        $(id).addEventListener("input", function () {
+          updateCurl();
+          if (id === "apiUrl") { try { localStorage.setItem("mm-medicos-api", $("apiUrl").value.trim()); } catch (e) {} }
+        });
+      });
+
+      function showFieldErrors(campos) {
+        ["nome", "crm", "uf"].forEach(function (k) {
+          $("err-" + k).textContent = (campos && campos[k]) || "";
+          $(k).classList.toggle("invalid", !!(campos && campos[k]));
+        });
+      }
+
+      // Destaque de sintaxe do JSON construído com nós de texto (sem innerHTML).
+      function renderJson(obj) {
+        var text = JSON.stringify(obj, null, 2);
+        lastJson = text;
+        var pre = $("json"); pre.textContent = "";
+        var re = /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g;
+        var last = 0, m;
+        while ((m = re.exec(text))) {
+          if (m.index > last) pre.append(document.createTextNode(text.slice(last, m.index)));
+          var span = document.createElement("span");
+          if (m[1]) { span.className = m[2] ? "k" : "s"; span.textContent = m[1]; pre.append(span); if (m[2]) pre.append(document.createTextNode(m[2])); }
+          else if (m[3]) { span.className = "b"; span.textContent = m[3]; pre.append(span); }
+          else { span.className = "n"; span.textContent = m[4]; pre.append(span); }
+          last = re.lastIndex;
+        }
+        if (last < text.length) pre.append(document.createTextNode(text.slice(last)));
+      }
+
+      function el(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      }
+
+      function fmtDate(iso) {
+        var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+        return m ? m[3] + "/" + m[2] + "/" + m[1] : (iso || "—");
+      }
+
+      function renderResults(status, body) {
+        var box = $("results"); box.textContent = "";
+        if (status === 200 && body && Array.isArray(body.medicos)) {
+          body.medicos.forEach(function (m) {
+            var doc = el("article", "doc" + (m.regular ? "" : " irregular"));
+            var head = el("div", "row");
+            head.append(el("h4", null, m.nome || "—"));
+            head.append(el("span", "spacer"));
+            head.append(el("span", "badge " + (m.regular ? "ok" : "err"), m.situacao || "—"));
+            doc.append(head);
+            doc.append(el("div", "muted mono", "CRM " + m.crm + " / " + m.uf));
+            var dl = el("dl");
+            [["Situação", m.detalhe_situacao], ["Especialidades", (m.especialidades || []).join(", ") || "Sem especialidade registrada"],
+             ["Inscrição", m.tipo_inscricao], ["Desde", fmtDate(m.data_inscricao)], ["Fonte", m.fonte]].forEach(function (p) {
+              dl.append(el("dt", null, p[0]), el("dd", null, p[1] || "—"));
+            });
+            doc.append(dl);
+            box.append(doc);
+          });
+          return;
+        }
+        var msg = body && body.erro ? body.erro.mensagem : "Resposta inesperada.";
+        var empty = el("div", "empty");
+        empty.append(el("strong", null, msg));
+        if (body && body.erro && body.erro.campos) {
+          var ul = el("ul", null); ul.style.textAlign = "left"; ul.style.margin = "10px auto 0"; ul.style.maxWidth = "36ch";
+          Object.keys(body.erro.campos).forEach(function (k) { ul.append(el("li", null, k.toUpperCase() + ": " + body.erro.campos[k])); });
+          empty.append(ul);
+        }
+        box.append(empty);
+      }
+
+      function setStatus(status, ms, extra) {
+        var line = $("statusLine"); line.textContent = "";
+        var cls = status >= 500 || status === 0 ? "s5" : status >= 400 ? "s4" : "s2";
+        line.append(el("span", "http " + cls, status ? "HTTP " + status : "ERRO DE REDE"));
+        line.append(el("span", null, ms + " ms"));
+        if (extra) line.append(el("span", null, extra));
+      }
+
+      function addHistory(p, status, ms) {
+        stats.n++; stats.total += ms;
+        $("kLast").textContent = String(ms);
+        $("kAvg").textContent = String(Math.round(stats.total / stats.n));
+        $("reqCount").textContent = stats.n + (stats.n === 1 ? " requisição" : " requisições");
+        var tb = $("hist");
+        if (stats.n === 1) tb.textContent = "";
+        var tr = el("tr");
+        var label = (p.crm ? "CRM " + p.crm : p.nome || "—") + " / " + (p.uf || "?");
+        var stCell = el("td"); stCell.append(el("span", "http " + (status >= 500 || !status ? "s5" : status >= 400 ? "s4" : "s2"), String(status || "—")));
+        tr.append(el("td", null, new Date().toLocaleTimeString("pt-BR")), el("td", null, label), stCell, el("td", null, String(ms)));
+        tb.prepend(tr);
+        while (tb.children.length > 12) tb.lastChild.remove();
+      }
+
+      function request(p) {
+        var t0 = performance.now();
+        if (!apiBase()) {
+          // Modo demonstração: mesma regra do provedor mock, com uma latência de rede simulada.
+          var out = core.consultar(p);
+          var delay = 80 + Math.round(Math.random() * 160);
+          return new Promise(function (resolve) {
+            setTimeout(function () { resolve({ status: out.status, body: out.body, ms: Math.round(performance.now() - t0) }); }, delay);
+          });
+        }
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, 15000);
+        return fetch(endpoint() + "?" + queryString(p), { signal: ctrl.signal, headers: { Accept: "application/json" } })
+          .then(function (r) {
+            return r.json().catch(function () { return { ok: false, erro: { codigo: "FORMATO", mensagem: "A API não devolveu JSON." } }; })
+              .then(function (body) { return { status: r.status, body: body, ms: Math.round(performance.now() - t0) }; });
+          })
+          .catch(function (e) {
+            return { status: 0, body: { ok: false, erro: { codigo: "REDE", mensagem: "Falha ao acessar a API: " + (e.name === "AbortError" ? "tempo esgotado" : e.message) } }, ms: Math.round(performance.now() - t0) };
+          })
+          .finally(function () { clearTimeout(timer); });
+      }
+
+      $("form").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var p = params();
+        var btn = $("btnSend");
+        btn.disabled = true; btn.textContent = "Consultando…";
+        $("statusLine").textContent = "";
+        $("statusLine").append(el("span", null, "enviando GET…"));
+        request(p).then(function (res) {
+          showFieldErrors(res.body && res.body.erro && res.body.erro.campos);
+          renderResults(res.status, res.body);
+          renderJson(res.body);
+          setStatus(res.status, res.ms, res.body && res.body.provider ? "provider: " + res.body.provider : "");
+          addHistory(p, res.status, res.ms);
+        }).finally(function () {
+          btn.disabled = false; btn.textContent = "Consultar";
+        });
+      });
+
+      $("btnClear").addEventListener("click", function () {
+        $("nome").value = ""; $("crm").value = ""; $("uf").value = "SP";
+        showFieldErrors(null); updateCurl();
+      });
+
+      document.querySelectorAll(".examples button").forEach(function (b) {
+        b.addEventListener("click", function () {
+          $("nome").value = b.dataset.nome || "";
+          $("crm").value = b.dataset.crm || "";
+          var uf = b.dataset.uf || "";
+          if (core.UFS.indexOf(uf) < 0) {
+            // Força uma UF inexistente no select para demonstrar a validação.
+            var o = sel.querySelector('option[data-fake]');
+            if (!o) { o = document.createElement("option"); o.dataset.fake = "1"; sel.append(o); }
+            o.value = uf; o.textContent = uf + " (inválida)";
+          }
+          sel.value = uf;
+          updateCurl();
+          $("form").requestSubmit();
+        });
+      });
+
+      function copy(text, btn) {
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          var t = btn.textContent; btn.textContent = "Copiado!";
+          setTimeout(function () { btn.textContent = t; }, 1200);
+        }).catch(function () {});
+      }
+      $("btnCopyJson").addEventListener("click", function () { copy(lastJson || "{}", this); });
+      $("btnCopyCurl").addEventListener("click", function () { copy($("curl").textContent, this); });
+
+      updateCurl();
+    })();
+  </script>
+</body>
+</html>

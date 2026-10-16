@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planilhas para SharePoint · Projetos MM</title>
+  <meta name="description" content="ETL que limpa, padroniza e valida planilhas de inventário patrimonial antes da ingestão no SharePoint. Power Automate Desktop + Python, com versão web interativa." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+    .map-item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface-2); }
+    .map-item .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .map-item strong { font: 700 .9rem var(--font-mono); color: var(--gold); }
+    .map-item .input { padding: 8px 10px; font-size: .85rem; }
+    .map-item .req { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--text-3); }
+    .rules { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+    .rules label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: .9rem; color: var(--text-2); cursor: pointer; }
+    .rules input { accent-color: var(--orange); margin-top: 3px; }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-strong); background: transparent; color: var(--text-2); font: 600 .85rem var(--font-body); cursor: pointer; }
+    .tab[aria-selected="true"] { background: var(--grad); color: #1a0f04; border-color: transparent; }
+    .table td.changed { color: var(--gold); }
+    .table td.bad { color: var(--err); }
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .kpi.ok .num { color: var(--ok); } .kpi.err .num { color: var(--err); } .kpi.warn .num { color: var(--warn); }
+    .source-name { font: 500 .85rem var(--font-mono); color: var(--text-3); }
+    @media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid-2 { grid-template-columns: 1fr; } }
+    .notice code, .lead code, .step code, td { overflow-wrap: anywhere; }
+    @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="sharepoint-planilhas-etl"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">RPA · ETL · Inventário Patrimonial</span>
+      <h1>Planilhas prontas para o <span class="grad-text">SharePoint</span></h1>
+      <p class="lead">Exportações brutas chegam com cabeçalhos diferentes, datas em três formatos, valores com “R$” e itens repetidos. Este ETL padroniza tudo para os nomes internos das colunas da lista, valida cada linha e separa o que não pode subir, antes que o App Inventário Patrimonial receba um dado sujo.</p>
+      <div class="meta chips">
+        <span class="chip gold">Power Automate Desktop</span>
+        <span class="chip orange">Python</span>
+        <span class="chip red">Excel/CSV Engine</span>
+        <span class="chip">Data Transformation</span>
+      </div>
+    </section>
+
+    <!-- 1. Entrada -->
+    <section class="container grid grid-2" style="padding-bottom: 24px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>1 · Planilha bruta</h3><span class="chip" id="srcChip">nenhum arquivo</span></div>
+        <label class="dropzone" id="drop" for="fileIn">
+          <strong>Arraste um .csv aqui</strong><br />
+          <span class="muted">ou clique para escolher · separador ; , ou TAB detectado automaticamente</span>
+        </label>
+        <input type="file" id="fileIn" accept=".csv,.txt,text/csv" class="sr-only" />
+        <div class="row mt-1">
+          <button class="btn btn-primary" id="btnSample" type="button">Usar exemplo (41 linhas)</button>
+          <span class="source-name" id="srcName"></span>
+        </div>
+        <p class="muted mt-1" style="font-size:.85rem">O arquivo é lido só no seu navegador; nada é enviado. Para .xlsx use o <code>etl.py</code> (lê Excel via openpyxl) ou salve a aba como CSV.</p>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title"><h3>Regras</h3></div>
+        <div class="rules">
+          <label><input type="checkbox" id="rDedupe" checked /> <span>Remover duplicados pela chave <code>Title</code> (Nº patrimônio)</span></label>
+          <label><input type="checkbox" id="rNames" checked /> <span>Nomes de pessoa em Title Case</span></label>
+          <label><input type="checkbox" id="rCat" checked /> <span>Unificar grafias de categoria (“informatica” → “Informática”)</span></label>
+          <label><input type="checkbox" id="rNeg" checked /> <span>Rejeitar valores negativos</span></label>
+          <label><input type="checkbox" id="rChoice" checked /> <span>Status precisa estar nas opções da coluna Choice</span></label>
+        </div>
+        <div class="field mt-1">
+          <label for="choices">Opções de Status (separadas por vírgula)</label>
+          <input class="input" id="choices" value="Ativo, Em manutenção, Inativo, Baixado" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Mapeamento -->
+    <section class="container" style="padding-bottom: 24px;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>2 · Mapeamento de colunas</h3>
+          <span class="muted" style="font-size:.85rem">coluna interna do SharePoint ← coluna da planilha</span>
+        </div>
+        <div class="map-grid" id="mapGrid"><p class="muted">Carregue uma planilha para mapear as colunas.</p></div>
+        <div class="row mt-2">
+          <button class="btn btn-primary" id="btnRun" type="button" disabled>Executar ETL</button>
+          <span class="muted" id="runInfo" style="font-size:.88rem"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Resultado -->
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>3 · Resultado</h3>
+          <div class="row">
+            <button class="btn btn-ghost btn-sm" id="dlClean" type="button" disabled>Baixar CSV limpo</button>
+            <button class="btn btn-danger btn-sm" id="dlRej" type="button" disabled>Baixar rejeitados</button>
+          </div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="num" id="kRead">0</div><div class="lbl">Lidas</div></div>
+          <div class="kpi ok"><div class="num" id="kOk">0</div><div class="lbl">Válidas</div></div>
+          <div class="kpi err"><div class="num" id="kRej">0</div><div class="lbl">Rejeitadas</div></div>
+          <div class="kpi warn"><div class="num" id="kDup">0</div><div class="lbl">Duplicadas</div></div>
+        </div>
+        <div class="progress mt-1" title="Taxa de aproveitamento"><span id="okBar"></span></div>
+
+        <div class="tabs mt-2" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="before">Antes (bruto)</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="after">Depois (SharePoint)</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="rej">Rejeitadas</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table"><thead id="tHead"></thead><tbody id="tBody"></tbody></table>
+        </div>
+        <p class="muted mt-1" style="font-size:.85rem">Na aba “Depois”, células em dourado foram alteradas pela limpeza. O CSV limpo sai em UTF-8 com BOM e vírgula, como a importação de listas do SharePoint espera.</p>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Do Excel bagunçado à lista</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>PAD vigia a pasta</h4><p>O fluxo do Power Automate Desktop pega cada planilha nova da pasta de entrada e chama o <code>etl.py</code> com <em>Run DOS command</em>.</p></div></div>
+            <div class="step"><div><h4>Cabeçalhos viram nomes internos</h4><p>“Nº Patrimônio ” e “patrimonio” viram <code>Title</code>; “Valor (R$)” vira <code>ValorAquisicao</code>. Acento, caixa e espaço não importam.</p></div></div>
+            <div class="step"><div><h4>Limpeza e validação</h4><p>Datas para ISO 8601, números no padrão brasileiro para ponto decimal, status conferido com a coluna Choice, chave sem duplicatas.</p></div></div>
+            <div class="step"><div><h4>Saída em duas partes</h4><p>O CSV limpo vai para a biblioteca sincronizada; os rejeitados seguem por e-mail com o motivo de cada linha. Código de saída 2 avisa o PAD.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-planilhas-etl/etl.py" target="_blank" rel="noopener">etl.py <small>ETL em Python (CSV/XLSX)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-planilhas-etl/pad/fluxo.txt" target="_blank" rel="noopener">pad/fluxo.txt <small>Fluxo do Power Automate Desktop</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-planilhas-etl/exemplo/inventario_bruto.csv" target="_blank" rel="noopener">exemplo/inventario_bruto.csv <small>Planilha de teste</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-planilhas-etl/index.html" target="_blank" rel="noopener">index.html <small>Esta página</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-planilhas-etl/README.md" target="_blank" rel="noopener">README.md <small>Como usar</small></a></li>
+          </ul>
+          <pre class="code mt-2">python etl.py exemplo/inventario_bruto.csv -o saida
+# Lidas: 41 | válidas: 33 | rejeitadas: 8 (duplicadas: 2)
+python etl.py inventario.xlsx -o saida --aba "Bens"</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script type="text/plain" id="sampleCsv">
+Nº Patrimônio;Descrição do Bem ;CATEGORIA;Local;Responsável;Data Aquisição;Valor (R$);Status
+  PAT-0001 ;Notebook Dell Latitude 5420;Informática;Matriz - TI;Ana Souza;12/03/2022;R$ 5.899,90;Ativo
+PAT-0002;Monitor LG 24" ;informatica;Matriz - TI;ana souza;2022-03-12;1.249,00;ativo
+pat-0003;Cadeira ergonômica Flexform;Mobiliário;Filial Campinas;Carlos Lima;05-07-21;1.780,5;Ativo
+PAT-0004;Mesa em L 1,60m;MOBILIÁRIO;Filial Campinas;Carlos Lima;05/07/2021;980;Ativo
+PAT-0005;Impressora HP LaserJet M428;Informática;Matriz - Financeiro;Juliana Prado;18/11/2020;2.350,00;Em manutenção
+PAT-0006;Ar-condicionado Split 12000 BTU;Climatização;Matriz - Recepção;;01/02/2019;2.799,99;Ativo
+PAT-0007;Projetor Epson PowerLite;Audiovisual;Sala de Reuniões 2;Marcos Teixeira;31/02/2023;3.100,00;Ativo
+PAT-0008;Notebook Lenovo ThinkPad E14;Informática;Matriz - TI;Ana Souza;20/09/2023;4.799,00;Ativo
+PAT-0002;Monitor LG 24";Informática;Matriz - TI;Ana Souza;12/03/2022;1249;Ativo
+PAT-0009;Smartphone Samsung A54;Telefonia;Comercial;Rafael Nunes;14/04/2023;1.999,00;ativo
+;Teclado sem fio Logitech;Informática;Matriz - TI;Ana Souza;10/10/2023;199,90;Ativo
+PAT-0010;Switch Cisco 24 portas;Rede;Data Center;Bruno Alves;22/08/2018;7.450,00;Ativo
+PAT-0011;Nobreak SMS 3kVA;Energia;Data Center;Bruno Alves;22/08/2018;3.890,00;Baixado
+PAT-0012;Armário de aço 2 portas;Mobiliário;Almoxarifado;Patrícia Gomes;03/01/2017;650,00;Ativo
+PAT-0013;Geladeira Consul 300L;Copa;Copa - Matriz;Patrícia Gomes;15/06/2020;2.199,00;Ativo
+PAT-0014;Notebook Dell Latitude 5420;Informática;Comercial;Rafael Nunes;12/03/2022;5899.90;Ativo
+PAT-0015;Cadeira fixa empilhável;Mobiliário;Auditório;Patrícia Gomes;2019-05-10;189,00;Ativo
+PAT-0016;Câmera IP Intelbras;Segurança;Portaria;Bruno Alves;07/12/2021;459,00;ativo
+PAT-0017;Licença Microsoft 365 (anual);Software;Matriz - TI;Ana Souza;01/01/2024;abc;Ativo
+PAT-0018;Tablet iPad 9ª geração;Informática;Diretoria;Fernanda Rocha;19/03/2022;3.499,00;Ativo
+PAT-0019;Bebedouro industrial;Copa;Fábrica;Patrícia Gomes;11/11/2016;1.120,00;Inativo
+  ;  ;  ;  ;  ;  ;  ;
+PAT-0020;Roteador Mikrotik RB4011;Rede;Data Center;Bruno Alves;02/05/2022;1.680,00;Ativo
+PAT-0021;Notebook Apple MacBook Air M2;Informática;Marketing;Luiza Martins;25/07/2023;9.299,00;Ativo
+PAT-0022;Cadeira ergonômica Flexform;mobiliario;Marketing;Luiza Martins;25/07/2023;1.780,50;Ativo
+PAT-0023;Scanner Fujitsu fi-7160;Informática;Matriz - Financeiro;Juliana Prado;13/02/2021;5.600,00;Ativo
+PAT-0024;Telefone IP Grandstream;Telefonia;Recepção;Marcos Teixeira;30/09/2020;390,00;Ativo
+PAT-0025;Furadeira Bosch GSB;Ferramentas;Manutenção;Diego Castro;08/08/2019;520,00;Ativo
+PAT-0026;Paleteira manual 2,5t;Ferramentas;Almoxarifado;Diego Castro;sem data;1.950,00;Ativo
+PAT-0027;Servidor Dell PowerEdge T150;Informática;Data Center;Bruno Alves;17/01/2023;18.900,00;Ativo
+PAT-0028;Monitor Samsung 27" curvo;Informática;Diretoria;Fernanda Rocha;19/03/2022;1.899,00;Ativo
+PAT-0029;Mesa de reunião 8 lugares;Mobiliário;Sala de Reuniões 1;Marcos Teixeira;12/04/2018;3.200,00;Ativo
+pat-0028 ;Monitor Samsung 27" curvo;Informática;Diretoria;Fernanda Rocha;19/03/2022;1.899,00;Ativo
+PAT-0030;Micro-ondas Electrolux;Copa;Copa - Matriz;Patrícia Gomes;15/06/2020;599,00;Ativo
+PAT-0031;Notebook Dell Vostro 3520;Informática;Comercial;Rafael Nunes;03/10/2023;3.999,00;Em uso
+PAT-0032;Caixa de som JBL;Audiovisual;Auditório;Marcos Teixeira;2023/06/01;1.299,00;Ativo
+PAT-0033;Extintor CO2 6kg;Segurança;Fábrica;Diego Castro;20/01/2024;-350,00;Ativo
+PAT-0034;Webcam Logitech C920;Informática;Sala de Reuniões 2;Marcos Teixeira;14/02/2023;549,90;Ativo
+PAT-0035;Gaveteiro volante 3 gavetas;Mobiliário;Matriz - Financeiro;Juliana Prado;18/11/2020;420,00;ATIVO
+PAT-0036;Leitor de código de barras Zebra;Informática;Almoxarifado;Diego Castro;09/09/2021;780,00;Ativo
+PAT-0037;Notebook HP ProBook 440;Informática;RH;Camila Ribeiro;28/02/2024;4.299,00;Ativo
+PAT-0038;Cofre eletrônico;Segurança;Matriz - Financeiro;Juliana Prado;06/06/2016;1.150,00;Ativo
+</script>
+  <script>
+    (function () {
+      "use strict";
+      var $ = function (id) { return document.getElementById(id); };
+
+      // Mesma configuração de COLUNAS do etl.py
+      var COLUNAS = [
+        { id: "Title", tipo: "chave", req: true, aliases: ["n patrimonio", "no patrimonio", "patrimonio", "numero patrimonio", "plaqueta", "tag"] },
+        { id: "Descricao", tipo: "texto", req: true, aliases: ["descricao do bem", "descricao", "item", "bem"] },
+        { id: "Categoria", tipo: "categoria", req: true, aliases: ["categoria", "grupo", "classe"] },
+        { id: "Localizacao", tipo: "texto", req: false, aliases: ["local", "localizacao", "setor", "unidade"] },
+        { id: "Responsavel", tipo: "pessoa", req: false, aliases: ["responsavel", "custodiante", "usuario"] },
+        { id: "DataAquisicao", tipo: "data", req: true, aliases: ["data aquisicao", "data de aquisicao", "dt aquisicao", "data compra"] },
+        { id: "ValorAquisicao", tipo: "numero", req: true, aliases: ["valor r", "valor", "valor aquisicao", "valor de aquisicao", "custo"] },
+        { id: "Status", tipo: "escolha", req: true, aliases: ["status", "situacao"] }
+      ];
+      var TIPOS = { chave: "chave", texto: "texto", categoria: "categoria", pessoa: "pessoa", data: "data ISO", numero: "número", escolha: "choice" };
+
+      var state = { headers: [], rows: [], result: null, tab: "before", name: "" };
+
+      // ---------- utilidades ----------
+      function semAcento(s) { return s.normalize("NFKD").replace(/[̀-ͯ]/g, ""); }
+      function slug(s) { return semAcento(String(s)).toLowerCase().replace(/[º°]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+      function limpa(s) { return String(s == null ? "" : s).replace(/\s+/g, " ").trim(); }
+      function pad(n) { return String(n).padStart(2, "0"); }
+
+      function detectDelim(text) {
+        var first = text.split(/\r?\n/)[0] || "";
+        var best = ";", max = -1;
+        [";", ",", "\t", "|"].forEach(function (d) { var c = first.split(d).length; if (c > max) { max = c; best = d; } });
+        return best;
+      }
+      function parseCsv(text, delim) {
+        var rows = [], row = [], cell = "", q = false;
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          if (q) {
+            if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+            else cell += ch;
+          } else if (ch === '"' && cell === "") q = true;
+          else if (ch === delim) { row.push(cell); cell = ""; }
+          else if (ch === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+          else if (ch !== "\r") cell += ch;
+        }
+        if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+        return rows;
+      }
+      function toCsv(rows, delim) {
+        return "﻿" + rows.map(function (r) {
+          return r.map(function (v) {
+            v = String(v == null ? "" : v);
+            return /["\n\r]/.test(v) || v.indexOf(delim) >= 0 ? '"' + v.replace(/"/g, '""') + '"' : v;
+          }).join(delim);
+        }).join("\r\n");
+      }
+      function download(name, text) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+        a.download = name; document.body.append(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      }
+
+      // ---------- conversores (espelham o etl.py) ----------
+      function paraData(v) {
+        v = limpa(v);
+        var m, a, mo, d;
+        if ((m = v.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/))) { a = +m[1]; mo = +m[2]; d = +m[3]; }
+        else if ((m = v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))) { d = +m[1]; mo = +m[2]; a = +m[3]; }
+        else if ((m = v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2})$/))) {
+          d = +m[1]; mo = +m[2]; a = 2000 + +m[3];
+          if (a > new Date().getFullYear()) a -= 100;
+        } else throw new Error("data não reconhecida: '" + v + "'");
+        var dt = new Date(Date.UTC(a, mo - 1, d));
+        if (dt.getUTCFullYear() !== a || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) throw new Error("data inexistente: '" + v + "'");
+        return a + "-" + pad(mo) + "-" + pad(d);
+      }
+      function paraNumero(raw) {
+        var v = limpa(raw).replace("R$", "").replace(/ /g, "");
+        if (!v) throw new Error("valor vazio");
+        if (v.indexOf(",") >= 0) v = v.replace(/\./g, "").replace(",", ".");
+        else if ((v.match(/\./g) || []).length > 1) v = v.replace(/\./g, "");
+        if (!/^-?\d+(\.\d+)?$/.test(v)) throw new Error("número inválido: '" + limpa(raw) + "'");
+        return Math.round(parseFloat(v) * 100) / 100;
+      }
+      function titleCase(s) {
+        var low = { da: 1, de: 1, "do": 1, das: 1, dos: 1, e: 1 };
+        return limpa(s).toLowerCase().split(" ").filter(Boolean).map(function (p, i) {
+          return i && low[p] ? p : p.charAt(0).toUpperCase() + p.slice(1);
+        }).join(" ");
+      }
+
+      // ---------- carga ----------
+      function load(text, name) {
+        text = text.replace(/^﻿/, "");
+        var all = parseCsv(text, detectDelim(text));
+        if (!all.length) { alert("Arquivo vazio."); return; }
+        state.headers = all[0].map(limpa);
+        state.rows = all.slice(1).filter(function (r, i, arr) { return !(i === arr.length - 1 && r.length === 1 && r[0] === ""); });
+        state.name = name;
+        state.result = null;
+        $("srcName").textContent = name;
+        $("srcChip").textContent = state.rows.length + " linhas · " + state.headers.length + " colunas";
+        buildMapping();
+        $("btnRun").disabled = false;
+        setTab("before");
+        run();
+      }
+
+      function autoMap() {
+        var slugs = state.headers.map(slug), used = {}, map = {};
+        COLUNAS.forEach(function (c) {
+          var cands = [slug(c.id)].concat(c.aliases);
+          for (var i = 0; i < cands.length; i++) {
+            var idx = slugs.indexOf(cands[i]);
+            if (idx >= 0 && !used[idx]) { map[c.id] = idx; used[idx] = 1; break; }
+          }
+        });
+        return map;
+      }
+
+      function buildMapping() {
+        var grid = $("mapGrid"); grid.textContent = "";
+        var map = autoMap();
+        COLUNAS.forEach(function (c) {
+          var box = document.createElement("div"); box.className = "map-item";
+          var head = document.createElement("div"); head.className = "head";
+          var strong = document.createElement("strong"); strong.textContent = c.id;
+          var tipo = document.createElement("span"); tipo.className = "chip"; tipo.textContent = TIPOS[c.tipo];
+          head.append(strong, tipo);
+          var sel = document.createElement("select"); sel.className = "input"; sel.id = "map-" + c.id;
+          sel.setAttribute("aria-label", "Coluna de origem para " + c.id);
+          var none = document.createElement("option"); none.value = ""; none.textContent = "— não mapear —"; sel.append(none);
+          state.headers.forEach(function (h, i) {
+            var o = document.createElement("option"); o.value = String(i); o.textContent = h || "(coluna " + (i + 1) + ")";
+            if (map[c.id] === i) o.selected = true;
+            sel.append(o);
+          });
+          var req = document.createElement("label"); req.className = "req mt-1";
+          var cb = document.createElement("input"); cb.type = "checkbox"; cb.id = "req-" + c.id; cb.checked = c.req;
+          req.append(cb, document.createTextNode("obrigatório"));
+          box.append(head, sel, req);
+          grid.append(box);
+        });
+      }
+
+      // ---------- ETL ----------
+      function run() {
+        if (!state.headers.length) return;
+        var t0 = performance.now();
+        var cfg = COLUNAS.map(function (c) {
+          var v = $("map-" + c.id).value;
+          return { id: c.id, tipo: c.tipo, idx: v === "" ? -1 : +v, req: $("req-" + c.id).checked };
+        });
+        var faltando = cfg.filter(function (c) { return c.req && c.idx < 0; }).map(function (c) { return c.id; });
+        if (faltando.length) {
+          $("runInfo").textContent = "Mapeie as colunas obrigatórias: " + faltando.join(", ");
+          return;
+        }
+        var rules = { dedupe: $("rDedupe").checked, names: $("rNames").checked, cat: $("rCat").checked, neg: $("rNeg").checked, choice: $("rChoice").checked };
+        var opcoes = {};
+        $("choices").value.split(",").map(limpa).filter(Boolean).forEach(function (o) { opcoes[slug(o)] = o; });
+
+        // Grafia oficial de cada categoria (mais frequente, preferindo a acentuada)
+        var catCol = cfg.find(function (c) { return c.tipo === "categoria"; });
+        var canon = {};
+        if (catCol && catCol.idx >= 0) {
+          var counts = {};
+          state.rows.forEach(function (r) {
+            var b = limpa(r[catCol.idx]); if (!b) return;
+            var k = slug(b), f = b.charAt(0).toUpperCase() + b.slice(1).toLowerCase();
+            counts[k] = counts[k] || {}; counts[k][f] = (counts[k][f] || 0) + 1;
+          });
+          Object.keys(counts).forEach(function (k) {
+            canon[k] = Object.keys(counts[k]).sort(function (x, y) {
+              return (counts[k][y] - counts[k][x]) || ((y !== semAcento(y)) - (x !== semAcento(x)));
+            })[0];
+          });
+        }
+
+        var res = { valid: [], changed: [], rej: [], stats: { lidas: 0, vazias: 0, validas: 0, rejeitadas: 0, duplicadas: 0 } };
+        var seen = {};
+        state.rows.forEach(function (r, i) {
+          var n = i + 2;
+          if (!r.some(function (c) { return limpa(c); })) { res.stats.vazias++; return; }
+          res.stats.lidas++;
+          var out = {}, chg = {}, errs = [];
+          cfg.forEach(function (c) {
+            var raw = c.idx >= 0 ? (r[c.idx] == null ? "" : r[c.idx]) : "";
+            var t = limpa(raw);
+            if (!t) { if (c.req) errs.push(c.id + " vazio"); out[c.id] = ""; return; }
+            try {
+              var v;
+              switch (c.tipo) {
+                case "chave": v = t.toUpperCase(); break;
+                case "data": v = paraData(t); break;
+                case "numero":
+                  var num = paraNumero(t);
+                  if (rules.neg && num < 0) throw new Error("valor negativo: " + t);
+                  v = num.toFixed(2); break;
+                case "pessoa": v = rules.names ? titleCase(t) : t; break;
+                case "categoria": v = rules.cat ? (canon[slug(t)] || t) : t; break;
+                case "escolha":
+                  if (rules.choice) {
+                    if (!opcoes[slug(t)]) throw new Error("status '" + t + "' fora das opções (" + Object.values(opcoes).join(", ") + ")");
+                    v = opcoes[slug(t)];
+                  } else v = t;
+                  break;
+                default: v = t;
+              }
+              out[c.id] = v;
+              if (v !== String(raw)) chg[c.id] = true;
+            } catch (e) { errs.push(c.id + ": " + e.message); }
+          });
+          var key = out.Title || "";
+          if (!errs.length && rules.dedupe && key && seen[key]) { res.stats.duplicadas++; errs.push("duplicado da linha " + seen[key]); }
+          if (errs.length) {
+            res.stats.rejeitadas++;
+            res.rej.push({ linha: n, motivo: errs.join("; "), raw: r });
+          } else {
+            if (key) seen[key] = n;
+            res.stats.validas++;
+            res.valid.push(out); res.changed.push(chg);
+          }
+        });
+        res.cfg = cfg;
+        state.result = res;
+        var ms = performance.now() - t0;
+        $("runInfo").textContent = "ETL executado em " + ms.toFixed(1) + " ms sobre " + state.rows.length + " linhas.";
+        renderKpis(); renderTable();
+        $("dlClean").disabled = !res.valid.length;
+        $("dlRej").disabled = !res.rej.length;
+      }
+
+      function renderKpis() {
+        var s = state.result ? state.result.stats : { lidas: 0, validas: 0, rejeitadas: 0, duplicadas: 0 };
+        $("kRead").textContent = s.lidas; $("kOk").textContent = s.validas;
+        $("kRej").textContent = s.rejeitadas; $("kDup").textContent = s.duplicadas;
+        $("okBar").style.width = (s.lidas ? s.validas / s.lidas * 100 : 0) + "%";
+      }
+
+      function fillTable(headers, rows, cellClass) {
+        var head = $("tHead"), body = $("tBody");
+        head.textContent = ""; body.textContent = "";
+        var tr = document.createElement("tr");
+        headers.forEach(function (h) { var th = document.createElement("th"); th.textContent = h; tr.append(th); });
+        head.append(tr);
+        if (!rows.length) {
+          var e = document.createElement("tr"), td = document.createElement("td");
+          td.colSpan = Math.max(1, headers.length); td.className = "muted";
+          td.textContent = state.headers.length ? "Nada aqui." : "Carregue uma planilha ou clique em “Usar exemplo”.";
+          e.append(td); body.append(e); return;
+        }
+        rows.forEach(function (r, ri) {
+          var tr2 = document.createElement("tr");
+          r.forEach(function (v, ci) {
+            var td2 = document.createElement("td"); td2.textContent = v;
+            var cls = cellClass && cellClass(ri, ci); if (cls) td2.className = cls;
+            tr2.append(td2);
+          });
+          body.append(tr2);
+        });
+      }
+
+      function renderTable() {
+        var res = state.result;
+        if (state.tab === "before") {
+          fillTable(["#"].concat(state.headers), state.rows.map(function (r, i) { return [i + 2].concat(state.headers.map(function (_, j) { return r[j] == null ? "" : r[j]; })); }));
+        } else if (state.tab === "after") {
+          var ids = COLUNAS.map(function (c) { return c.id; });
+          fillTable(ids, res ? res.valid.map(function (o) { return ids.map(function (k) { return o[k]; }); }) : [],
+            function (ri, ci) { return res.changed[ri][ids[ci]] ? "changed" : ""; });
+        } else {
+          fillTable(["Linha", "Motivo"].concat(state.headers), res ? res.rej.map(function (x) {
+            return [x.linha, x.motivo].concat(state.headers.map(function (_, j) { return x.raw[j] == null ? "" : x.raw[j]; }));
+          }) : [], function (ri, ci) { return ci === 1 ? "bad" : ""; });
+        }
+      }
+
+      function setTab(t) {
+        state.tab = t;
+        document.querySelectorAll(".tab").forEach(function (b) { b.setAttribute("aria-selected", String(b.dataset.tab === t)); });
+        renderTable();
+      }
+
+      // ---------- eventos ----------
+      document.querySelectorAll(".tab").forEach(function (b) { b.addEventListener("click", function () { setTab(b.dataset.tab); }); });
+      $("btnRun").addEventListener("click", function () { run(); setTab("after"); });
+      $("btnSample").addEventListener("click", function () { load($("sampleCsv").textContent.replace(/^\n/, ""), "inventario_bruto.csv (exemplo)"); });
+      ["rDedupe", "rNames", "rCat", "rNeg", "rChoice", "choices"].forEach(function (id) { $(id).addEventListener("change", run); });
+      $("mapGrid").addEventListener("change", run);
+
+      function readFile(f) {
+        if (!f) return;
+        if (/\.xlsx?$/i.test(f.name)) { alert("No navegador a leitura é de CSV. Para .xlsx use o etl.py ou exporte a aba como CSV."); return; }
+        f.text().then(function (t) { load(t, f.name); });
+      }
+      $("fileIn").addEventListener("change", function (e) { readFile(e.target.files[0]); e.target.value = ""; });
+      var drop = $("drop");
+      ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("drag"); }); });
+      ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("drag"); }); });
+      drop.addEventListener("drop", function (e) { readFile(e.dataTransfer.files[0]); });
+
+      $("dlClean").addEventListener("click", function () {
+        var ids = COLUNAS.map(function (c) { return c.id; });
+        download("inventario_sharepoint.csv", toCsv([ids].concat(state.result.valid.map(function (o) { return ids.map(function (k) { return o[k]; }); })), ","));
+      });
+      $("dlRej").addEventListener("click", function () {
+        download("rejeitados.csv", toCsv([["linha", "motivo"].concat(state.headers)].concat(state.result.rej.map(function (x) {
+          return [x.linha, x.motivo].concat(state.headers.map(function (_, j) { return x.raw[j] == null ? "" : x.raw[j]; }));
+        })), ";"));
+      });
+
+      renderKpis(); renderTable();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Importação para SharePoint · Projetos MM</title>
+  <meta name="description" content="Pipeline Power Automate Cloud que consome arquivos das rotinas desktop e insere itens em lote no SharePoint via Graph $batch, com retry e dead-letter. Simulador interativo." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .pipe { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; position: relative; }
+    .stage { position: relative; padding: 16px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); transition: border-color .3s, box-shadow .3s, transform .3s; }
+    .stage .n { font: 700 .72rem var(--font-mono); color: var(--text-3); letter-spacing: .08em; text-transform: uppercase; }
+    .stage h4 { margin: 6px 0 4px; font-size: 1rem; }
+    .stage p { margin: 0; font-size: .8rem; color: var(--text-3); min-height: 2.4em; }
+    .stage::after { content: ""; position: absolute; top: 50%; right: -11px; width: 12px; height: 2px; background: var(--line-strong); }
+    .stage:last-child::after { display: none; }
+    .stage.active { border-color: var(--orange); box-shadow: var(--glow); transform: translateY(-3px); }
+    .stage.active .n { color: var(--orange); }
+    .stage.done { border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+    .stage.done .n { color: var(--ok); }
+    .stage.fail { border-color: var(--err); }
+    .batches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+    .batch { border-radius: 10px; padding: 10px; border: 1px solid var(--line); background: var(--surface-2); font: 500 .76rem var(--font-mono); color: var(--text-2); transition: background .25s, border-color .25s; }
+    .batch b { display: block; font: 700 .9rem var(--font-display); color: var(--text); }
+    .batch.sending { border-color: var(--orange); }
+    .batch.retry { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, var(--surface-2)); }
+    .batch.ok { border-color: color-mix(in srgb, var(--ok) 60%, transparent); background: color-mix(in srgb, var(--ok) 12%, var(--surface-2)); }
+    .batch.partial { border-color: var(--red); background: color-mix(in srgb, var(--red) 12%, var(--surface-2)); }
+    .log { height: 300px; overflow: auto; }
+    .log div { white-space: pre-wrap; }
+    .kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+    .kpi .num { font-size: 1.5rem; }
+    .param-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    .param-row output { font: 700 .9rem var(--font-mono); color: var(--gold); min-width: 3.5ch; text-align: right; }
+    input[type="range"] { width: 100%; accent-color: var(--orange); }
+    pre.code.payload { max-height: 260px; overflow: auto; font-size: .78rem; }
+    .sim-badge { display: inline-flex; gap: 6px; align-items: center; font: 700 .72rem var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--warn); border: 1px dashed var(--warn); padding: 4px 10px; border-radius: 999px; }
+    @media (max-width: 900px) {
+      .pipe { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stage::after { display: none; }
+      .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .notice code, .lead code, .step code, td { overflow-wrap: anywhere; }
+    @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="sharepoint-import-pipeline"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">RPA · Cloud Flow · Microsoft Graph</span>
+      <h1>Pipeline de importação para o <span class="grad-text">SharePoint</span></h1>
+      <p class="lead">Um fluxo agendado do Power Automate pega os arquivos que as rotinas desktop deixam numa pasta, transforma cada linha em item de lista e envia em lotes de 20 pelo <code>$batch</code> do Microsoft Graph. Throttling é tratado com Retry-After e backoff; o que falha de vez vai para um CSV de dead-letter, sem derrubar o resto da carga.</p>
+      <div class="meta chips">
+        <span class="chip gold">Power Automate Cloud</span>
+        <span class="chip orange">SharePoint REST API</span>
+        <span class="chip red">Graph API</span>
+        <span class="chip">Error Handling</span>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 20px;">
+      <div class="notice reveal"><strong>Simulador.</strong><span>Esta página não chama a API real: as respostas do Graph (201, 429 com Retry-After, 400) são simuladas no navegador com as probabilidades que você escolher, e o tempo de espera é acelerado. O código que fala com o Graph de verdade está em <code>python/importer.py</code> e <code>flow/definition.json</code>.</span></div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 20px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Arquivo da rotina desktop</h3><span class="chip" id="rowsChip">0 linhas</span></div>
+        <div class="field">
+          <label for="csvText">CSV (cabeçalho = nomes internos das colunas)</label>
+          <textarea class="input" id="csvText" spellcheck="false" placeholder="Title,Descricao,Categoria,..."></textarea>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost btn-sm" id="btnSample" type="button">Usar exemplo (57 itens)</button>
+          <label class="btn btn-ghost btn-sm" for="fileIn">Enviar .csv</label>
+          <input type="file" id="fileIn" accept=".csv,text/csv" class="sr-only" />
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title"><h3>Parâmetros</h3><span class="sim-badge">simulação</span></div>
+        <div class="field"><label for="pBatch">Itens por $batch</label>
+          <div class="param-row"><input type="range" id="pBatch" min="1" max="20" value="20" /><output id="oBatch">20</output></div></div>
+        <div class="field"><label for="pThrottle">Chance de 429 por item</label>
+          <div class="param-row"><input type="range" id="pThrottle" min="0" max="60" value="15" /><output id="oThrottle">15%</output></div></div>
+        <div class="field"><label for="pPerm">Chance de erro permanente (400)</label>
+          <div class="param-row"><input type="range" id="pPerm" min="0" max="20" value="3" /><output id="oPerm">3%</output></div></div>
+        <div class="grid grid-2" style="gap:12px">
+          <div class="field"><label for="pRetries">Máx. tentativas</label><input class="input" type="number" id="pRetries" min="0" max="8" value="5" /></div>
+          <div class="field"><label for="pSpeed">Velocidade</label>
+            <select class="input" id="pSpeed"><option value="1">1×</option><option value="4" selected>4×</option><option value="20">20×</option></select></div>
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" id="btnRun" type="button">Executar pipeline</button>
+          <button class="btn btn-ghost" id="btnStop" type="button" disabled>Parar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 20px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Execução</h3><span class="muted mono" id="clock" style="font-size:.85rem">t = 0,0 s</span></div>
+        <div class="pipe" id="pipe">
+          <div class="stage" data-s="0"><span class="n">01 · Gatilho</span><h4>Recorrência</h4><p>a cada 15 min, horário comercial</p></div>
+          <div class="stage" data-s="1"><span class="n">02 · Ler arquivo</span><h4>Pasta de entrada</h4><p id="s1p">—</p></div>
+          <div class="stage" data-s="2"><span class="n">03 · Parse</span><h4>CSV → fields</h4><p id="s2p">—</p></div>
+          <div class="stage" data-s="3"><span class="n">04 · Lotes $batch</span><h4>Graph API</h4><p id="s3p">—</p></div>
+          <div class="stage" data-s="4"><span class="n">05 · SharePoint</span><h4>Lista Inventário</h4><p id="s4p">—</p></div>
+        </div>
+        <div class="progress mt-2"><span id="bar"></span></div>
+        <h4 class="mt-2">Lotes</h4>
+        <div class="batches" id="batches"><p class="muted">Os lotes aparecem aqui ao executar.</p></div>
+        <h4 class="mt-2">Log</h4>
+        <div class="log" id="log" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Relatório final</h3>
+          <button class="btn btn-danger btn-sm" id="btnDl" type="button" disabled>Baixar dead-letter</button></div>
+        <div class="kpis">
+          <div class="kpi"><div class="num" id="kIns">0</div><div class="lbl">Inseridos</div></div>
+          <div class="kpi"><div class="num" id="kBat">0</div><div class="lbl">Lotes</div></div>
+          <div class="kpi"><div class="num" id="kCalls">0</div><div class="lbl">Chamadas</div></div>
+          <div class="kpi"><div class="num" id="kRetry">0</div><div class="lbl">Retries</div></div>
+          <div class="kpi"><div class="num" id="kDead">0</div><div class="lbl">Dead-letter</div></div>
+          <div class="kpi"><div class="num" id="kTime">0s</div><div class="lbl">Tempo</div></div>
+        </div>
+        <div class="table-wrap mt-2" style="max-height:240px">
+          <table class="table"><thead><tr><th>Linha</th><th>Title</th><th>Erro</th></tr></thead><tbody id="deadRows"><tr><td colspan="3" class="muted">Nenhum item no dead-letter.</td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-title"><h3>Corpo do 1º $batch</h3><span class="chip">POST /v1.0/$batch</span></div>
+        <pre class="code payload" id="payload">{ "requests": [] }</pre>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Da pasta à lista, sem perder linha</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Gatilho de recorrência</h4><p>O fluxo Cloud roda a cada 15 minutos e lista os <code>.csv</code> que o PAD deixou na pasta de importação da biblioteca.</p></div></div>
+            <div class="step"><div><h4>Parse e montagem</h4><p>Cada linha vira um <code>POST /sites/{site}/lists/{lista}/items</code> com o objeto <code>fields</code>; números são convertidos para <code>float</code>.</p></div></div>
+            <div class="step"><div><h4>Lotes de 20 no $batch</h4><p>O JSON batching do Graph aceita até 20 requisições por chamada: 1.000 itens viram 50 chamadas em vez de 1.000.</p></div></div>
+            <div class="step"><div><h4>Retry com Retry-After</h4><p>Respostas 429/503/504 aguardam o tempo pedido pelo servidor (ou backoff exponencial com jitter) e reenviam só os itens que falharam.</p></div></div>
+            <div class="step"><div><h4>Try / Catch e dead-letter</h4><p>Erros permanentes vão para um CSV de dead-letter; se o escopo inteiro falhar, o arquivo vai para <code>Erro/</code> e um e-mail de alerta é enviado.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-import-pipeline/flow/definition.json" target="_blank" rel="noopener">flow/definition.json <small>Definição do fluxo Cloud</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-import-pipeline/python/importer.py" target="_blank" rel="noopener">python/importer.py <small>Cliente Graph (MSAL + requests)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-import-pipeline/exemplo/patrimonio_lote.csv" target="_blank" rel="noopener">exemplo/patrimonio_lote.csv <small>Arquivo de teste</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-import-pipeline/index.html" target="_blank" rel="noopener">index.html <small>Este simulador</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/sharepoint-import-pipeline/README.md" target="_blank" rel="noopener">README.md <small>Configuração</small></a></li>
+          </ul>
+          <pre class="code mt-2"># offline, com Graph simulado
+python importer.py ../exemplo/patrimonio_lote.csv --dry-run --falhas 0.2 -v
+
+# real (client credentials)
+export AZURE_TENANT_ID=... AZURE_CLIENT_ID=... AZURE_CLIENT_SECRET=...
+export SP_SITE_ID=... SP_LIST_ID=InventarioPatrimonial
+python importer.py ../exemplo/patrimonio_lote.csv</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script type="text/plain" id="sampleCsv">
+Title,Descricao,Categoria,Localizacao,Responsavel,DataAquisicao,ValorAquisicao,Status
+PAT-1100,Ar-condicionado 12000 BTU,Climatização,Filial Campinas,Fernanda Rocha,2023-01-03,2799.99,Em manutenção
+PAT-1101,"Monitor LG 24""",Informática,Almoxarifado,Ana Souza,2022-04-02,1249.00,Ativo
+PAT-1102,Projetor Epson,Audiovisual,Diretoria,Carlos Lima,2019-02-18,3100.00,Ativo
+PAT-1103,Notebook Dell Latitude 5440,Informática,Matriz - Financeiro,Rafael Nunes,2023-11-19,5899.90,Ativo
+PAT-1104,Nobreak 3kVA,Energia,Diretoria,Ana Souza,2019-01-18,3890.00,Ativo
+PAT-1105,Impressora HP M428,Informática,Diretoria,Juliana Prado,2022-02-19,2350.00,Ativo
+PAT-1106,Switch 24 portas,Rede,Filial Campinas,Carlos Lima,2022-10-21,7450.00,Ativo
+PAT-1107,Ar-condicionado 12000 BTU,Climatização,Matriz - Financeiro,Diego Castro,2023-02-19,2799.99,Ativo
+PAT-1108,Nobreak 3kVA,Energia,Comercial,Luiza Martins,2023-09-14,3890.00,Ativo
+PAT-1109,Smartphone Samsung A54,Telefonia,Marketing,Patrícia Gomes,2020-04-26,1999.00,Ativo
+PAT-1110,Câmera IP,Segurança,Comercial,Carlos Lima,2022-05-17,459.00,Ativo
+PAT-1111,Ar-condicionado 12000 BTU,Climatização,Marketing,Bruno Alves,2022-02-04,2799.99,Em manutenção
+PAT-1112,Projetor Epson,Audiovisual,Filial Campinas,Patrícia Gomes,2019-08-14,3100.00,Ativo
+PAT-1113,Armário de aço,Mobiliário,Matriz - Financeiro,Diego Castro,2022-06-11,650.00,Ativo
+PAT-1114,Nobreak 3kVA,Energia,Marketing,Luiza Martins,2018-02-09,3890.00,Ativo
+PAT-1115,Câmera IP,Segurança,Matriz - Financeiro,Ana Souza,2023-12-10,459.00,Inativo
+PAT-1116,Armário de aço,Mobiliário,Marketing,Bruno Alves,2023-07-22,650.00,Ativo
+PAT-1117,Notebook Dell Latitude 5440,Informática,Marketing,Patrícia Gomes,2019-10-04,5899.90,Ativo
+PAT-1118,Notebook Dell Latitude 5440,Informática,Comercial,Bruno Alves,2019-12-08,5899.90,Ativo
+PAT-1119,Projetor Epson,Audiovisual,Marketing,Carlos Lima,2019-08-13,3100.00,Em manutenção
+PAT-1120,Impressora HP M428,Informática,Filial Campinas,Fernanda Rocha,2024-09-09,2350.00,Ativo
+PAT-1121,Ar-condicionado 12000 BTU,Climatização,Diretoria,Rafael Nunes,2019-02-06,2799.99,Ativo
+PAT-1122,Mesa em L,Mobiliário,Comercial,Ana Souza,2021-10-06,980.00,Ativo
+PAT-1123,Impressora HP M428,Informática,Matriz - TI,Juliana Prado,2021-09-12,2350.00,Inativo
+PAT-1124,Nobreak 3kVA,Energia,Almoxarifado,Juliana Prado,2023-09-20,3890.00,Ativo
+PAT-1125,Smartphone Samsung A54,Telefonia,RH,Fernanda Rocha,2021-07-13,1999.00,Ativo
+PAT-1126,Smartphone Samsung A54,Telefonia,Diretoria,Ana Souza,2019-02-07,1999.00,Ativo
+PAT-1127,Cadeira ergonômica,Mobiliário,Matriz - Financeiro,Patrícia Gomes,2022-01-04,1780.50,Ativo
+PAT-1128,Nobreak 3kVA,Energia,Filial Campinas,Diego Castro,2018-06-20,3890.00,Ativo
+PAT-1129,"Monitor LG 24""",Informática,Comercial,Fernanda Rocha,2019-11-09,1249.00,Ativo
+PAT-1130,Nobreak 3kVA,Energia,Almoxarifado,Luiza Martins,2018-02-28,3890.00,Ativo
+PAT-1131,Smartphone Samsung A54,Telefonia,Marketing,Luiza Martins,2020-02-05,1999.00,Ativo
+PAT-1132,Câmera IP,Segurança,Almoxarifado,Bruno Alves,2021-12-06,459.00,Em manutenção
+PAT-1133,Notebook Dell Latitude 5440,Informática,Comercial,Diego Castro,2020-03-23,5899.90,Em manutenção
+PAT-1134,Notebook Dell Latitude 5440,Informática,RH,Bruno Alves,2023-02-23,5899.90,Ativo
+PAT-1135,Switch 24 portas,Rede,Almoxarifado,Juliana Prado,2020-04-18,7450.00,Em manutenção
+PAT-1136,Tablet iPad,Informática,RH,Patrícia Gomes,2023-04-20,3499.00,Ativo
+PAT-1137,Tablet iPad,Informática,Comercial,Fernanda Rocha,2023-04-07,3499.00,Em manutenção
+PAT-1138,Smartphone Samsung A54,Telefonia,Almoxarifado,Ana Souza,2018-05-16,1999.00,Ativo
+PAT-1139,Mesa em L,Mobiliário,Almoxarifado,Luiza Martins,2024-12-12,980.00,Ativo
+PAT-1140,"Monitor LG 24""",Informática,Comercial,Carlos Lima,2019-08-07,1249.00,Ativo
+PAT-1141,Mesa em L,Mobiliário,Marketing,Ana Souza,2021-11-12,980.00,Ativo
+PAT-1142,Webcam Logitech,Informática,Matriz - Financeiro,Fernanda Rocha,2024-12-25,549.90,Ativo
+PAT-1143,Smartphone Samsung A54,Telefonia,Filial Campinas,Fernanda Rocha,2024-11-11,1999.00,Ativo
+PAT-1144,Tablet iPad,Informática,Diretoria,Luiza Martins,2021-12-03,3499.00,Ativo
+PAT-1145,Cadeira ergonômica,Mobiliário,Filial Campinas,Ana Souza,2019-10-15,1780.50,Ativo
+PAT-1146,Nobreak 3kVA,Energia,Marketing,Patrícia Gomes,2019-09-18,3890.00,Ativo
+PAT-1147,Notebook Dell Latitude 5440,Informática,Matriz - TI,Carlos Lima,2022-12-05,5899.90,Ativo
+PAT-1148,Webcam Logitech,Informática,Comercial,Rafael Nunes,2018-05-07,549.90,Ativo
+PAT-1149,Switch 24 portas,Rede,Comercial,Patrícia Gomes,2020-09-14,7450.00,Ativo
+PAT-1150,Notebook Dell Latitude 5440,Informática,Almoxarifado,Luiza Martins,2023-10-27,5899.90,Em manutenção
+PAT-1151,Projetor Epson,Audiovisual,RH,Juliana Prado,2022-03-17,3100.00,Em manutenção
+PAT-1152,Notebook Dell Latitude 5440,Informática,Marketing,Juliana Prado,2022-01-25,5899.90,Ativo
+PAT-1153,Cadeira ergonômica,Mobiliário,Filial Campinas,Luiza Martins,2022-12-04,1780.50,Em manutenção
+PAT-1154,Notebook Dell Latitude 5440,Informática,Almoxarifado,Diego Castro,2022-09-16,5899.90,Ativo
+PAT-1155,Switch 24 portas,Rede,Matriz - TI,Rafael Nunes,2019-05-02,7450.00,Ativo
+PAT-1156,Switch 24 portas,Rede,Marketing,Diego Castro,2018-02-15,7450.00,Ativo
+</script>
+  <script>
+    (function () {
+      "use strict";
+      var $ = function (id) { return document.getElementById(id); };
+      var running = false, stopFlag = false, deadLetter = [], headers = [];
+      var simClock = 0;
+
+      // ---------- CSV ----------
+      function parseCsv(text) {
+        text = text.replace(/^﻿/, "");
+        var first = text.split(/\r?\n/)[0] || "";
+        var delim = [",", ";", "\t"].sort(function (a, b) { return first.split(b).length - first.split(a).length; })[0];
+        var rows = [], row = [], cell = "", q = false;
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+          else if (ch === '"' && cell === "") q = true;
+          else if (ch === delim) { row.push(cell); cell = ""; }
+          else if (ch === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+          else if (ch !== "\r") cell += ch;
+        }
+        if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+        return rows.filter(function (r) { return r.some(function (c) { return c.trim(); }); });
+      }
+      function toCsv(rows) {
+        return "﻿" + rows.map(function (r) {
+          return r.map(function (v) { v = String(v == null ? "" : v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(",");
+        }).join("\r\n");
+      }
+      function updateCount() {
+        var rows = parseCsv($("csvText").value);
+        $("rowsChip").textContent = Math.max(0, rows.length - 1) + " linhas";
+      }
+
+      // ---------- UI helpers ----------
+      function log(msg, cls) {
+        var d = document.createElement("div");
+        var t = document.createElement("span"); t.className = "info";
+        t.textContent = "[" + simClock.toFixed(1).padStart(6, " ") + "s] ";
+        var m = document.createElement("span"); if (cls) m.className = cls; m.textContent = msg;
+        d.append(t, m); $("log").append(d); $("log").scrollTop = $("log").scrollHeight;
+      }
+      function stage(i, cls, text) {
+        var el = document.querySelector('.stage[data-s="' + i + '"]');
+        el.classList.remove("active", "done", "fail");
+        if (cls) el.classList.add(cls);
+        if (text != null && $("s" + i + "p")) $("s" + i + "p").textContent = text;
+      }
+      function speed() { return +$("pSpeed").value; }
+      function wait(simSeconds) {
+        simClock += simSeconds;
+        $("clock").textContent = "t = " + simClock.toFixed(1).replace(".", ",") + " s";
+        var ms = Math.min(simSeconds * 1000 / speed(), 2500);
+        return new Promise(function (r) { setTimeout(r, ms); });
+      }
+      function kpi(id, v) { $(id).textContent = v; }
+
+      // ---------- Graph simulado ----------
+      function fakeBatch(reqs, pThrottle, pPerm) {
+        if (Math.random() < pThrottle / 6) return { status: 429, headers: { "Retry-After": String(2 + Math.floor(Math.random() * 5)) } };
+        return {
+          status: 200, body: {
+            responses: reqs.map(function (r) {
+              var s = Math.random();
+              if (s < pPerm) return { id: r.id, status: 400, body: { error: { code: "invalidRequest", message: "List data validation failed." } } };
+              if (s < pPerm + pThrottle) return { id: r.id, status: 429, headers: { "Retry-After": String(1 + Math.floor(Math.random() * 5)) } };
+              return { id: r.id, status: 201 };
+            })
+          }
+        };
+      }
+
+      function fields(obj) {
+        var f = {};
+        Object.keys(obj).forEach(function (k) {
+          var v = obj[k]; if (v === "") return;
+          f[k] = k === "ValorAquisicao" && !isNaN(parseFloat(v)) ? parseFloat(v) : v;
+        });
+        return f;
+      }
+
+      // ---------- Execução ----------
+      async function run() {
+        var rows = parseCsv($("csvText").value);
+        if (rows.length < 2) { alert("Cole um CSV com cabeçalho e ao menos uma linha, ou use o exemplo."); return; }
+        running = true; stopFlag = false; simClock = 0; deadLetter = [];
+        $("btnRun").disabled = true; $("btnStop").disabled = false; $("btnDl").disabled = true;
+        $("log").textContent = ""; $("batches").textContent = "";
+        $("deadRows").textContent = "";
+        [0, 1, 2, 3, 4].forEach(function (i) { stage(i, null, i ? "—" : null); });
+        ["kIns", "kBat", "kCalls", "kRetry", "kDead"].forEach(function (k) { kpi(k, 0); });
+        $("bar").style.width = "0%";
+
+        var size = +$("pBatch").value, pT = $("pThrottle").value / 100, pP = $("pPerm").value / 100, maxTry = Math.max(0, +$("pRetries").value || 0);
+        var stats = { ins: 0, bat: 0, calls: 0, retry: 0 };
+        headers = rows[0].map(function (h) { return h.trim(); });
+        var items = rows.slice(1).map(function (r, i) {
+          var o = {}; headers.forEach(function (h, j) { o[h] = (r[j] || "").trim(); });
+          return { linha: i + 2, data: o };
+        });
+
+        stage(0, "active"); log("Gatilho de recorrência disparado (simulação)", "info"); await wait(0.4);
+        stage(0, "done"); stage(1, "active", "patrimonio_lote.csv");
+        log("GET /Importacao/Entrada → 1 arquivo .csv", ""); await wait(0.6);
+        log("Conteúdo lido: " + items.length + " linhas, " + headers.length + " colunas", "ok");
+        stage(1, "done"); stage(2, "active", items.length + " itens");
+        var requests = items.map(function (it) {
+          return { id: String(it.linha), method: "POST", url: "/sites/{site-id}/lists/InventarioPatrimonial/items", headers: { "Content-Type": "application/json" }, body: { fields: fields(it.data) } };
+        });
+        await wait(0.5);
+        var lotes = [];
+        for (var i = 0; i < requests.length; i += size) lotes.push(requests.slice(i, i + size));
+        $("payload").textContent = JSON.stringify({ requests: lotes[0].slice(0, 3).concat(lotes[0].length > 3 ? [{ "...": (lotes[0].length - 3) + " requisições a mais" }] : []) }, null, 2);
+        log("Parse concluído → " + lotes.length + " lote(s) de até " + size, "ok");
+        stage(2, "done"); stage(3, "active", lotes.length + " lotes"); stage(4, null, "0 itens");
+
+        var boxes = lotes.map(function (l, i) {
+          var b = document.createElement("div"); b.className = "batch";
+          var t = document.createElement("b"); t.textContent = "Lote " + (i + 1);
+          var s = document.createElement("span"); s.textContent = l.length + " itens";
+          b.append(t, s); $("batches").append(b); return { el: b, st: s };
+        });
+        var byId = {}; items.forEach(function (it) { byId[String(it.linha)] = it; });
+
+        for (var n = 0; n < lotes.length && !stopFlag; n++) {
+          stats.bat++; kpi("kBat", stats.bat);
+          var box = boxes[n]; box.el.className = "batch sending"; box.st.textContent = "enviando…";
+          var pend = lotes[n].slice(), lastErr = {};
+          for (var tent = 0; tent <= maxTry && pend.length && !stopFlag; tent++) {
+            await wait(0.35 + 0.02 * pend.length);
+            var resp = fakeBatch(pend, pT, pP);
+            stats.calls++; kpi("kCalls", stats.calls);
+            if (resp.status === 429) {
+              var ra = +resp.headers["Retry-After"];
+              pend.forEach(function (r) { lastErr[r.id] = "HTTP 429 no $batch"; });
+              log("Lote " + (n + 1) + ": HTTP 429 no $batch inteiro · Retry-After " + ra + "s", "warn");
+              if (tent < maxTry) { stats.retry++; kpi("kRetry", stats.retry); box.el.className = "batch retry"; box.st.textContent = "aguardando " + ra + "s"; await wait(ra); }
+              continue;
+            }
+            var maxRa = 0, still = [], ok = 0;
+            resp.body.responses.forEach(function (r) {
+              var req = pend.find(function (x) { return x.id === r.id; });
+              if (r.status >= 200 && r.status < 300) { ok++; }
+              else if (r.status === 429) { maxRa = Math.max(maxRa, +r.headers["Retry-After"]); lastErr[r.id] = "HTTP 429 (throttling)"; still.push(req); }
+              else { deadLetter.push({ linha: r.id, erro: "HTTP " + r.status + ": " + r.body.error.message, data: byId[r.id].data }); }
+            });
+            stats.ins += ok; kpi("kIns", stats.ins); kpi("kDead", deadLetter.length);
+            stage(4, "active", stats.ins + " itens");
+            var perm = pend.length - ok - still.length;
+            log("Lote " + (n + 1) + " tentativa " + (tent + 1) + ": " + ok + " × 201" + (still.length ? " · " + still.length + " × 429" : "") + (perm ? " · " + perm + " × 400" : ""), still.length || perm ? "warn" : "ok");
+            pend = still;
+            if (pend.length && tent < maxTry) {
+              var pausa = maxRa || Math.min(Math.pow(2, tent), 60);
+              stats.retry++; kpi("kRetry", stats.retry);
+              box.el.className = "batch retry"; box.st.textContent = pend.length + " p/ reenviar";
+              log("  ↻ reenviando " + pend.length + " item(ns) após Retry-After " + pausa + "s", "info");
+              await wait(pausa);
+            }
+          }
+          pend.forEach(function (r) { deadLetter.push({ linha: r.id, erro: (lastErr[r.id] || "interrompido") + " · tentativas esgotadas", data: byId[r.id].data }); });
+          kpi("kDead", deadLetter.length);
+          var failedHere = deadLetter.filter(function (d) { return lotes[n].some(function (r) { return r.id === d.linha; }); }).length;
+          box.el.className = "batch " + (failedHere ? "partial" : "ok");
+          box.st.textContent = failedHere ? (lotes[n].length - failedHere) + "/" + lotes[n].length + " ok" : "201 · ok";
+          $("bar").style.width = ((n + 1) / lotes.length * 100) + "%";
+        }
+
+        stage(3, stopFlag ? "fail" : "done");
+        stage(4, stopFlag ? "fail" : "done", stats.ins + " itens");
+        if (stopFlag) log("Execução interrompida pelo usuário.", "err");
+        log("Fim: " + stats.ins + " inseridos, " + deadLetter.length + " no dead-letter, " + stats.calls + " chamadas $batch, " + stats.retry + " retries.", deadLetter.length ? "warn" : "ok");
+        if (deadLetter.length) log("Dead-letter gravado em /Importacao/Erro/dead_letter.csv (simulado)", "err");
+        kpi("kTime", Math.round(simClock) + "s");
+        renderDead();
+        running = false; $("btnRun").disabled = false; $("btnStop").disabled = true;
+      }
+
+      function renderDead() {
+        var tb = $("deadRows"); tb.textContent = "";
+        if (!deadLetter.length) {
+          var tr = document.createElement("tr"), td = document.createElement("td");
+          td.colSpan = 3; td.className = "muted"; td.textContent = "Nenhum item no dead-letter."; tr.append(td); tb.append(tr);
+          return;
+        }
+        deadLetter.sort(function (a, b) { return a.linha - b.linha; }).forEach(function (d) {
+          var tr2 = document.createElement("tr");
+          [d.linha, d.data.Title || "", d.erro].forEach(function (v) { var c = document.createElement("td"); c.textContent = v; tr2.append(c); });
+          tb.append(tr2);
+        });
+        $("btnDl").disabled = false;
+      }
+
+      // ---------- eventos ----------
+      [["pBatch", "oBatch", ""], ["pThrottle", "oThrottle", "%"], ["pPerm", "oPerm", "%"]].forEach(function (p) {
+        $(p[0]).addEventListener("input", function () { $(p[1]).textContent = $(p[0]).value + p[2]; });
+      });
+      $("btnSample").addEventListener("click", function () { $("csvText").value = $("sampleCsv").textContent.replace(/^\n/, ""); updateCount(); });
+      $("csvText").addEventListener("input", updateCount);
+      $("fileIn").addEventListener("change", function (e) {
+        var f = e.target.files[0]; if (!f) return;
+        f.text().then(function (t) { $("csvText").value = t; updateCount(); });
+        e.target.value = "";
+      });
+      $("btnRun").addEventListener("click", function () { if (!running) run(); });
+      $("btnStop").addEventListener("click", function () { stopFlag = true; });
+      $("btnDl").addEventListener("click", function () {
+        var rows = [["linha", "erro"].concat(headers)].concat(deadLetter.map(function (d) {
+          return [d.linha, d.erro].concat(headers.map(function (h) { return d.data[h]; }));
+        }));
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" }));
+        a.download = "dead_letter.csv"; document.body.append(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      });
+
+      $("csvText").value = $("sampleCsv").textContent.replace(/^\n/, "");
+      updateCount();
+    })();
+  </script>
+</body>
+</html>

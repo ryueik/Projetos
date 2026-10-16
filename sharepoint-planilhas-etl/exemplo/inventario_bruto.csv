@@ -1,0 +1,43 @@
+Nº Patrimônio;Descrição do Bem ;CATEGORIA;Local;Responsável;Data Aquisição;Valor (R$);Status
+  PAT-0001 ;Notebook Dell Latitude 5420;Informática;Matriz - TI;Ana Souza;12/03/2022;R$ 5.899,90;Ativo
+PAT-0002;Monitor LG 24" ;informatica;Matriz - TI;ana souza;2022-03-12;1.249,00;ativo
+pat-0003;Cadeira ergonômica Flexform;Mobiliário;Filial Campinas;Carlos Lima;05-07-21;1.780,5;Ativo
+PAT-0004;Mesa em L 1,60m;MOBILIÁRIO;Filial Campinas;Carlos Lima;05/07/2021;980;Ativo
+PAT-0005;Impressora HP LaserJet M428;Informática;Matriz - Financeiro;Juliana Prado;18/11/2020;2.350,00;Em manutenção
+PAT-0006;Ar-condicionado Split 12000 BTU;Climatização;Matriz - Recepção;;01/02/2019;2.799,99;Ativo
+PAT-0007;Projetor Epson PowerLite;Audiovisual;Sala de Reuniões 2;Marcos Teixeira;31/02/2023;3.100,00;Ativo
+PAT-0008;Notebook Lenovo ThinkPad E14;Informática;Matriz - TI;Ana Souza;20/09/2023;4.799,00;Ativo
+PAT-0002;Monitor LG 24";Informática;Matriz - TI;Ana Souza;12/03/2022;1249;Ativo
+PAT-0009;Smartphone Samsung A54;Telefonia;Comercial;Rafael Nunes;14/04/2023;1.999,00;ativo
+;Teclado sem fio Logitech;Informática;Matriz - TI;Ana Souza;10/10/2023;199,90;Ativo
+PAT-0010;Switch Cisco 24 portas;Rede;Data Center;Bruno Alves;22/08/2018;7.450,00;Ativo
+PAT-0011;Nobreak SMS 3kVA;Energia;Data Center;Bruno Alves;22/08/2018;3.890,00;Baixado
+PAT-0012;Armário de aço 2 portas;Mobiliário;Almoxarifado;Patrícia Gomes;03/01/2017;650,00;Ativo
+PAT-0013;Geladeira Consul 300L;Copa;Copa - Matriz;Patrícia Gomes;15/06/2020;2.199,00;Ativo
+PAT-0014;Notebook Dell Latitude 5420;Informática;Comercial;Rafael Nunes;12/03/2022;5899.90;Ativo
+PAT-0015;Cadeira fixa empilhável;Mobiliário;Auditório;Patrícia Gomes;2019-05-10;189,00;Ativo
+PAT-0016;Câmera IP Intelbras;Segurança;Portaria;Bruno Alves;07/12/2021;459,00;ativo
+PAT-0017;Licença Microsoft 365 (anual);Software;Matriz - TI;Ana Souza;01/01/2024;abc;Ativo
+PAT-0018;Tablet iPad 9ª geração;Informática;Diretoria;Fernanda Rocha;19/03/2022;3.499,00;Ativo
+PAT-0019;Bebedouro industrial;Copa;Fábrica;Patrícia Gomes;11/11/2016;1.120,00;Inativo
+  ;  ;  ;  ;  ;  ;  ;
+PAT-0020;Roteador Mikrotik RB4011;Rede;Data Center;Bruno Alves;02/05/2022;1.680,00;Ativo
+PAT-0021;Notebook Apple MacBook Air M2;Informática;Marketing;Luiza Martins;25/07/2023;9.299,00;Ativo
+PAT-0022;Cadeira ergonômica Flexform;mobiliario;Marketing;Luiza Martins;25/07/2023;1.780,50;Ativo
+PAT-0023;Scanner Fujitsu fi-7160;Informática;Matriz - Financeiro;Juliana Prado;13/02/2021;5.600,00;Ativo
+PAT-0024;Telefone IP Grandstream;Telefonia;Recepção;Marcos Teixeira;30/09/2020;390,00;Ativo
+PAT-0025;Furadeira Bosch GSB;Ferramentas;Manutenção;Diego Castro;08/08/2019;520,00;Ativo
+PAT-0026;Paleteira manual 2,5t;Ferramentas;Almoxarifado;Diego Castro;sem data;1.950,00;Ativo
+PAT-0027;Servidor Dell PowerEdge T150;Informática;Data Center;Bruno Alves;17/01/2023;18.900,00;Ativo
+PAT-0028;Monitor Samsung 27" curvo;Informática;Diretoria;Fernanda Rocha;19/03/2022;1.899,00;Ativo
+PAT-0029;Mesa de reunião 8 lugares;Mobiliário;Sala de Reuniões 1;Marcos Teixeira;12/04/2018;3.200,00;Ativo
+pat-0028 ;Monitor Samsung 27" curvo;Informática;Diretoria;Fernanda Rocha;19/03/2022;1.899,00;Ativo
+PAT-0030;Micro-ondas Electrolux;Copa;Copa - Matriz;Patrícia Gomes;15/06/2020;599,00;Ativo
+PAT-0031;Notebook Dell Vostro 3520;Informática;Comercial;Rafael Nunes;03/10/2023;3.999,00;Em uso
+PAT-0032;Caixa de som JBL;Audiovisual;Auditório;Marcos Teixeira;2023/06/01;1.299,00;Ativo
+PAT-0033;Extintor CO2 6kg;Segurança;Fábrica;Diego Castro;20/01/2024;-350,00;Ativo
+PAT-0034;Webcam Logitech C920;Informática;Sala de Reuniões 2;Marcos Teixeira;14/02/2023;549,90;Ativo
+PAT-0035;Gaveteiro volante 3 gavetas;Mobiliário;Matriz - Financeiro;Juliana Prado;18/11/2020;420,00;ATIVO
+PAT-0036;Leitor de código de barras Zebra;Informática;Almoxarifado;Diego Castro;09/09/2021;780,00;Ativo
+PAT-0037;Notebook HP ProBook 440;Informática;RH;Camila Ribeiro;28/02/2024;4.299,00;Ativo
+PAT-0038;Cofre eletrônico;Segurança;Matriz - Financeiro;Juliana Prado;06/06/2016;1.150,00;Ativo
