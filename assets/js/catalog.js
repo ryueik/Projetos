@@ -182,9 +182,9 @@ window.PROJECTS = [
   {
     slug: "brecho",
     title: "Brechó da Família Guimarães",
-    desc: "Vitrine de brechó vintage com página de produtos.",
+    desc: "Loja de brechó com 26 peças únicas, filtros por categoria, tamanho e década, sacola e reserva pelo WhatsApp.",
     category: "ecommerce",
-    tags: ["HTML", "CSS"],
+    tags: ["JavaScript", "E-commerce", "WhatsApp", "Responsivo"],
     path: "brecho/",
     thumb: "assets/thumbs/brecho.jpg",
     cover: "assets/covers/brecho.jpg",

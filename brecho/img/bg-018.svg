@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img">
+<defs>
+<filter id="g17" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .17 0 0 0 0 .13 0 0 0 0 .1 0 0 0 .55 0"/></filter>
+<filter id="s17" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="10" stdDeviation="0" flood-color="#2b211a" flood-opacity=".14"/></filter>
+<pattern id="dots17" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2.2" fill="#2b211a" opacity=".12"/></pattern>
+
+</defs>
+<rect width="600" height="750" fill="#eee9df"/>
+<rect width="600" height="750" fill="url(#dots17)"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690 Z" fill="#2f6f6a"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690" fill="none" stroke="#2b211a" stroke-width="2" opacity=".35" transform="translate(-12 -12)"/>
+<ellipse cx="300" cy="668" rx="170" ry="16" fill="#2b211a" opacity=".12"/>
+<g filter="url(#s17)" stroke="#2b211a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="250" y="120" width="100" height="200" rx="14" fill="#7a4a1f"/><rect x="250" y="430" width="100" height="200" rx="14" fill="#7a4a1f"/><circle cx="300" cy="520" r="5" fill="#e3b341"/><circle cx="300" cy="560" r="5" fill="#e3b341"/><circle cx="300" cy="600" r="5" fill="#e3b341"/><circle cx="300" cy="375" r="112" fill="#e3b341"/><circle cx="300" cy="375" r="90" fill="#f7efe2"/><path d="M300 293 v14" transform="rotate(0 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(30 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(60 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(90 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(120 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(150 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(180 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(210 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(240 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(270 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(300 300 375)" fill="none"/><path d="M300 293 v14" transform="rotate(330 300 375)" fill="none"/><path d="M300 375 V320 M300 375 L340 395" fill="none" stroke-width="5"/><circle cx="300" cy="375" r="7" fill="#2b211a"/><rect x="410" y="362" width="18" height="26" rx="4" fill="#e3b341"/></g>
+
+<rect width="600" height="750" filter="url(#g17)" opacity=".35"/>
+</svg>

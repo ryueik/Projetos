@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img">
+<defs>
+<filter id="g5" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .17 0 0 0 0 .13 0 0 0 0 .1 0 0 0 .55 0"/></filter>
+<filter id="s5" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="10" stdDeviation="0" flood-color="#2b211a" flood-opacity=".14"/></filter>
+<pattern id="dots5" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2.2" fill="#2b211a" opacity=".12"/></pattern>
+<pattern id="f6" width="48" height="48" patternUnits="userSpaceOnUse"><rect width="48" height="48" fill="#d9cdb4"/>
+<rect y="18" width="48" height="12" fill="#7a6a55" opacity=".55" stroke="none"/><rect x="18" width="12" height="48" fill="#7a6a55" opacity=".55" stroke="none"/>
+<rect y="40" width="48" height="2" fill="#2b211a" stroke="none"/><rect x="40" width="2" height="48" fill="#2b211a" stroke="none"/></pattern>
+</defs>
+<rect width="600" height="750" fill="#f2ebe0"/>
+<rect width="600" height="750" fill="url(#dots5)"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690 Z" fill="#c9b48f"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690" fill="none" stroke="#2b211a" stroke-width="2" opacity=".35" transform="translate(-12 -12)"/>
+<ellipse cx="300" cy="668" rx="170" ry="16" fill="#2b211a" opacity=".12"/>
+<g filter="url(#s5)" stroke="#2b211a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M300 70 q0 -22 18 -22 q16 0 16 16 q0 12 -18 20 v14" fill="none"/><path d="M188 150 L300 98 L412 150" fill="none" stroke-width="5"/><path d="M206 150 L120 210 L96 530 L150 538 L190 330 L196 610 L404 610 L410 330 L450 538 L504 530 L480 210 L394 150 Z" fill="url(#f6)"/><path d="M254 150 L300 330 L346 150 L322 150 L300 240 L278 150 Z" fill="#f7efe2"/><path d="M206 150 L254 150 L300 330 L236 250 L250 236 L204 200 Z M394 150 L346 150 L300 330 L364 250 L350 236 L396 200 Z" fill="url(#f6)"/><path d="M300 330 V610" fill="none"/><circle cx="300" cy="400" r="7" fill="#2b211a"/><circle cx="300" cy="470" r="7" fill="#2b211a"/><path d="M214 470 h64 M322 470 h64 M330 300 h46" fill="none" stroke-width="4"/></g>
+
+<rect width="600" height="750" filter="url(#g5)" opacity=".35"/>
+</svg>

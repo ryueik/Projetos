@@ -1,13 +1,185 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brechó da Família Guimarães</title>
-  <meta http-equiv="refresh" content="0; url=brecho.html" />
-  <link rel="canonical" href="brecho.html" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brechó da Família Guimarães · Vintage &amp; Afeto</title>
+  <meta name="description" content="Brechó de família desde 1985: roupas, bolsas, sapatos, louças, discos e livros vintage. Peças únicas, reservadas pelo WhatsApp.">
+  <meta name="theme-color" content="#f7f1e6">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/brecho.css">
+  <script>try{if(JSON.parse(localStorage.getItem("brecho-tema"))==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
 </head>
-<body>
-  <p>Abrindo <a href="brecho.html">Brechó da Família Guimarães</a>…</p>
+<body data-page="home">
+  <div class="topbar">Reservas pelo WhatsApp · <strong>peças únicas</strong> guardadas por 48 h</div>
+  <header id="site-header"></header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Brechó de família · desde 1985</span>
+          <h1>Peças com história, <em>escolhidas com afeto.</em></h1>
+          <p class="hero-lead">Roupas, bolsas, louças, discos e livros garimpados por três gerações da Família Guimarães. Cada peça é única, higienizada e pronta para começar um novo capítulo com você.</p>
+          <div class="hero-ctas">
+            <a class="btn" href="produtos.html">Explorar as peças
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn btn-ghost" href="#historia">Conhecer a família</a>
+          </div>
+          <div class="hero-stats">
+            <div><b id="statAnos">41</b><span>anos de garimpo</span></div>
+            <div><b>3</b><span>gerações na loja</span></div>
+            <div><b id="statPecas">26</b><span>peças no acervo</span></div>
+          </div>
+        </div>
+        <div class="hero-art">
+          <img src="img/hero-arara.svg" alt="Ilustração de uma arara com jaqueta jeans, vestido floral e camisa listrada, uma bolsa e uma bota" width="900" height="900">
+          <div class="stamp" aria-hidden="true"><span><i>✿</i>peça<br>única</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Peça única</span><span>Curadoria de família</span><span>Moda circular</span><span>Anos 70 · 80 · 90</span><span>Reserva pelo WhatsApp</span>
+        <span>Peça única</span><span>Curadoria de família</span><span>Moda circular</span><span>Anos 70 · 80 · 90</span><span>Reserva pelo WhatsApp</span>
+      </div>
+    </div>
+
+    <!-- História -->
+    <section class="section" id="historia">
+      <div class="wrap story">
+        <div class="story-art reveal">
+          <img src="img/fachada.svg" alt="Ilustração da fachada do Brechó da Família Guimarães, com toldo listrado e vitrine" width="900" height="700" loading="lazy">
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Nossa história</span>
+          <h2>Três gerações cuidando do que <em>merece continuar.</em></h2>
+          <p>O Brechó da Família Guimarães nasceu em 1985, quando Dona Maria começou a revender, na garagem de casa, as peças especiais que encontrava em feiras e viagens. O que era um hobby virou ponto de encontro do bairro.</p>
+          <p>Hoje filhos e netos seguem o mesmo ritual: escolher com calma, lavar, consertar o que precisa e contar a história de cada item. Nada de estoque infinito — só peças únicas, com alma.</p>
+          <blockquote>“Roupa boa não tem prazo de validade. Tem dono novo.” <br><small>— Dona Maria Guimarães</small></blockquote>
+          <ol class="timeline">
+            <li><b>1985</b><span>Dona Maria abre o brechó na garagem de casa, com uma arara e muita conversa.</span></li>
+            <li><b>2003</b><span>A filha Helena assume a curadoria e traz louças, discos e livros para o acervo.</span></li>
+            <li><b>Hoje</b><span>Os netos levam o brechó para o digital, com reserva pelo WhatsApp e envio para todo o Brasil.</span></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categorias -->
+    <section class="section band" id="categorias">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">Categorias</span>
+            <h2>Garimpe por <em>departamento</em></h2>
+          </div>
+          <p>Do vestido de festa à xícara da avó: tudo separado com carinho para você encontrar o seu achado.</p>
+        </div>
+        <div class="cats" id="cats"></div>
+      </div>
+    </section>
+
+    <!-- Peças da semana -->
+    <section class="section" id="destaques">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">Peças da semana</span>
+            <h2>Chegaram agora e <em>não vão durar</em></h2>
+          </div>
+          <a class="btn btn-ghost" href="produtos.html">Ver todo o acervo</a>
+        </div>
+        <div class="grid g4" id="featured"></div>
+      </div>
+    </section>
+
+    <!-- Como funciona -->
+    <section class="section band" id="como-funciona">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">Como funciona</span>
+            <h2>Simples como <em>conversar com a família</em></h2>
+          </div>
+          <p>Sem cadastro e sem pagamento no site. A gente conversa, confirma e separa a sua peça.</p>
+        </div>
+        <div class="steps">
+          <div class="step reveal">
+            <span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7l8 4 8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg></span>
+            <h3>Escolha</h3>
+            <p>Navegue pelo acervo, filtre por tamanho, década e preço e coloque suas favoritas na sacola.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg></span>
+            <h3>Reserve pelo WhatsApp</h3>
+            <p>Finalize a sacola: a lista com códigos e total vai pronta para a nossa conversa. Guardamos por 48 h.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>
+            <h3>Retire ou receba</h3>
+            <p>Busque no brechó em horário combinado ou receba em casa, embalado em papel de seda e com bilhetinho.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Depoimentos -->
+    <section class="section" id="depoimentos">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">Quem garimpa aqui</span>
+            <h2>Histórias que <em>continuam</em></h2>
+          </div>
+        </div>
+        <div class="quotes">
+          <figure class="quote reveal">
+            <p>“Achei um vestido idêntico ao que minha mãe usou no noivado. Chegou cheiroso, com bilhete escrito à mão.”</p>
+            <footer><span class="avatar" style="background:#e3b341">C</span><span><b>Camila R.</b><br>cliente (exemplo)</span></footer>
+          </figure>
+          <figure class="quote reveal">
+            <p>“Atendimento de família mesmo: me mandaram foto da etiqueta e medidas antes de eu reservar a jaqueta.”</p>
+            <footer><span class="avatar" style="background:#ff9d5c">R</span><span><b>Rafael M.</b><br>cliente (exemplo)</span></footer>
+          </figure>
+          <figure class="quote reveal">
+            <p>“Montei a mesa de café da tarde inteira com as louças daqui. Todo mundo pergunta onde comprei.”</p>
+            <footer><span class="avatar" style="background:#9fc3c0">T</span><span><b>Teresa A.</b><br>cliente (exemplo)</span></footer>
+          </figure>
+        </div>
+        <p class="note">* Depoimentos ilustrativos (exemplos) criados para este projeto demonstrativo.</p>
+      </div>
+    </section>
+
+    <!-- Contato -->
+    <section class="section" id="contato" style="padding-top:0">
+      <div class="wrap">
+        <div class="cta reveal">
+          <div>
+            <span class="eyebrow" style="color:inherit;opacity:.75">Fale com a família</span>
+            <h2 style="margin:12px 0 14px">Procurando algo <em>especial?</em></h2>
+            <p>Conte o que você procura — tamanho, década, estilo — e avisamos quando chegar uma peça com a sua cara.</p>
+          </div>
+          <div class="cta-actions">
+            <a class="btn btn-wa" href="https://wa.me/5512974117747?text=Ol%C3%A1%2C%20Fam%C3%ADlia%20Guimar%C3%A3es!%20Estou%20procurando%20uma%20pe%C3%A7a%20especial." target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>Chamar no WhatsApp</a>
+            <a class="btn btn-ghost" href="produtos.html">Ver peças</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="data/produtos.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/home.js"></script>
+  <script src="../assets/js/hub.js" defer></script>
 </body>
 </html>
