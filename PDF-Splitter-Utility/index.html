@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Splitter Utility · Projetos MM</title>
+  <meta name="description" content="Divide PDFs pesados em partes que respeitam um limite de upload (PJe, eproc, portais). Roda no navegador com pdf-lib, sem enviar o arquivo a nenhum servidor." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .grid > *, .step > div { min-width: 0; }
+    .step code, .lead code { overflow-wrap: anywhere; }
+    .limit-row { display: grid; grid-template-columns: 1fr 140px; gap: 14px; align-items: end; }
+    .limit-row input[type="range"] { width: 100%; accent-color: var(--orange); }
+    .dz-icon { width: 46px; height: 46px; margin: 0 auto 10px; color: var(--orange); }
+    .dz-title { font: 700 1.1rem var(--font-display); color: var(--text); }
+    .file-name { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+    .alert-size { color: var(--red); font-weight: 700; }
+    .alert-row td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+    .parts { display: grid; gap: 8px; margin-top: 12px; }
+    .part {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+      padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2);
+      font: 500 .85rem var(--font-mono);
+    }
+    .part .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .part .pg { color: var(--text-3); font-size: .78rem; }
+    .group-title { margin: 18px 0 4px; font: 700 .95rem var(--font-display); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .impl-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .impl-tabs button[aria-selected="true"] { border-color: var(--orange); color: var(--orange); }
+    .impl-panel[hidden] { display: none; }
+    .cmp td, .cmp th { white-space: normal; }
+    @media (max-width: 640px) {
+      .limit-row { grid-template-columns: 1fr; }
+      .part { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="PDF-Splitter-Utility"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">Utilitário corporativo · Documentos</span>
+      <h1>PDF <span class="grad-text">Splitter</span> Utility</h1>
+      <p class="lead">Divide PDFs pesados em partes que cabem no limite de upload de sistemas judiciais e portais públicos (PJe, eproc e afins). Esta versão roda inteira no navegador: o arquivo não sai do seu computador.</p>
+      <div class="meta chips">
+        <span class="chip gold">Algoritmo guloso de fatiamento</span>
+        <span class="chip orange">Python · PowerShell · VBScript</span>
+        <span class="chip red">Alerta acima de 4 MB</span>
+        <span class="chip">pypdf · pdf-lib</span>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 24px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>1. Arquivos</h3><span class="chip" id="fileCount">0 PDFs</span></div>
+        <label class="dropzone" id="dropzone" for="fileIn">
+          <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg>
+          <div class="dz-title">Solte os PDFs aqui</div>
+          <div class="muted">ou clique para escolher (vários arquivos de uma vez)</div>
+        </label>
+        <input type="file" id="fileIn" accept="application/pdf,.pdf" multiple class="sr-only" />
+        <div class="row mt-2">
+          <button class="btn btn-ghost btn-sm" id="btnSample" type="button">Gerar PDF de exemplo</button>
+          <span class="muted" style="font-size:.85rem">Cria um documento “digitalizado” de 14 páginas (~8 MB) para testar sem arquivo próprio.</span>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title"><h3>2. Limite por parte</h3><span class="chip gold" id="limitChip">3.8 MB</span></div>
+        <div class="limit-row">
+          <div class="field">
+            <label for="limitRange">Arraste para ajustar</label>
+            <input type="range" id="limitRange" min="0.2" max="25" step="0.1" value="3.8" />
+          </div>
+          <div class="field">
+            <label for="limitIn">Limite (MB)</label>
+            <input class="input" id="limitIn" type="number" min="0.1" max="100" step="0.1" value="3.8" />
+          </div>
+        </div>
+        <p class="muted" style="font-size:.85rem">Padrão 3.8 MB: margem para portais que aceitam até 4 MB. As estimativas usam o tamanho médio por página com fator de segurança de 0.97, como no <code>engine.py</code>.</p>
+        <div class="row">
+          <button class="btn btn-primary" id="btnSplit" type="button" disabled>Dividir todos</button>
+          <button class="btn btn-danger btn-sm" id="btnCancel" type="button" disabled>Cancelar</button>
+          <button class="btn btn-ghost btn-sm" id="btnClear" type="button" disabled>Limpar lista</button>
+        </div>
+        <div class="progress mt-2" aria-label="Progresso"><span id="bar"></span></div>
+        <div class="muted mt-1" style="font-size:.85rem" id="progressText">Aguardando arquivos.</div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 24px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Metadados</h3><span class="muted" style="font-size:.85rem">Linhas em vermelho passam de 4 MB</span></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Arquivo</th><th>Tamanho</th><th>Páginas</th><th>Título</th><th>Autor</th><th>Partes est.</th><th>Status</th></tr></thead>
+            <tbody id="rows"><tr><td colspan="7" class="muted">Nenhum PDF carregado.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>Partes geradas</h3>
+          <button class="btn btn-primary btn-sm" id="btnZip" type="button" disabled>Baixar todas (.zip)</button>
+        </div>
+        <div id="parts"><p class="muted">As partes aparecem aqui no padrão <code>[Nome]_parte_001.pdf</code>.</p></div>
+      </div>
+      <div class="card reveal">
+        <div class="card-title"><h3>Log</h3><button class="btn btn-ghost btn-sm" id="btnLogClear" type="button">Limpar log</button></div>
+        <div class="log" id="log" role="log" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Fatiamento guloso com medição real</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Leitura de metadados</h4><p>Tamanho, número de páginas, título e autor de cada PDF. Arquivos acima de 4 MB ganham destaque vermelho.</p></div></div>
+            <div class="step"><div><h4>Estimativa inicial</h4><p>Páginas por parte = <code>limite × 0.97 ÷ (tamanho ÷ páginas)</code>. O fator 0.97 absorve o overhead de cabeçalhos e tabelas de referência.</p></div></div>
+            <div class="step"><div><h4>Ajuste iterativo</h4><p>A fatia candidata é serializada em memória. Se estoura, encolhe proporcionalmente e depois página a página; se sobra espaço, tenta incluir a próxima página.</p></div></div>
+            <div class="step"><div><h4>Caso extremo</h4><p>Uma página sozinha maior que o limite vira uma parte isolada: nenhum conteúdo se perde.</p></div></div>
+            <div class="step"><div><h4>Nomeação e metadados</h4><p>Cada parte recebe <code>_parte_001</code>, <code>_parte_002</code>… e herda título, autor e a origem (<code>/Source</code> no Python, campo Assunto aqui).</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PDF-Splitter-Utility/src/engine.py" target="_blank" rel="noopener">src/engine.py <small>Núcleo (pypdf) + CLI</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PDF-Splitter-Utility/src/gui.py" target="_blank" rel="noopener">src/gui.py <small>Interface CustomTkinter</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PDF-Splitter-Utility/src/powershell/Split-PDF.ps1" target="_blank" rel="noopener">src/powershell/Split-PDF.ps1 <small>PdfSharp / qpdf / pdftk</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PDF-Splitter-Utility/src/vbscript/Split-PDF.vbs" target="_blank" rel="noopener">src/vbscript/Split-PDF.vbs <small>WSH para ambientes legados</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PDF-Splitter-Utility/tests/test_engine.py" target="_blank" rel="noopener">tests/test_engine.py <small>Testes com pytest</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PDF-Splitter-Utility/index.html" target="_blank" rel="noopener">index.html <small>Esta versão web (pdf-lib)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PDF-Splitter-Utility/READEME.md" target="_blank" rel="noopener">READEME.md <small>Documentação</small></a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <span class="eyebrow">Três implementações</span>
+      <h2>A mesma tarefa para <span class="grad-text">qualquer perfil</span> de TI</h2>
+      <p class="lead">Usuário final, administrador de rede ou servidor legado sem Python: cada um tem uma versão que roda no seu ambiente.</p>
+      <div class="grid grid-2 mt-2">
+        <div class="card reveal">
+          <div class="impl-tabs" role="tablist" aria-label="Implementações">
+            <button class="btn btn-ghost btn-sm" role="tab" aria-selected="true" aria-controls="p-py" id="t-py">Python (GUI + CLI)</button>
+            <button class="btn btn-ghost btn-sm" role="tab" aria-selected="false" aria-controls="p-ps" id="t-ps">PowerShell</button>
+            <button class="btn btn-ghost btn-sm" role="tab" aria-selected="false" aria-controls="p-vbs" id="t-vbs">VBScript</button>
+          </div>
+          <div class="impl-panel" id="p-py" role="tabpanel" aria-labelledby="t-py">
+            <p>Interface em CustomTkinter com tabela, barra de progresso e log; o núcleo <code>engine.py</code> mede cada fatia serializando em memória com <code>pypdf</code>.</p>
+<pre class="code">python src/gui.py
+python src/engine.py "C:\Peticoes" -o "C:\Peticoes\split" -l 3.8 -r
+
+# engine.py — quantas páginas cabem na próxima fatia?
+size = cls._measure(reader, start, hint)
+if size &gt; limit_bytes:
+    ratio = limit_bytes / max(size, 1)
+    hint = max(1, int(hint * ratio * 0.95))
+    ...
+while count &lt; available:
+    new_size = cls._measure(reader, start, count + 1)
+    if new_size &gt; limit_bytes:
+        break
+    count += 1</pre>
+          </div>
+          <div class="impl-panel" id="p-ps" role="tabpanel" aria-labelledby="t-ps" hidden>
+            <p>Para administradores e RPA. Detecta o backend disponível (PdfSharp, <code>qpdf</code> ou <code>pdftk</code>) e mede cada fatia em disco.</p>
+<pre class="code">.\src\powershell\Split-PDF.ps1 `
+    -InputFolder "C:\Peticoes" `
+    -OutputFolder "C:\Peticoes\split" `
+    -MaxSizeMB 3.8 `
+    -Recurse
+
+# Se a política bloquear scripts:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</pre>
+          </div>
+          <div class="impl-panel" id="p-vbs" role="tabpanel" aria-labelledby="t-vbs" hidden>
+            <p>Para servidores legados com Windows Script Host. Usa <code>qpdf --pages</code> ou <code>pdftk cat</code> e grava o relatório <code>log_divisao.txt</code>.</p>
+<pre class="code">cscript //nologo src\vbscript\Split-PDF.vbs ^
+    "C:\Peticoes" "C:\Peticoes\split" 3.8
+
+' Contagem de páginas
+qpdf --show-npages arquivo.pdf
+' Extração de uma fatia
+qpdf arquivo.pdf --pages . 1-12 -- saida_parte_001.pdf</pre>
+          </div>
+        </div>
+        <div class="card reveal">
+          <h3>Comparativo</h3>
+          <div class="table-wrap mt-1" style="max-height:none">
+            <table class="table cmp">
+              <thead><tr><th>Critério</th><th>Python</th><th>PowerShell</th><th>VBScript</th></tr></thead>
+              <tbody>
+                <tr><td>Interface</td><td>Gráfica moderna</td><td>Terminal colorido</td><td>Console / MsgBox</td></tr>
+                <tr><td>Dependências</td><td>pip (pypdf, CustomTkinter)</td><td>PdfSharp ou qpdf/pdftk</td><td>qpdf ou pdftk</td></tr>
+                <tr><td>Precisão do limite</td><td>Alta (em memória)</td><td>Alta (em disco)</td><td>Média (estimativa + verificação)</td></tr>
+                <tr><td>Memória</td><td>Moderada</td><td>Baixa</td><td>Baixa</td></tr>
+                <tr><td>Sistemas</td><td>Windows, Linux, macOS</td><td>Windows (PS 5.1+)</td><td>Windows (WSH)</td></tr>
+                <tr><td>Melhor para</td><td>Usuário final</td><td>Admin de rede / RPA</td><td>Servidores legados</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="notice mt-2">Nenhum original é sobrescrito: as partes vão para uma pasta separada (ou, aqui, para downloads). PDFs corrompidos são registrados no log e o lote continua.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous"></script>
+  <script>
+    (function () {
+      var MB = 1024 * 1024;
+      var SAFETY = 0.97;
+      var ALERT_MB = 4;
+      var $ = function (id) { return document.getElementById(id); };
+      var files = [];        // { id, name, bytes, size, pages, title, author, error, status, parts: [] }
+      var nextId = 1;
+      var cancelFlag = false;
+      var busy = false;
+      var generating = false;
+
+      // ---------- utilidades ----------
+      function fmtMB(b) { return (b / MB).toFixed(2) + " MB"; }
+      function limitBytes() {
+        var v = parseFloat($("limitIn").value);
+        if (!isFinite(v) || v < 0.1) v = 0.1;
+        return Math.floor(v * MB);
+      }
+      function el(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      function log(msg, kind) {
+        var line = el("span", kind || "", msg + "\n");
+        $("log").append(line);
+        $("log").scrollTop = $("log").scrollHeight;
+      }
+      function yieldUI() { return new Promise(function (r) { setTimeout(r, 0); }); }
+      function setProgress(p, txt) {
+        $("bar").style.width = Math.round(Math.max(0, Math.min(1, p)) * 100) + "%";
+        if (txt) $("progressText").textContent = txt;
+      }
+      function baseName(n) { return n.replace(/\.pdf$/i, ""); }
+      function libOk() {
+        if (!window.PDFLib) {
+          log("[ERRO] Não foi possível carregar a biblioteca pdf-lib (sem internet?).", "err");
+          return false;
+        }
+        return true;
+      }
+
+      function estimateParts(f, limit) {
+        if (f.error || !f.pages) return 1;
+        if (f.size <= limit) return 1;
+        var avg = f.size / Math.max(f.pages, 1);
+        var per = Math.max(1, Math.floor(limit * SAFETY / avg));
+        return Math.max(1, Math.ceil(f.pages / per));
+      }
+
+      // ---------- leitura ----------
+      async function addFile(name, bytes) {
+        if (!libOk()) return;
+        var f = { id: nextId++, name: name, bytes: bytes, size: bytes.byteLength, pages: 0, title: "", author: "", error: "", status: "pronto", parts: [] };
+        try {
+          var doc = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+          f.pages = doc.getPageCount();
+          f.title = (doc.getTitle() || "").trim();
+          f.author = (doc.getAuthor() || "").trim();
+          if (doc.isEncrypted) f.error = "PDF criptografado: não é possível dividir no navegador.";
+          if (!f.pages) f.error = "PDF sem páginas.";
+        } catch (e) {
+          f.error = "PDF corrompido ou ilegível.";
+        }
+        files.push(f);
+        if (f.error) { f.status = "erro"; log("[ERRO] " + f.name + ": " + f.error, "err"); }
+        else log("[OK] " + f.name + "  |  " + fmtMB(f.size) + "  |  " + f.pages + " pág.  |  ~" + estimateParts(f, limitBytes()) + " parte(s)", "ok");
+        render();
+      }
+
+      async function handleFiles(list) {
+        var arr = Array.prototype.slice.call(list).filter(function (f) { return /\.pdf$/i.test(f.name) || f.type === "application/pdf"; });
+        if (!arr.length) { log("[AVISO] Nenhum arquivo PDF na seleção.", "warn"); return; }
+        log("[SCAN] " + arr.length + " arquivo(s) recebido(s).", "info");
+        for (var i = 0; i < arr.length; i++) {
+          var buf = new Uint8Array(await arr[i].arrayBuffer());
+          await addFile(arr[i].name, buf);
+        }
+      }
+
+      // ---------- algoritmo (porta de engine.py) ----------
+      async function buildPart(src, start, count, meta) {
+        var out = await PDFLib.PDFDocument.create();
+        var idx = [];
+        for (var i = start; i < start + count; i++) idx.push(i);
+        var pages = await out.copyPages(src, idx);
+        pages.forEach(function (p) { out.addPage(p); });
+        out.setTitle(meta.title);
+        out.setAuthor(meta.author);
+        out.setSubject("Origem: " + meta.source);
+        out.setProducer("PDF-Splitter-Utility (pdf-lib)");
+        out.setCreator("PDF-Splitter-Utility");
+        return out.save({ useObjectStreams: true });
+      }
+
+      async function fitPages(src, start, total, limit, hint, meta) {
+        var available = total - start;
+        if (available <= 0) return null;
+        hint = Math.max(1, Math.min(hint, available));
+        var measures = 0;
+        var bytes = await buildPart(src, start, hint, meta); measures++;
+        if (bytes.length > limit) {
+          var ratio = limit / Math.max(bytes.length, 1);
+          hint = Math.max(1, Math.floor(hint * ratio * 0.95));
+          bytes = await buildPart(src, start, hint, meta); measures++;
+          while (hint > 1 && bytes.length > limit) {
+            if (cancelFlag) return null;
+            hint -= 1;
+            bytes = await buildPart(src, start, hint, meta); measures++;
+            await yieldUI();
+          }
+        }
+        var count = hint;
+        while (count < available) {
+          if (cancelFlag) return null;
+          var next = await buildPart(src, start, count + 1, meta); measures++;
+          await yieldUI();
+          if (next.length > limit) break;
+          count += 1;
+          bytes = next;
+        }
+        return { count: count, bytes: bytes, measures: measures };
+      }
+
+      async function splitFile(f, limit, onProgress) {
+        var src = await PDFLib.PDFDocument.load(f.bytes, { ignoreEncryption: true, updateMetadata: false });
+        var total = src.getPageCount();
+        var base = baseName(f.name);
+        var avg = f.size / Math.max(total, 1);
+        var hint = Math.max(1, Math.floor(limit * SAFETY / avg));
+        var start = 0, partNo = 1;
+        f.parts = [];
+        log("[SPLIT] " + f.name + " — " + total + " páginas / " + fmtMB(f.size) + " (dica inicial: " + hint + " pág./parte)", "info");
+        while (start < total) {
+          if (cancelFlag) { log("[CANCEL] Operação interrompida pelo usuário.", "warn"); break; }
+          var num = String(partNo).padStart(3, "0");
+          var meta = { title: (f.title || base) + " — Parte " + num, author: f.author || "PDF-Splitter-Utility", source: f.name };
+          var res = await fitPages(src, start, total, limit, hint, meta);
+          if (!res) { log("[CANCEL] Operação interrompida pelo usuário.", "warn"); break; }
+          var outName = base + "_parte_" + num + ".pdf";
+          var blob = new Blob([res.bytes], { type: "application/pdf" });
+          var over = res.bytes.length > limit;
+          f.parts.push({ name: outName, blob: blob, url: URL.createObjectURL(blob), size: res.bytes.length, from: start + 1, to: start + res.count, over: over });
+          log("   -> " + outName + "  |  " + fmtMB(res.bytes.length) + "  |  págs. " + (start + 1) + "–" + (start + res.count) + (over ? "  (página única acima do limite)" : ""), over ? "warn" : "");
+          hint = res.count;
+          start += res.count;
+          partNo++;
+          onProgress(start / total);
+          renderParts();
+        }
+        log("[SPLIT] " + f.name + ": " + f.parts.length + " parte(s) gerada(s).", "ok");
+        return !cancelFlag;
+      }
+
+      async function splitAll() {
+        if (busy || !libOk()) return;
+        var list = files.filter(function (f) { return !f.error; });
+        if (!list.length) { log("[AVISO] Nenhum PDF válido para dividir.", "warn"); return; }
+        busy = true; cancelFlag = false; syncButtons();
+        var limit = limitBytes();
+        log("\n=== Dividindo " + list.length + " arquivo(s) com limite de " + fmtMB(limit) + " ===", "info");
+        var t0 = performance.now();
+        for (var i = 0; i < list.length; i++) {
+          if (cancelFlag) break;
+          var f = list[i];
+          f.parts.forEach(function (p) { URL.revokeObjectURL(p.url); });
+          f.status = "dividindo"; render();
+          try {
+            var done = await splitFile(f, limit, function (p) {
+              setProgress((i + p) / list.length, "(" + (i + 1) + "/" + list.length + ") " + f.name + " — " + Math.round(p * 100) + "%");
+            });
+            f.status = done ? "concluído" : "cancelado";
+          } catch (e) {
+            f.status = "erro";
+            log("[ERRO] " + f.name + ": falha ao dividir (" + (e && e.message ? e.message : "erro desconhecido") + ")", "err");
+          }
+          render();
+        }
+        var secs = ((performance.now() - t0) / 1000).toFixed(1);
+        var totalParts = files.reduce(function (s, f) { return s + f.parts.length; }, 0);
+        setProgress(cancelFlag ? 0 : 1, cancelFlag ? "Cancelado." : "Concluído em " + secs + " s · " + totalParts + " parte(s).");
+        busy = false; syncButtons(); renderParts();
+      }
+
+      // ---------- PDF de exemplo ----------
+      function noiseJpeg(w, h, page, total) {
+        var c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        var ctx = c.getContext("2d");
+        var img = ctx.createImageData(w, h);
+        var d = img.data;
+        for (var i = 0; i < d.length; i += 4) {
+          var v = 225 + Math.random() * 30;
+          d[i] = v; d[i + 1] = v - 4; d[i + 2] = v - 14; d[i + 3] = 255;
+        }
+        ctx.putImageData(img, 0, 0);
+        ctx.fillStyle = "#2a2118";
+        ctx.font = "bold 44px serif";
+        ctx.fillText("PETIÇÃO DE EXEMPLO", 70, 110);
+        ctx.font = "22px serif";
+        for (var l = 0; l < 30; l++) {
+          var len = 320 + Math.random() * 560;
+          ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+          ctx.fillRect(70, 170 + l * 30, len, 9);
+        }
+        ctx.globalAlpha = 1;
+        ctx.font = "20px monospace";
+        ctx.fillText("Página " + page + " de " + total + " · documento digitalizado fictício", 70, h - 50);
+        return new Promise(function (resolve) {
+          c.toBlob(function (b) { b.arrayBuffer().then(function (ab) { resolve(new Uint8Array(ab)); }); }, "image/jpeg", 0.92);
+        });
+      }
+
+      async function makeSample() {
+        if (!libOk()) return;
+        generating = true; syncButtons();
+        log("[DEMO] Gerando PDF de exemplo…", "info");
+        var total = 14;
+        var doc = await PDFLib.PDFDocument.create();
+        doc.setTitle("Petição de exemplo");
+        doc.setAuthor("Projetos MM (demo)");
+        for (var p = 1; p <= total; p++) {
+          var jpg = await noiseJpeg(1100, 1400, p, total);
+          var img = await doc.embedJpg(jpg);
+          var page = doc.addPage([595, 842]);
+          page.drawImage(img, { x: 0, y: 0, width: 595, height: 842 });
+          setProgress(p / total, "Gerando página " + p + "/" + total);
+          await yieldUI();
+        }
+        var bytes = await doc.save();
+        await addFile("peticao_exemplo.pdf", bytes);
+        setProgress(0, "PDF de exemplo pronto. Ajuste o limite e clique em “Dividir todos”.");
+        generating = false; syncButtons();
+      }
+
+      // ---------- download ----------
+      async function downloadZip() {
+        var all = [];
+        files.forEach(function (f) { f.parts.forEach(function (p) { all.push(p); }); });
+        if (!all.length) return;
+        if (!window.JSZip) {
+          log("[AVISO] JSZip indisponível; baixando as partes uma a uma.", "warn");
+          all.forEach(function (p, i) { setTimeout(function () { trigger(p.url, p.name); }, i * 300); });
+          return;
+        }
+        var zip = new JSZip();
+        all.forEach(function (p) { zip.file(p.name, p.blob); });
+        var blob = await zip.generateAsync({ type: "blob" });
+        var url = URL.createObjectURL(blob);
+        trigger(url, "pdf_split_output.zip");
+        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+      }
+      function trigger(url, name) {
+        var a = document.createElement("a");
+        a.href = url; a.download = name;
+        document.body.append(a); a.click(); a.remove();
+      }
+
+      // ---------- render ----------
+      function render() {
+        var limit = limitBytes();
+        var tb = $("rows");
+        tb.replaceChildren();
+        if (!files.length) {
+          var tr0 = el("tr"); var td0 = el("td", "muted", "Nenhum PDF carregado."); td0.colSpan = 7; tr0.append(td0); tb.append(tr0);
+        }
+        files.forEach(function (f) {
+          var tr = el("tr");
+          var alert = f.size / MB > ALERT_MB;
+          if (alert) tr.className = "alert-row";
+          var name = el("td"); var nm = el("div", "file-name", f.name); nm.title = f.name; name.append(nm);
+          var size = el("td", alert ? "alert-size" : "", fmtMB(f.size));
+          var est = estimateParts(f, limit);
+          var st = el("td");
+          var cls = f.status === "erro" ? "err" : f.status === "concluído" ? "ok" : "warn";
+          st.append(el("span", "badge " + cls, f.error ? "erro" : f.status));
+          var estTd = el("td", est > 1 ? "alert-size" : "", f.error ? "—" : String(est));
+          tr.append(name, size, el("td", "", f.pages ? String(f.pages) : "—"), el("td", "", f.title || "—"), el("td", "", f.author || "—"), estTd, st);
+          tb.append(tr);
+        });
+        $("fileCount").textContent = files.length + (files.length === 1 ? " PDF" : " PDFs");
+        syncButtons();
+      }
+
+      function renderParts() {
+        var box = $("parts");
+        box.replaceChildren();
+        var any = false;
+        files.forEach(function (f) {
+          if (!f.parts.length) return;
+          any = true;
+          var h = el("div", "group-title");
+          h.append(el("span", "", f.name), el("span", "chip", f.parts.length + " parte(s)"));
+          box.append(h);
+          var list = el("div", "parts");
+          f.parts.forEach(function (p) {
+            var row = el("div", "part");
+            var left = el("div");
+            var nm = el("div", "nm", p.name); nm.title = p.name;
+            left.append(nm, el("div", "pg", "págs. " + p.from + "–" + p.to));
+            var sz = el("span", "badge " + (p.over ? "warn" : "ok"), fmtMB(p.size));
+            var a = el("a", "btn btn-ghost btn-sm", "Baixar");
+            a.href = p.url; a.download = p.name;
+            row.append(left, sz, a);
+            list.append(row);
+          });
+          box.append(list);
+        });
+        if (!any) box.append(el("p", "muted", "Nenhuma parte gerada ainda."));
+        syncButtons();
+      }
+
+      function syncButtons() {
+        var valid = files.some(function (f) { return !f.error; });
+        var hasParts = files.some(function (f) { return f.parts.length; });
+        $("btnSplit").disabled = busy || !valid;
+        $("btnCancel").disabled = !busy;
+        $("btnClear").disabled = busy || !files.length;
+        $("btnZip").disabled = busy || !hasParts;
+        $("btnSample").disabled = busy || generating;
+      }
+
+      // ---------- eventos ----------
+      var dz = $("dropzone");
+      ["dragenter", "dragover"].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add("drag"); }); });
+      ["dragleave", "drop"].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove("drag"); }); });
+      dz.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files); });
+      $("fileIn").addEventListener("change", function (e) { handleFiles(e.target.files).then(function () { e.target.value = ""; }); });
+
+      function syncLimit(v) {
+        $("limitChip").textContent = (parseFloat(v) || 0).toFixed(1) + " MB";
+        render();
+      }
+      $("limitRange").addEventListener("input", function () { $("limitIn").value = this.value; syncLimit(this.value); });
+      $("limitIn").addEventListener("input", function () { $("limitRange").value = this.value; syncLimit(this.value); });
+
+      $("btnSplit").addEventListener("click", splitAll);
+      $("btnCancel").addEventListener("click", function () { cancelFlag = true; log("[CANCEL] Cancelamento solicitado…", "warn"); });
+      $("btnClear").addEventListener("click", function () {
+        files.forEach(function (f) { f.parts.forEach(function (p) { URL.revokeObjectURL(p.url); }); });
+        files = []; render(); renderParts(); setProgress(0, "Aguardando arquivos.");
+      });
+      $("btnSample").addEventListener("click", makeSample);
+      $("btnZip").addEventListener("click", downloadZip);
+      $("btnLogClear").addEventListener("click", function () { $("log").replaceChildren(); });
+
+      // abas das implementações
+      var tabs = document.querySelectorAll('[role="tab"]');
+      tabs.forEach(function (t) {
+        t.addEventListener("click", function () {
+          tabs.forEach(function (o) {
+            var on = o === t;
+            o.setAttribute("aria-selected", on ? "true" : "false");
+            $(o.getAttribute("aria-controls")).hidden = !on;
+          });
+        });
+      });
+
+      log("PDF-Splitter-Utility (web) pronto. Limite padrão: 3.8 MB.", "info");
+      if (!window.PDFLib) log("[AVISO] pdf-lib não carregou; verifique a conexão.", "warn");
+      render(); renderParts();
+    })();
+  </script>
+</body>
+</html>

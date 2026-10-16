@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python PowerUp · Robô de cadastro · Projetos MM</title>
+  <meta name="description" content="Simulação visual do robô em Python (pyautogui + pandas) que faz login num sistema e cadastra centenas de produtos a partir de um CSV." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .grid > *, .step > div { min-width: 0; }
+    .step code, .lead code { overflow-wrap: anywhere; }
+    .stage { position: relative; }
+    .browser { border: 1px solid var(--line-strong); border-radius: 16px; overflow: hidden; background: var(--bg-2); }
+    .browser-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--text-3); opacity: .5; }
+    .dots i:nth-child(1) { background: var(--red); opacity: .9; }
+    .dots i:nth-child(2) { background: var(--gold); opacity: .9; }
+    .dots i:nth-child(3) { background: var(--orange); opacity: .9; }
+    .url { flex: 1; min-width: 0; padding: 6px 12px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); font: 500 .78rem var(--font-mono); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 30px; }
+    .screen { padding: 22px; min-height: 470px; position: relative; }
+    .screen[hidden] { display: none; }
+    .mock-title { font: 800 1.2rem var(--font-display); margin-bottom: 4px; }
+    .mock .field { margin-bottom: 10px; }
+    .mock .input { padding: 9px 12px; font-size: .9rem; font-family: var(--font-mono); }
+    .mock .input.active { border-color: var(--orange); box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 25%, transparent); }
+    .mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+    .mock-grid .full { grid-column: 1 / -1; }
+    .fake-btn { width: 100%; padding: 11px; border-radius: 12px; border: 0; background: var(--grad); color: #1a0f04; font: 700 .92rem var(--font-body); }
+    .fake-btn.pressed { transform: scale(.97); filter: brightness(.9); }
+    .desktop { display: grid; place-items: center; min-height: 420px; text-align: center; }
+    .desktop .startmenu { padding: 18px 22px; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface); min-width: 260px; }
+    .cursor {
+      position: absolute; left: 30px; top: 30px; width: 22px; height: 22px; z-index: 5; pointer-events: none;
+      transition: left .45s cubic-bezier(.5,.1,.2,1), top .45s cubic-bezier(.5,.1,.2,1);
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
+    }
+    .cursor.click::after {
+      content: ""; position: absolute; left: -9px; top: -9px; width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--orange); animation: ping .4s ease-out;
+    }
+    @keyframes ping { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+    .toast { position: absolute; right: 16px; bottom: 16px; padding: 8px 14px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 20%, var(--surface)); color: var(--ok); font: 600 .82rem var(--font-mono); opacity: 0; transition: opacity .25s; }
+    .toast.show { opacity: 1; }
+    .controls { display: grid; gap: 14px; }
+    .speed { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+    .speed input { width: 100%; accent-color: var(--orange); }
+    .step-pill { display: flex; gap: 6px; flex-wrap: wrap; }
+    .step-pill span { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); font: 600 .72rem var(--font-mono); color: var(--text-3); }
+    .step-pill span.on { color: #1a0f04; background: var(--grad); border-color: transparent; }
+    .step-pill span.done { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+    tr.current td { background: color-mix(in srgb, var(--orange) 14%, transparent) !important; }
+    .kbd { display: inline-block; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--line-strong); font: 600 .74rem var(--font-mono); }
+    @media (max-width: 640px) { .mock-grid { grid-template-columns: 1fr; } .screen { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="PYTHON POWERUP"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">RPA · Automação de interface</span>
+      <h1>Python <span class="grad-text">PowerUp</span></h1>
+      <p class="lead">Um robô em Python que abre o navegador, faz login e cadastra cada produto de uma planilha, campo por campo, como uma pessoa faria. Aqui você assiste a uma simulação fiel do script rodando sobre o mesmo <code>produtos.csv</code>.</p>
+      <div class="meta chips">
+        <span class="chip gold">pyautogui</span>
+        <span class="chip orange">pandas</span>
+        <span class="chip red">Automação de cadastro</span>
+        <span class="chip" id="heroCount">— produtos no CSV</span>
+      </div>
+    </section>
+
+    <section class="container grid" style="grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); padding-bottom: 24px;" id="simGrid">
+      <div class="card reveal stage" id="stage">
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="url" id="url" aria-label="Barra de endereço"></div>
+          </div>
+
+          <div class="screen desktop" id="scrDesktop">
+            <div class="startmenu">
+              <div class="muted" style="font-size:.8rem">Menu Iniciar</div>
+              <div class="input mt-1" id="startSearch" style="text-align:left; min-height: 42px; font-family: var(--font-mono)"></div>
+              <p class="muted mt-1" style="font-size:.85rem; margin-bottom:0">Passo 1 · <span class="kbd">win</span> → digitar → <span class="kbd">enter</span></p>
+            </div>
+          </div>
+
+          <div class="screen mock" id="scrLogin" hidden>
+            <div style="max-width: 360px; margin: 30px auto 0;">
+              <div class="mock-title">Entrar no sistema</div>
+              <p class="muted" style="font-size:.85rem">Sistema de cadastro de produtos (simulado)</p>
+              <div class="field"><label for="mEmail">E-mail</label><input class="input" id="mEmail" readonly tabindex="-1" /></div>
+              <div class="field"><label for="mSenha">Senha</label><input class="input" id="mSenha" type="password" readonly tabindex="-1" /></div>
+              <button class="fake-btn" id="mLoginBtn" type="button" tabindex="-1">Acessar</button>
+            </div>
+          </div>
+
+          <div class="screen mock" id="scrForm" hidden>
+            <div class="mock-title">Cadastro de produto</div>
+            <p class="muted" style="font-size:.85rem">Preencha os campos e clique em Enviar</p>
+            <div class="mock-grid">
+              <div class="field"><label for="f_codigo">Código do produto</label><input class="input" id="f_codigo" readonly tabindex="-1" /></div>
+              <div class="field"><label for="f_marca">Marca</label><input class="input" id="f_marca" readonly tabindex="-1" /></div>
+              <div class="field"><label for="f_tipo">Tipo</label><input class="input" id="f_tipo" readonly tabindex="-1" /></div>
+              <div class="field"><label for="f_categoria">Categoria</label><input class="input" id="f_categoria" readonly tabindex="-1" /></div>
+              <div class="field"><label for="f_custo">Custo do produto</label><input class="input" id="f_custo" readonly tabindex="-1" /></div>
+              <div class="field"><label for="f_preco_unitario">Preço unitário</label><input class="input" id="f_preco_unitario" readonly tabindex="-1" /></div>
+              <div class="field full"><label for="f_obs">Obs</label><input class="input" id="f_obs" readonly tabindex="-1" /></div>
+              <div class="full"><button class="fake-btn" id="mSend" type="button" tabindex="-1">Enviar</button></div>
+            </div>
+            <div class="toast" id="toast">Produto cadastrado ✓</div>
+          </div>
+        </div>
+        <svg class="cursor" id="cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2l7.5 19 2.4-7.6L20.5 11z" fill="#fff" stroke="#1a0f04" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+
+      <div class="card reveal controls">
+        <div class="card-title" style="margin-bottom:0"><h3>Painel do robô</h3><span class="badge warn" id="state">parado</span></div>
+        <div class="step-pill" id="pills">
+          <span data-s="1">1 · Navegador</span><span data-s="2">2 · Login</span><span data-s="3">3 · CSV</span><span data-s="4">4 · Cadastro</span><span data-s="5">5 · Repetir</span>
+        </div>
+        <div class="grid grid-2">
+          <div class="kpi"><div class="num" id="kDone">0</div><div class="lbl">Cadastrados</div></div>
+          <div class="kpi"><div class="num" id="kTotal">0</div><div class="lbl">Na base</div></div>
+        </div>
+        <div class="progress"><span id="bar"></span></div>
+        <div class="speed">
+          <div class="field" style="margin:0">
+            <label for="speed">Velocidade</label>
+            <input type="range" id="speed" min="1" max="40" value="4" />
+          </div>
+          <span class="chip gold" id="speedLbl">4×</span>
+        </div>
+        <label class="row" style="font-size:.9rem; color: var(--text-2)"><input type="checkbox" id="skipIntro" /> Pular abertura e login</label>
+        <div class="row">
+          <button class="btn btn-primary" id="btnStart" type="button">Iniciar robô</button>
+          <button class="btn btn-ghost btn-sm" id="btnPause" type="button" disabled>Pausar</button>
+          <button class="btn btn-danger btn-sm" id="btnStop" type="button" disabled>Parar</button>
+        </div>
+        <div class="log" id="log" role="log" aria-live="polite" style="height: 200px"></div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>produtos.csv</h3><span class="muted" style="font-size:.85rem" id="srcInfo">Carregando…</span></div>
+        <div class="table-wrap" id="tableWrap" style="max-height: 380px;">
+          <table class="table">
+            <thead><tr><th>#</th><th>codigo</th><th>marca</th><th>tipo</th><th>categoria</th><th>preco_unitario</th><th>custo</th><th>obs</th><th>status</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Cinco passos, zero digitação manual</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Abrir o navegador e o site</h4><p><code>press("win")</code>, digita o nome do navegador, <code>enter</code> e escreve a URL do sistema. <code>pyautogui.PAUSE = 1</code> dá um respiro entre os comandos.</p></div></div>
+            <div class="step"><div><h4>Fazer login</h4><p>Posiciona o mouse, navega com <code>tab</code> entre e-mail e senha e confirma com <code>enter</code>.</p></div></div>
+            <div class="step"><div><h4>Importar a base</h4><p><code>pandas.read_csv("produtos.csv")</code> carrega a planilha com código, marca, tipo, categoria, preço, custo e observação.</p></div></div>
+            <div class="step"><div><h4>Cadastrar um produto</h4><p>Clica no primeiro campo e, para cada coluna, <code>write()</code> + <code>tab</code>. Observações vazias (<code>nan</code>) são puladas; <code>enter</code> envia.</p></div></div>
+            <div class="step"><div><h4>Repetir para toda a base</h4><p>O <code>for linha in tabela.index</code> repete o cadastro e rola a página ao topo (<code>scroll(10000)</code>) antes do próximo item.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PYTHON%20POWERUP/codigo.py" target="_blank" rel="noopener">codigo.py <small>Robô de cadastro</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PYTHON%20POWERUP/pegar_posicao.py" target="_blank" rel="noopener">pegar_posicao.py <small>Descobre coordenadas do mouse</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PYTHON%20POWERUP/produtos.csv" target="_blank" rel="noopener">produtos.csv <small>Base de produtos</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PYTHON%20POWERUP/index.html" target="_blank" rel="noopener">index.html <small>Esta simulação</small></a></li>
+          </ul>
+<pre class="code mt-2">import pyautogui, time, pandas
+pyautogui.PAUSE = 1
+
+tabela = pandas.read_csv("produtos.csv")
+
+for linha in tabela.index:
+    pyautogui.click(x=856, y=286)   # campo "código"
+    pyautogui.write(tabela.loc[linha, "codigo"])
+    pyautogui.press("tab")
+    pyautogui.write(tabela.loc[linha, "marca"])
+    pyautogui.press("tab")
+    # ... tipo, categoria, custo, preco_unitario
+    obs = str(tabela.loc[linha, "obs"])
+    if obs != "nan":
+        pyautogui.write(obs)
+    pyautogui.press("tab")
+    pyautogui.press("enter")         # enviar
+    pyautogui.scroll(10000)          # volta ao topo</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      var $ = function (id) { return document.getElementById(id); };
+      var SITE = "https://dlp.hashtagtreinamentos.com/python/intensivao/login";
+      // Usado só se o fetch falhar (por exemplo, abrindo o arquivo direto via file://).
+      var FALLBACK = [
+        "codigo,marca,tipo,categoria,preco_unitario,custo,obs",
+        "MOLO000251,Logitech,Mouse,1,25.95,6.50,",
+        "MOLO000192,Logitech,Mouse,2,19.95,5.00,",
+        "CAHA000251,Hashtag,Camisa,1,25.00,11.00,",
+        "CAHA000252,Hashtag,Camisa,2,25.00,11.00,Conferir estoque",
+        "MOMU000111,Multilaser,Mouse,1,11.99,3.40,",
+        "BOHA000251,Hashtag,Bone,1,25.00,11.00,",
+        "BOHA000252,Hashtag,Bone,2,25.00,11.00,",
+        "CAHA000273,Hashtag,Camisa,3,27.50,12.40,Troca de fornecedor",
+        "CAHA000274,Hashtag,Camisa,4,27.50,12.40,",
+        "CAHA000275,Hashtag,Camisa,5,27.50,12.40,",
+        "TELG000821,LG,Televisao,1,820.00,172.20,",
+        "TELG000252,LG,Televisao,2,250.00,62.50,"
+      ].join("\n");
+      var ORDER = ["codigo", "marca", "tipo", "categoria", "custo", "preco_unitario", "obs"];
+
+      var products = [];
+      var run = { active: false, paused: false, stop: false, done: 0 };
+
+      function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+      function log(msg, kind) {
+        var ts = new Date().toLocaleTimeString("pt-BR");
+        $("log").append(el("span", kind || "", "[" + ts + "] " + msg + "\n"));
+        $("log").scrollTop = $("log").scrollHeight;
+      }
+
+      function parseCSV(txt) {
+        var lines = txt.replace(/\r/g, "").split("\n").filter(function (l) { return l.trim(); });
+        var head = lines.shift().split(",");
+        return lines.map(function (l) {
+          var parts = l.split(",");
+          var o = {};
+          head.forEach(function (h, i) { o[h] = (parts[i] || "").trim(); });
+          return o;
+        });
+      }
+
+      function load() {
+        fetch("produtos.csv").then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.text();
+        }).then(function (t) {
+          products = parseCSV(t);
+          $("srcInfo").textContent = products.length + " linhas lidas de produtos.csv";
+          log("produtos.csv carregado: " + products.length + " produtos.", "ok");
+        }).catch(function () {
+          products = parseCSV(FALLBACK);
+          $("srcInfo").textContent = "Amostra embutida (" + products.length + " linhas): abra via servidor para ler o CSV completo";
+          log("Não foi possível ler produtos.csv; usando amostra embutida.", "warn");
+        }).then(renderTable);
+      }
+
+      function renderTable() {
+        var tb = $("rows"); tb.replaceChildren();
+        products.forEach(function (p, i) {
+          var tr = el("tr"); tr.id = "row-" + i;
+          tr.append(el("td", "muted", String(i + 1)));
+          ["codigo", "marca", "tipo", "categoria", "preco_unitario", "custo", "obs"].forEach(function (k) { tr.append(el("td", "", p[k] || "")); });
+          var st = el("td"); st.append(el("span", "badge warn", "pendente")); tr.append(st);
+          tb.append(tr);
+        });
+        $("kTotal").textContent = products.length;
+        $("heroCount").textContent = products.length + " produtos no CSV";
+      }
+
+      // ---------- tempo, pausa e parada ----------
+      function speed() { return parseInt($("speed").value, 10) || 1; }
+      function StopErr() {}
+      function wait(ms) {
+        return new Promise(function (resolve, reject) {
+          var left = ms / speed();
+          (function tick() {
+            if (run.stop) return reject(new StopErr());
+            if (run.paused) return setTimeout(tick, 80);
+            if (left <= 0) return resolve();
+            var step = Math.min(left, 40);
+            left -= step;
+            setTimeout(tick, step);
+          })();
+        });
+      }
+
+      // ---------- cursor ----------
+      function moveTo(target) {
+        var stage = $("stage").getBoundingClientRect();
+        var r = target.getBoundingClientRect();
+        var c = $("cursor");
+        c.style.transitionDuration = Math.max(.05, .45 / Math.sqrt(speed())) + "s";
+        c.style.left = (r.left - stage.left + Math.min(r.width - 10, 26)) + "px";
+        c.style.top = (r.top - stage.top + r.height / 2 - 4) + "px";
+        return wait(480);
+      }
+      async function clickOn(target) {
+        await moveTo(target);
+        var c = $("cursor");
+        c.classList.remove("click"); void c.offsetWidth; c.classList.add("click");
+        await wait(160);
+      }
+      async function type(target, text, isDiv) {
+        for (var i = 0; i < text.length; i++) {
+          if (isDiv) target.textContent += text[i]; else target.value += text[i];
+          await wait(55);
+        }
+      }
+      function focusField(f) {
+        document.querySelectorAll(".mock .input.active").forEach(function (x) { x.classList.remove("active"); });
+        if (f) f.classList.add("active");
+      }
+      function show(id) {
+        ["scrDesktop", "scrLogin", "scrForm"].forEach(function (s) { $(s).hidden = s !== id; });
+      }
+      function pill(n) {
+        document.querySelectorAll("#pills span").forEach(function (s) {
+          var k = +s.dataset.s;
+          s.className = k === n ? "on" : k < n ? "done" : "";
+        });
+      }
+      function setState(txt, cls) { var s = $("state"); s.textContent = txt; s.className = "badge " + cls; }
+
+      // ---------- roteiro do robô (espelha codigo.py) ----------
+      async function robot() {
+        var skip = $("skipIntro").checked;
+        if (!skip) {
+          pill(1); show("scrDesktop"); $("url").textContent = ""; $("startSearch").textContent = "";
+          log('Passo 1: pyautogui.press("win")', "info");
+          await clickOn($("startSearch"));
+          await type($("startSearch"), "mozila", true);
+          log('pyautogui.write("mozila") → enter');
+          await wait(700);
+          show("scrLogin"); $("url").textContent = "";
+          await clickOn($("url"));
+          await type($("url"), SITE, true);
+          log("Abrindo " + SITE);
+          await wait(600);
+
+          pill(2);
+          log("Passo 2: login com tab + write", "info");
+          $("mEmail").value = ""; $("mSenha").value = "";
+          await clickOn($("mEmail")); focusField($("mEmail"));
+          await type($("mEmail"), "matheus@gmail.com");
+          focusField($("mSenha")); await moveTo($("mSenha"));
+          await type($("mSenha"), "123456");
+          focusField(null);
+          await clickOn($("mLoginBtn"));
+          $("mLoginBtn").classList.add("pressed"); await wait(200); $("mLoginBtn").classList.remove("pressed");
+          log("Login enviado.", "ok");
+          await wait(500);
+        }
+        show("scrForm");
+        $("url").textContent = "https://dlp.hashtagtreinamentos.com/python/intensivao/tabela";
+        pill(3);
+        log('Passo 3: pandas.read_csv("produtos.csv") → ' + products.length + " linhas", "info");
+        await wait(500);
+
+        for (var i = run.done; i < products.length; i++) {
+          pill(i === 0 ? 4 : 5);
+          var p = products[i];
+          var row = $("row-" + i);
+          document.querySelectorAll("tr.current").forEach(function (r) { r.classList.remove("current"); });
+          row.classList.add("current");
+          row.scrollIntoView({ block: "nearest" });
+          ORDER.forEach(function (k) { $("f_" + k).value = ""; });
+
+          await clickOn($("f_codigo"));
+          for (var j = 0; j < ORDER.length; j++) {
+            var k = ORDER[j];
+            var f = $("f_" + k);
+            focusField(f);
+            if (j > 0) await moveTo(f);
+            var v = p[k] || "";
+            if (k === "obs" && !v) { await wait(120); continue; } // obs == "nan" → pula
+            await type(f, v);
+            await wait(80);
+          }
+          focusField(null);
+          await clickOn($("mSend"));
+          $("mSend").classList.add("pressed"); await wait(150); $("mSend").classList.remove("pressed");
+
+          run.done = i + 1;
+          var st = row.lastChild; st.replaceChildren(el("span", "badge ok", "cadastrado"));
+          $("kDone").textContent = run.done;
+          $("bar").style.width = (run.done / products.length * 100) + "%";
+          $("toast").classList.add("show");
+          setTimeout(function () { $("toast").classList.remove("show"); }, 500);
+          log("✓ " + p.codigo + " · " + p.marca + " " + p.tipo + " · R$ " + p.preco_unitario, "ok");
+          await wait(250);
+        }
+        pill(6);
+        log("Passo 5 concluído: " + run.done + " produtos cadastrados.", "ok");
+      }
+
+      function syncButtons() {
+        $("btnStart").disabled = run.active;
+        $("btnPause").disabled = !run.active;
+        $("btnStop").disabled = !run.active;
+        $("btnPause").textContent = run.paused ? "Continuar" : "Pausar";
+      }
+
+      $("btnStart").addEventListener("click", function () {
+        if (run.active || !products.length) return;
+        if (run.done >= products.length) {
+          run.done = 0;
+          renderTable();
+          $("kDone").textContent = "0"; $("bar").style.width = "0%";
+        }
+        run.active = true; run.paused = false; run.stop = false;
+        setState("executando", "ok"); syncButtons();
+        log(run.done ? "Retomando a partir do item " + (run.done + 1) : "Robô iniciado.", "info");
+        robot().then(function () {
+          setState("concluído", "ok");
+        }).catch(function (e) {
+          if (e instanceof StopErr) { setState("parado", "err"); log("Robô interrompido (equivale ao FAILSAFE do pyautogui).", "err"); }
+          else { setState("erro", "err"); log("Erro inesperado na simulação.", "err"); }
+        }).then(function () {
+          run.active = false; run.paused = false; syncButtons(); focusField(null);
+          $("btnStart").textContent = run.done >= products.length ? "Rodar de novo" : (run.done ? "Continuar do item " + (run.done + 1) : "Iniciar robô");
+        });
+      });
+      $("btnPause").addEventListener("click", function () {
+        run.paused = !run.paused;
+        setState(run.paused ? "pausado" : "executando", run.paused ? "warn" : "ok");
+        log(run.paused ? "Pausado." : "Continuando.", "warn");
+        syncButtons();
+      });
+      $("btnStop").addEventListener("click", function () { run.stop = true; run.paused = false; });
+      $("speed").addEventListener("input", function () { $("speedLbl").textContent = this.value + "×"; });
+
+      function layout() {
+        $("simGrid").style.gridTemplateColumns = window.innerWidth < 900 ? "1fr" : "minmax(0, 1.5fr) minmax(0, 1fr)";
+      }
+      window.addEventListener("resize", layout); layout();
+
+      $("url").textContent = "";
+      log("Robô pronto. Ajuste a velocidade e clique em Iniciar.", "info");
+      load();
+    })();
+  </script>
+</body>
+</html>

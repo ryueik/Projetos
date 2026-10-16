@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Insights · Cancelamento de clientes · Projetos MM</title>
+  <meta name="description" content="Dashboard interativo de churn: 50 mil clientes, histogramas por variável e um simulador das ações que derrubam a taxa de cancelamento de 56,8% para 18,4%." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .grid > *, .step > div { min-width: 0; }
+    .step code, .lead code { overflow-wrap: anywhere; }
+    .loader { display: grid; gap: 12px; }
+    .chart-wrap { width: 100%; overflow: hidden; }
+    .chart { width: 100%; height: auto; display: block; }
+    .chart .axis { stroke: var(--line-strong); stroke-width: 1; }
+    .chart .grid { stroke: var(--line); stroke-width: 1; }
+    .chart .tick { fill: var(--text-3); font: 500 11px var(--font-mono); }
+    .chart .val { fill: var(--text-2); font: 600 10px var(--font-mono); }
+    .chart .b0 { fill: var(--gold); }
+    .chart .b1 { fill: var(--red); }
+    .chart .rate { fill: var(--orange); }
+    .chart rect:hover { opacity: .8; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; font: 500 .8rem var(--font-mono); color: var(--text-2); }
+    .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+    .controls .field { margin: 0; min-width: 200px; }
+    .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; overflow: hidden; }
+    .seg button { background: transparent; border: 0; color: var(--text-2); padding: 9px 14px; font: 600 .82rem var(--font-body); cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--grad); color: #1a0f04; }
+    .toggle { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); align-items: start; }
+    .toggle input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--orange); margin-top: 2px; }
+    .toggle h4 { margin: 0 0 2px; font-size: 1rem; }
+    .toggle p { margin: 0; font-size: .85rem; }
+    .toggle input[type="range"] { width: 100%; accent-color: var(--orange); margin-top: 8px; }
+    .toggle .impact { font: 600 .75rem var(--font-mono); color: var(--text-3); margin-top: 6px; }
+    .compare { display: grid; gap: 10px; }
+    .compare .lbl { display: flex; justify-content: space-between; font: 500 .8rem var(--font-mono); color: var(--text-2); }
+    .compare .track { height: 14px; border-radius: 999px; background: var(--surface-2); overflow: hidden; border: 1px solid var(--line); }
+    .compare .track span { display: block; height: 100%; border-radius: 999px; transition: width .4s ease; }
+    .kpi .num.red { color: var(--red); }
+    .kpi .num.ok { color: var(--ok); }
+    .insight { border-left: 3px solid var(--orange); padding: 4px 0 4px 14px; }
+    .insight h4 { margin: 0 0 4px; }
+    .insight p { margin: 0; font-size: .92rem; }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="PYTHON INSIGHTS"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">Análise de dados · Churn</span>
+      <h1>Python <span class="grad-text">Insights</span></h1>
+      <p class="lead">Uma empresa com mais de 800 mil clientes descobriu que a maioria já cancelou. A partir de uma amostra de 50 mil clientes, a análise encontra os três motivos que mais pesam no cancelamento e mede quanto cada ação reduziria a taxa.</p>
+      <div class="meta chips">
+        <span class="chip gold">pandas</span>
+        <span class="chip orange">plotly.express</span>
+        <span class="chip red">Jupyter Notebook</span>
+        <span class="chip">50.000 clientes · 12 colunas</span>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 24px;" id="loadSec">
+      <div class="card reveal loader">
+        <div class="card-title" style="margin:0"><h3>Base de dados</h3><span class="badge warn" id="loadBadge">carregando</span></div>
+        <div class="progress"><span id="loadBar"></span></div>
+        <div class="muted" style="font-size:.88rem" id="loadText">Baixando cancelamentos_sample.csv…</div>
+        <div id="fallback" hidden>
+          <div class="notice">Não foi possível ler o CSV automaticamente (comum ao abrir a página direto do disco, via <code>file://</code>). Escolha o arquivo <code>cancelamentos_sample.csv</code> desta pasta:</div>
+          <label class="btn btn-ghost btn-sm mt-1" for="csvIn">Escolher CSV</label>
+          <input type="file" id="csvIn" accept=".csv,text/csv" class="sr-only" />
+        </div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 24px;">
+      <div class="grid grid-4 reveal">
+        <div class="kpi"><div class="num" id="kRows">—</div><div class="lbl">Clientes na base</div></div>
+        <div class="kpi"><div class="num red" id="kRate">—</div><div class="lbl">Taxa de cancelamento</div></div>
+        <div class="kpi"><div class="num" id="kCanc">—</div><div class="lbl">Cancelaram</div></div>
+        <div class="kpi"><div class="num" id="kNull">—</div><div class="lbl">Linhas com dados vazios</div></div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 24px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Como cada coluna impacta o cancelamento</h3></div>
+        <div class="controls">
+          <div class="field">
+            <label for="colSel">Coluna</label>
+            <select class="input" id="colSel" disabled></select>
+          </div>
+          <div class="seg" role="group" aria-label="Modo do gráfico">
+            <button type="button" aria-pressed="true" data-mode="count">Contagem</button>
+            <button type="button" aria-pressed="false" data-mode="rate">% que cancelou</button>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="chart-wrap mt-2"><svg class="chart" id="chart" viewBox="0 0 900 360" role="img" aria-label="Histograma"></svg></div>
+        <p class="muted" id="chartNote" style="font-size:.88rem; margin: 8px 0 0"></p>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Simulador de ações</h3><button class="btn btn-ghost btn-sm" id="btnAll" type="button">Aplicar as 3 ações do notebook</button></div>
+        <div class="grid grid-2">
+          <div class="grid" style="gap:12px">
+            <label class="toggle">
+              <input type="checkbox" id="tMonthly" />
+              <div><h4>Acabar com o contrato mensal</h4><p>Todos os clientes do contrato <em>Monthly</em> cancelaram. Ação: descontos nos planos trimestral e anual.</p><div class="impact" id="iMonthly"></div></div>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="tCall" />
+              <div>
+                <h4>Ligações ao call center ≤ <span id="vCall">4</span></h4>
+                <p>Quem ligou mais de 4 vezes cancelou. Ação: alerta a partir da 3ª ligação.</p>
+                <input type="range" id="rCall" min="0" max="10" value="4" aria-label="Máximo de ligações" />
+                <div class="impact" id="iCall"></div>
+              </div>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="tLate" />
+              <div>
+                <h4>Dias de atraso ≤ <span id="vLate">20</span></h4>
+                <p>Quem atrasou mais de 20 dias cancelou. Ação: cobrança acionada aos 10 dias.</p>
+                <input type="range" id="rLate" min="0" max="30" value="20" aria-label="Máximo de dias de atraso" />
+                <div class="impact" id="iLate"></div>
+              </div>
+            </label>
+          </div>
+          <div>
+            <div class="grid grid-2">
+              <div class="kpi"><div class="num" id="sRate">—</div><div class="lbl">Taxa restante</div></div>
+              <div class="kpi"><div class="num ok" id="sDelta">—</div><div class="lbl">Redução (p.p.)</div></div>
+              <div class="kpi"><div class="num" id="sBase">—</div><div class="lbl">Clientes no cenário</div></div>
+              <div class="kpi"><div class="num" id="sCanc">—</div><div class="lbl">Ainda cancelariam</div></div>
+            </div>
+            <div class="compare mt-2">
+              <div><div class="lbl"><span>Hoje</span><span id="cNow">—</span></div><div class="track"><span id="barNow" style="background: var(--red)"></span></div></div>
+              <div><div class="lbl"><span>Com as ações</span><span id="cSim">—</span></div><div class="track"><span id="barSim" style="background: var(--grad)"></span></div></div>
+            </div>
+            <p class="muted mt-1" style="font-size:.85rem">Como no notebook, o cenário filtra a base retirando os grupos problemáticos e recalcula <code>value_counts(normalize=True)</code> da coluna <code>cancelou</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Do CSV às decisões</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Importar a base</h4><p><code>pd.read_csv("cancelamentos_sample.csv")</code> e remoção do <code>CustomerID</code>, que não ajuda a explicar nada.</p></div></div>
+            <div class="step"><div><h4>Tratar</h4><p><code>info()</code> revela poucas células vazias (sexo, tempo como cliente); <code>dropna()</code> elimina essas linhas.</p></div></div>
+            <div class="step"><div><h4>Medir</h4><p><code>value_counts(normalize=True)</code> mostra que 56,8% dos clientes cancelaram.</p></div></div>
+            <div class="step"><div><h4>Visualizar</h4><p>Um <code>px.histogram(x=coluna, color="cancelou")</code> por coluna expõe os padrões que esta página reproduz no gráfico acima.</p></div></div>
+            <div class="step"><div><h4>Simular as ações</h4><p>Filtrando contrato mensal, mais de 4 ligações e mais de 20 dias de atraso, a taxa cai para cerca de 18,4%.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Conclusões</span>
+          <h2>Três alavancas</h2>
+          <div class="grid mt-2" style="gap:16px">
+            <div class="insight"><h4>Contrato mensal</h4><p>100% dos clientes mensais cancelaram. Descontos em planos mais longos atacam o maior grupo.</p></div>
+            <div class="insight"><h4>Call center</h4><p>Acima de 4 ligações o cancelamento é total. Um alerta na 3ª ligação dá tempo de agir.</p></div>
+            <div class="insight"><h4>Atraso no pagamento</h4><p>Acima de 20 dias de atraso o cliente sai. A cobrança entra em contato aos 10 dias.</p></div>
+          </div>
+          <span class="eyebrow mt-3" style="display:inline-flex">Arquivos</span>
+          <ul class="files mt-1">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PYTHON%20INSIGHTS/inicial.ipynb" target="_blank" rel="noopener">inicial.ipynb <small>Notebook da análise</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PYTHON%20INSIGHTS/cancelamentos_sample.csv" target="_blank" rel="noopener">cancelamentos_sample.csv <small>50 mil clientes</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/PYTHON%20INSIGHTS/index.html" target="_blank" rel="noopener">index.html <small>Este dashboard</small></a></li>
+          </ul>
+<pre class="code mt-2">tabela = tabela[tabela["ligacoes_callcenter"] &lt;= 4]
+tabela = tabela[tabela["dias_atraso"] &lt;= 20]
+tabela = tabela[tabela["duracao_contrato"] != "Monthly"]
+display(tabela["cancelou"].value_counts(normalize=True))
+# 0.0    0.816452
+# 1.0    0.183548</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      var $ = function (id) { return document.getElementById(id); };
+      var SVGNS = "http://www.w3.org/2000/svg";
+      var LABELS = {
+        idade: "Idade", sexo: "Sexo", tempo_como_cliente: "Tempo como cliente (meses)", frequencia_uso: "Frequência de uso",
+        ligacoes_callcenter: "Ligações ao call center", dias_atraso: "Dias de atraso", assinatura: "Assinatura",
+        duracao_contrato: "Duração do contrato", total_gasto: "Total gasto", meses_ultima_interacao: "Meses desde a última interação"
+      };
+      var CATEGORICAL = { sexo: 1, assinatura: 1, duracao_contrato: 1 };
+      var data = null; // { n, cols: {nome: Float64Array | string[]}, cancel: Uint8Array }
+      var mode = "count";
+
+      function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+      function svg(tag, attrs, text) {
+        var e = document.createElementNS(SVGNS, tag);
+        for (var k in attrs) e.setAttribute(k, attrs[k]);
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      var nf = new Intl.NumberFormat("pt-BR");
+      function pct(x, d) { return (x * 100).toLocaleString("pt-BR", { minimumFractionDigits: d == null ? 1 : d, maximumFractionDigits: d == null ? 1 : d }) + "%"; }
+
+      // ---------- carregamento ----------
+      async function fetchWithProgress(url) {
+        var res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var total = +res.headers.get("Content-Length") || 3506160;
+        if (!res.body || !res.body.getReader) return res.text();
+        var reader = res.body.getReader(), chunks = [], got = 0;
+        while (true) {
+          var r = await reader.read();
+          if (r.done) break;
+          chunks.push(r.value); got += r.value.length;
+          $("loadBar").style.width = Math.min(100, got / total * 90) + "%";
+          $("loadText").textContent = "Baixando… " + (got / 1048576).toFixed(1) + " de " + (total / 1048576).toFixed(1) + " MB";
+        }
+        var all = new Uint8Array(got), off = 0;
+        chunks.forEach(function (c) { all.set(c, off); off += c.length; });
+        return new TextDecoder("utf-8").decode(all);
+      }
+
+      function parse(txt) {
+        $("loadText").textContent = "Processando linhas…";
+        var lines = txt.split(/\r?\n/);
+        var head = lines[0].split(",");
+        var n = 0;
+        for (var i = lines.length - 1; i > 0; i--) if (lines[i]) { n = i; break; }
+        var cols = {};
+        head.forEach(function (h) { cols[h] = CATEGORICAL[h] ? new Array(n) : new Float64Array(n); });
+        var nullRows = 0;
+        for (var r = 1; r <= n; r++) {
+          var p = lines[r].split(","), hasNull = false;
+          for (var c = 0; c < head.length; c++) {
+            var h = head[c], v = p[c];
+            if (v === undefined || v === "") hasNull = true;
+            if (CATEGORICAL[h]) cols[h][r - 1] = v || null;
+            else cols[h][r - 1] = v === undefined || v === "" ? NaN : +v;
+          }
+          if (hasNull) nullRows++;
+        }
+        var cancel = new Uint8Array(n);
+        for (var k = 0; k < n; k++) cancel[k] = cols.cancelou[k] === 1 ? 1 : 0;
+        delete cols.CustomerID; // tabela.drop(columns="CustomerID")
+        return { n: n, cols: cols, cancel: cancel, nullRows: nullRows };
+      }
+
+      function ready(d) {
+        data = d;
+        $("loadBar").style.width = "100%";
+        $("loadBadge").textContent = "pronto"; $("loadBadge").className = "badge ok";
+        $("loadText").textContent = nf.format(d.n) + " linhas carregadas. CustomerID removido, como no notebook.";
+        $("fallback").hidden = true;
+        var canc = 0; for (var i = 0; i < d.n; i++) canc += d.cancel[i];
+        $("kRows").textContent = nf.format(d.n);
+        $("kRate").textContent = pct(canc / d.n);
+        $("kCanc").textContent = nf.format(canc);
+        $("kNull").textContent = nf.format(d.nullRows);
+
+        var sel = $("colSel"); sel.replaceChildren();
+        Object.keys(d.cols).forEach(function (c) {
+          if (c === "cancelou") return;
+          var o = el("option", "", LABELS[c] || c); o.value = c; sel.append(o);
+        });
+        sel.value = "duracao_contrato";
+        sel.disabled = false;
+        drawChart(); simulate();
+      }
+
+      function failLoad() {
+        $("loadBadge").textContent = "ação necessária"; $("loadBadge").className = "badge err";
+        $("loadText").textContent = "Leitura automática indisponível.";
+        $("fallback").hidden = false;
+      }
+
+      $("csvIn").addEventListener("change", function (e) {
+        var f = e.target.files[0]; if (!f) return;
+        $("loadBadge").textContent = "carregando"; $("loadBadge").className = "badge warn";
+        f.text().then(function (t) {
+          var d = parse(t);
+          if (!d.cols.cancelou) throw new Error("coluna cancelou ausente");
+          ready(d);
+        }).catch(function () {
+          $("loadText").textContent = "Arquivo inválido: esperado o cancelamentos_sample.csv.";
+        });
+      });
+
+      // ---------- histograma ----------
+      function bins(col) {
+        var arr = data.cols[col], n = data.n, map = new Map();
+        if (CATEGORICAL[col]) {
+          for (var i = 0; i < n; i++) {
+            var v = arr[i]; if (v == null) continue;
+            var b = map.get(v) || [0, 0]; b[data.cancel[i]]++; map.set(v, b);
+          }
+          return Array.from(map.entries()).sort(function (a, b) { return String(a[0]).localeCompare(String(b[0])); })
+            .map(function (e) { return { label: e[0], c0: e[1][0], c1: e[1][1] }; });
+        }
+        var min = Infinity, max = -Infinity, uniq = new Set();
+        for (var j = 0; j < n; j++) { var x = arr[j]; if (isNaN(x)) continue; if (x < min) min = x; if (x > max) max = x; if (uniq.size <= 80) uniq.add(x); }
+        if (uniq.size <= 80) {
+          for (var k = 0; k < n; k++) {
+            var y = arr[k]; if (isNaN(y)) continue;
+            var bb = map.get(y) || [0, 0]; bb[data.cancel[k]]++; map.set(y, bb);
+          }
+          return Array.from(map.entries()).sort(function (a, b) { return a[0] - b[0]; })
+            .map(function (e) { return { label: String(e[0]), c0: e[1][0], c1: e[1][1] }; });
+        }
+        var nb = 25, w = (max - min) / nb || 1, out = [];
+        for (var q = 0; q < nb; q++) out.push({ label: Math.round(min + q * w) + "–" + Math.round(min + (q + 1) * w), c0: 0, c1: 0 });
+        for (var t = 0; t < n; t++) {
+          var z = arr[t]; if (isNaN(z)) continue;
+          var idx = Math.min(nb - 1, Math.floor((z - min) / w));
+          out[idx]["c" + data.cancel[t]]++;
+        }
+        return out;
+      }
+
+      function drawChart() {
+        if (!data) return;
+        var col = $("colSel").value, B = bins(col);
+        var W = 900, H = 360, m = { l: 56, r: 12, t: 16, b: 52 };
+        var cw = W - m.l - m.r, ch = H - m.t - m.b;
+        var s = $("chart"); s.replaceChildren();
+        s.setAttribute("aria-label", "Histograma de " + (LABELS[col] || col));
+        var maxV = 0;
+        B.forEach(function (b) {
+          var v = mode === "count" ? Math.max(b.c0, b.c1) : 1;
+          if (v > maxV) maxV = v;
+        });
+        maxV = maxV || 1;
+        // grade
+        for (var g = 0; g <= 4; g++) {
+          var gy = m.t + ch - ch * g / 4;
+          s.append(svg("line", { x1: m.l, x2: W - m.r, y1: gy, y2: gy, class: "grid" }));
+          var gv = maxV * g / 4;
+          s.append(svg("text", { x: m.l - 8, y: gy + 4, "text-anchor": "end", class: "tick" }, mode === "count" ? nf.format(Math.round(gv)) : Math.round(gv * 100) + "%"));
+        }
+        s.append(svg("line", { x1: m.l, x2: W - m.r, y1: m.t + ch, y2: m.t + ch, class: "axis" }));
+        var slot = cw / B.length, showVals = B.length <= 12;
+        var every = Math.ceil(B.length / 16);
+        B.forEach(function (b, i) {
+          var x0 = m.l + i * slot, tot = b.c0 + b.c1;
+          if (mode === "count") {
+            var bw = Math.max(1, slot * 0.4);
+            [["c0", "b0", "Não cancelou"], ["c1", "b1", "Cancelou"]].forEach(function (k, j) {
+              var v = b[k[0]], h = ch * v / maxV;
+              var x = x0 + slot * 0.1 + j * bw, y = m.t + ch - h;
+              var r = svg("rect", { x: x.toFixed(1), y: y.toFixed(1), width: bw.toFixed(1), height: Math.max(0, h).toFixed(1), rx: 2, class: k[1] });
+              r.append(svg("title", {}, (LABELS[col] || col) + " = " + b.label + " · " + k[2] + ": " + nf.format(v)));
+              s.append(r);
+              if (showVals && v) s.append(svg("text", { x: (x + bw / 2).toFixed(1), y: (y - 4).toFixed(1), "text-anchor": "middle", class: "val" }, nf.format(v)));
+            });
+          } else {
+            var rate = tot ? b.c1 / tot : 0, hh = ch * rate, bw2 = slot * 0.7, xx = x0 + slot * 0.15, yy = m.t + ch - hh;
+            var rr = svg("rect", { x: xx.toFixed(1), y: yy.toFixed(1), width: bw2.toFixed(1), height: hh.toFixed(1), rx: 2, class: rate >= 0.999 ? "b1" : "rate" });
+            rr.append(svg("title", {}, (LABELS[col] || col) + " = " + b.label + " · " + pct(rate) + " cancelou (" + nf.format(tot) + " clientes)"));
+            s.append(rr);
+            if (showVals) s.append(svg("text", { x: (xx + bw2 / 2).toFixed(1), y: (yy - 4).toFixed(1), "text-anchor": "middle", class: "val" }, pct(rate, 0)));
+          }
+          if (i % every === 0) {
+            s.append(svg("text", { x: (x0 + slot / 2).toFixed(1), y: m.t + ch + 18, "text-anchor": "middle", class: "tick" }, b.label));
+          }
+        });
+        s.append(svg("text", { x: m.l + cw / 2, y: H - 8, "text-anchor": "middle", class: "tick" }, LABELS[col] || col));
+
+        var lg = $("legend"); lg.replaceChildren();
+        function item(color, txt) { var sp = el("span"); var i = el("i"); i.style.background = color; sp.append(i, document.createTextNode(txt)); lg.append(sp); }
+        if (mode === "count") { item("var(--gold)", "Não cancelou (0)"); item("var(--red)", "Cancelou (1)"); }
+        else { item("var(--orange)", "% que cancelou"); item("var(--red)", "100% cancelou"); }
+
+        var full = B.filter(function (b) { return b.c0 === 0 && b.c1 > 0; }).map(function (b) { return b.label; });
+        $("chartNote").textContent = full.length
+          ? "Grupos em que todos cancelaram: " + (full.length > 8 ? full.slice(0, 8).join(", ") + "…" : full.join(", ")) + "."
+          : "Nenhum grupo desta coluna tem 100% de cancelamento.";
+      }
+
+      document.querySelectorAll(".seg button").forEach(function (b) {
+        b.addEventListener("click", function () {
+          mode = b.dataset.mode;
+          document.querySelectorAll(".seg button").forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+          drawChart();
+        });
+      });
+      $("colSel").addEventListener("change", drawChart);
+
+      // ---------- simulador ----------
+      function scenario(opts) {
+        var c = data.cols, n = data.n, base = 0, canc = 0;
+        for (var i = 0; i < n; i++) {
+          // Comparações com NaN são falsas no pandas: linhas vazias saem do filtro.
+          if (opts.call && !(c.ligacoes_callcenter[i] <= opts.callMax)) continue;
+          if (opts.late && !(c.dias_atraso[i] <= opts.lateMax)) continue;
+          if (opts.monthly && c.duracao_contrato[i] === "Monthly") continue;
+          base++; canc += data.cancel[i];
+        }
+        return { base: base, canc: canc, rate: base ? canc / base : 0 };
+      }
+      function opts() {
+        return {
+          monthly: $("tMonthly").checked,
+          call: $("tCall").checked, callMax: +$("rCall").value,
+          late: $("tLate").checked, lateMax: +$("rLate").value
+        };
+      }
+      function simulate() {
+        $("vCall").textContent = $("rCall").value;
+        $("vLate").textContent = $("rLate").value;
+        if (!data) return;
+        var o = opts();
+        var now = scenario({}), sim = scenario(o);
+        $("sRate").textContent = pct(sim.rate);
+        $("sDelta").textContent = "−" + ((now.rate - sim.rate) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+        $("sBase").textContent = nf.format(sim.base);
+        $("sCanc").textContent = nf.format(sim.canc);
+        $("cNow").textContent = pct(now.rate);
+        $("cSim").textContent = pct(sim.rate);
+        $("barNow").style.width = (now.rate * 100) + "%";
+        $("barSim").style.width = (sim.rate * 100) + "%";
+        var iso = [
+          ["iMonthly", { monthly: true }],
+          ["iCall", { call: true, callMax: o.callMax }],
+          ["iLate", { late: true, lateMax: o.lateMax }]
+        ];
+        iso.forEach(function (it) {
+          var r = scenario(it[1]);
+          $(it[0]).textContent = "Sozinha: " + pct(now.rate) + " → " + pct(r.rate) + " (" + nf.format(now.base - r.base) + " clientes fora)";
+        });
+      }
+      ["tMonthly", "tCall", "tLate", "rCall", "rLate"].forEach(function (id) { $(id).addEventListener("input", simulate); });
+      $("btnAll").addEventListener("click", function () {
+        $("tMonthly").checked = $("tCall").checked = $("tLate").checked = true;
+        $("rCall").value = 4; $("rLate").value = 20;
+        simulate();
+      });
+
+      fetchWithProgress("cancelamentos_sample.csv")
+        .then(function (t) { return new Promise(function (r) { setTimeout(function () { r(parse(t)); }, 20); }); })
+        .then(function (d) { if (!d.cols.cancelou) throw new Error("csv"); ready(d); })
+        .catch(failLoad);
+      simulate();
+    })();
+  </script>
+</body>
+</html>

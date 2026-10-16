@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produtora Monteiro · Produção audiovisual, eventos e fotografia</title>
+  <meta name="description" content="Produtora Monteiro: produção audiovisual, cobertura de eventos, fotografia e conteúdo para marcas, do roteiro à entrega final. Versão demonstrativa do site institucional." />
+  <meta name="theme-color" content="#0b0907" />
+  <link rel="canonical" href="https://produtoramonteiro.com/" />
+
+  <!-- Open Graph / redes sociais -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="Produtora Monteiro" />
+  <meta property="og:title" content="Produtora Monteiro · Produção audiovisual, eventos e fotografia" />
+  <meta property="og:description" content="Do roteiro à entrega final: vídeo institucional, cobertura de eventos, fotografia e conteúdo para redes sociais." />
+  <meta property="og:url" content="https://produtoramonteiro.com/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Produtora Monteiro" />
+  <meta name="twitter:description" content="Produção audiovisual, eventos e fotografia, do roteiro à entrega final." />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Produtora Monteiro",
+    "url": "https://produtoramonteiro.com/",
+    "description": "Produtora de conteúdo audiovisual: vídeo institucional, cobertura de eventos, fotografia e conteúdo para redes sociais.",
+    "knowsAbout": ["Produção audiovisual", "Cobertura de eventos", "Fotografia", "Edição de vídeo", "Conteúdo para redes sociais"],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "availableLanguage": ["Portuguese"]
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .grid > *, .step > div { min-width: 0; }
+    .step code, .lead code { overflow-wrap: anywhere; }
+    .demo-bar { padding-top: 18px; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 40px; align-items: center; padding: clamp(40px, 7vw, 90px) 0 50px; }
+    .hero h1 { max-width: 14ch; }
+    .hero-visual { position: relative; aspect-ratio: 4 / 5; border-radius: 28px; overflow: hidden; border: 1px solid var(--line-strong); box-shadow: var(--glow); }
+    .hero-visual .layer { position: absolute; inset: 0; }
+    .hv-1 { background: radial-gradient(120% 80% at 80% 10%, color-mix(in srgb, var(--orange) 70%, transparent), transparent 60%), radial-gradient(90% 70% at 10% 90%, color-mix(in srgb, var(--red) 65%, transparent), transparent 60%), linear-gradient(160deg, #1b120a, #0b0907); }
+    [data-theme="light"] .hv-1 { background: radial-gradient(120% 80% at 80% 10%, color-mix(in srgb, var(--orange) 55%, transparent), transparent 60%), radial-gradient(90% 70% at 10% 90%, color-mix(in srgb, var(--red) 45%, transparent), transparent 60%), linear-gradient(160deg, #f6e3c4, #f7f1e6); }
+    .hv-2 { background-image: repeating-linear-gradient(90deg, transparent 0 46px, rgba(255,255,255,.06) 46px 47px); }
+    .rec { position: absolute; top: 18px; left: 18px; display: inline-flex; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 999px; background: rgba(0,0,0,.45); color: #fff; font: 600 .75rem var(--font-mono); letter-spacing: .1em; }
+    .rec i { width: 9px; height: 9px; border-radius: 50%; background: var(--red); animation: blink 1.2s infinite; }
+    @keyframes blink { 50% { opacity: .2; } }
+    .frame { position: absolute; inset: 24px; border: 1px solid rgba(255,255,255,.25); border-radius: 18px; }
+    .frame::before, .frame::after { content: ""; position: absolute; width: 26px; height: 26px; border: 2px solid var(--gold); }
+    .frame::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-radius: 18px 0 0 0; }
+    .frame::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-radius: 0 0 18px 0; }
+    .play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 86px; height: 86px; border-radius: 50%; background: var(--grad); display: grid; place-items: center; box-shadow: 0 0 0 14px rgba(255,122,26,.18); }
+    .play svg { width: 30px; height: 30px; margin-left: 5px; }
+    .timecode { position: absolute; bottom: 18px; right: 18px; color: #fff; font: 600 .8rem var(--font-mono); background: rgba(0,0,0,.45); padding: 4px 10px; border-radius: 8px; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+
+    .svc { position: relative; overflow: hidden; transition: transform .25s ease, border-color .25s; }
+    .svc:hover { transform: translateY(-4px); border-color: var(--line-strong); }
+    .svc .ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--orange) 14%, transparent); color: var(--orange); margin-bottom: 16px; }
+    .svc .ico svg { width: 24px; height: 24px; }
+    .svc p { font-size: .93rem; margin: 0; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 22px; }
+    .filters button[aria-pressed="true"] { background: var(--grad); color: #1a0f04; border-color: transparent; }
+    .works { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .work { position: relative; border-radius: 20px; overflow: hidden; aspect-ratio: 4 / 3; border: 1px solid var(--line); isolation: isolate; }
+    .work.tall { grid-row: span 2; aspect-ratio: auto; }
+    .work .art { position: absolute; inset: 0; z-index: -1; transition: transform .6s ease; }
+    .work:hover .art { transform: scale(1.06); }
+    .work .cap { position: absolute; inset: auto 0 0 0; padding: 18px; background: linear-gradient(transparent, rgba(0,0,0,.75)); color: #fff; }
+    .work .cap h3 { margin: 0; font-size: 1.05rem; }
+    .work .cap span { font: 500 .74rem var(--font-mono); color: #f3d27a; text-transform: uppercase; letter-spacing: .08em; }
+    .work[hidden] { display: none; }
+    .a1 { background: radial-gradient(circle at 30% 30%, #ff7a1a, transparent 55%), radial-gradient(circle at 80% 70%, #e63946, transparent 50%), #1a0f08; }
+    .a2 { background: conic-gradient(from 200deg at 60% 40%, #e3b341, #ff7a1a, #e63946, #3a1a10, #e3b341); }
+    .a3 { background: linear-gradient(135deg, #2a1608 0%, #e63946 55%, #f3d27a 100%); }
+    .a4 { background: repeating-linear-gradient(45deg, #1d1209 0 18px, #261810 18px 36px), #1d1209; }
+    .a4::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(227,179,65,.75), transparent 45%); }
+    .a5 { background: radial-gradient(ellipse at 50% 120%, #ff7a1a, transparent 60%), linear-gradient(#0d0a08, #2b130b); }
+    .a6 { background: linear-gradient(200deg, #e3b341, #b3471c 60%, #2a120b); }
+
+    .process { counter-reset: p; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+    .process li { list-style: none; padding: 22px; border-radius: var(--radius-lg); border: 1px solid var(--line); background: var(--surface); position: relative; }
+    .process li::before { counter-increment: p; content: "0" counter(p); font: 800 2.2rem/1 var(--font-display); display: block; margin-bottom: 14px; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .process h3 { font-size: 1.08rem; }
+    .process p { font-size: .9rem; margin: 0; }
+
+    .contact { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 30px; align-items: start; }
+    .err-msg { color: var(--err); font-size: .8rem; min-height: 1em; }
+    .input[aria-invalid="true"] { border-color: var(--err); }
+    .ok-msg { color: var(--ok); font-weight: 600; }
+    .check { display: flex; gap: 10px; align-items: flex-start; font-size: .88rem; color: var(--text-2); }
+    .check input { margin-top: 4px; accent-color: var(--orange); }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+    @media (max-width: 900px) {
+      .hero, .contact { grid-template-columns: 1fr; }
+      .hero-visual { aspect-ratio: 16 / 10; }
+      .works { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .process { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .works, .process { grid-template-columns: 1fr; }
+      .work.tall { grid-row: auto; aspect-ratio: 4 / 3; }
+    }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="produtora-monteiro"></header>
+
+  <main>
+    <div class="container demo-bar">
+      <div class="notice" role="note">
+        <span aria-hidden="true">ⓘ</span>
+        <span><strong>Versão demonstrativa.</strong> Esta página recria a estrutura do portal institucional desenvolvido para a Produtora Monteiro, com conteúdo ilustrativo. O site oficial está em <a href="https://produtoramonteiro.com/" target="_blank" rel="noopener">produtoramonteiro.com</a>.</span>
+      </div>
+    </div>
+
+    <section class="container hero" aria-labelledby="hero-title">
+      <div>
+        <span class="eyebrow">Produtora audiovisual</span>
+        <h1 id="hero-title">Histórias que <span class="grad-text">ganham vida</span> em vídeo e foto</h1>
+        <p class="lead">Da ideia ao arquivo final: roteiro, captação, edição e entrega para marcas, eventos e projetos pessoais, com o cuidado de quem acompanha cada etapa.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#contato">Solicitar orçamento</a>
+          <a class="btn btn-ghost" href="#portfolio">Ver portfólio</a>
+        </div>
+        <div class="chips mt-2">
+          <span class="chip gold">Vídeo</span><span class="chip orange">Eventos</span><span class="chip red">Fotografia</span><span class="chip">Redes sociais</span>
+        </div>
+      </div>
+      <div class="hero-visual reveal" aria-hidden="true">
+        <div class="layer hv-1"></div>
+        <div class="layer hv-2"></div>
+        <div class="frame"></div>
+        <span class="rec"><i></i>REC</span>
+        <span class="play"><svg viewBox="0 0 24 24" fill="#1a0f04"><path d="M6 4l14 8-14 8z"/></svg></span>
+        <span class="timecode" id="tc">00:00:00:00</span>
+      </div>
+    </section>
+
+    <section class="section container" id="servicos" aria-labelledby="svc-title">
+      <span class="eyebrow">Serviços</span>
+      <h2 id="svc-title">O que a produtora entrega</h2>
+      <p class="lead">Uma equipe para o projeto inteiro, ou só para a etapa que você precisa.</p>
+      <div class="grid grid-3 mt-2">
+        <article class="card svc reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg></div>
+          <h3>Vídeo institucional</h3>
+          <p>Filmes que apresentam a empresa, o produto ou a equipe, com roteiro pensado para o público certo.</p>
+        </article>
+        <article class="card svc reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg></div>
+          <h3>Cobertura de eventos</h3>
+          <p>Captação de congressos, lançamentos, shows e celebrações, com aftermovie e cortes para divulgação.</p>
+        </article>
+        <article class="card svc reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          <h3>Fotografia</h3>
+          <p>Ensaios corporativos, produtos e eventos, com tratamento de cor e entrega em alta resolução.</p>
+        </article>
+        <article class="card svc reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></div>
+          <h3>Conteúdo para redes</h3>
+          <p>Reels, shorts e peças verticais produzidos em série, prontos para o calendário de publicação.</p>
+        </article>
+        <article class="card svc reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/><path d="M8 3v6M15 9v6M10 15v6"/></svg></div>
+          <h3>Edição e pós-produção</h3>
+          <p>Montagem, correção de cor, trilha, legendas e motion graphics para o material que você já tem.</p>
+        </article>
+        <article class="card svc reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10a7 7 0 0 1-14 0M12 17v5"/></svg></div>
+          <h3>Áudio e locução</h3>
+          <p>Captação de som direto, podcasts e locução para vídeos e campanhas.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container" id="portfolio" aria-labelledby="pf-title">
+      <span class="eyebrow">Portfólio</span>
+      <h2 id="pf-title">Tipos de trabalho</h2>
+      <p class="lead">Exemplos ilustrativos dos formatos produzidos. Os trabalhos reais estão no site oficial.</p>
+      <div class="filters" role="group" aria-label="Filtrar portfólio">
+        <button class="btn btn-ghost btn-sm" type="button" data-f="todos" aria-pressed="true">Todos</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-f="video" aria-pressed="false">Vídeo</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-f="eventos" aria-pressed="false">Eventos</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-f="foto" aria-pressed="false">Fotografia</button>
+      </div>
+      <div class="works">
+        <article class="work tall reveal" data-cat="video"><div class="art a1"></div><div class="cap"><span>Vídeo</span><h3>Filme institucional</h3></div></article>
+        <article class="work reveal" data-cat="eventos"><div class="art a2"></div><div class="cap"><span>Eventos</span><h3>Aftermovie de lançamento</h3></div></article>
+        <article class="work reveal" data-cat="foto"><div class="art a3"></div><div class="cap"><span>Fotografia</span><h3>Ensaio corporativo</h3></div></article>
+        <article class="work reveal" data-cat="video"><div class="art a4"></div><div class="cap"><span>Vídeo</span><h3>Série para redes sociais</h3></div></article>
+        <article class="work reveal" data-cat="eventos"><div class="art a5"></div><div class="cap"><span>Eventos</span><h3>Cobertura de show</h3></div></article>
+        <article class="work reveal" data-cat="foto"><div class="art a6"></div><div class="cap"><span>Fotografia</span><h3>Fotos de produto</h3></div></article>
+      </div>
+    </section>
+
+    <section class="section container" id="processo" aria-labelledby="pr-title">
+      <span class="eyebrow">Processo</span>
+      <h2 id="pr-title">Como um projeto acontece</h2>
+      <ol class="process mt-2" style="padding:0">
+        <li class="reveal"><h3>Briefing</h3><p>Conversa sobre objetivo, público, prazo e orçamento. Saímos com um escopo claro.</p></li>
+        <li class="reveal"><h3>Pré-produção</h3><p>Roteiro, decupagem, locações, equipe e cronograma de gravação.</p></li>
+        <li class="reveal"><h3>Captação</h3><p>Gravação e fotografia no dia combinado, com equipamento adequado ao formato.</p></li>
+        <li class="reveal"><h3>Pós e entrega</h3><p>Edição, cor, áudio e rodadas de ajuste até a versão final em cada formato.</p></li>
+      </ol>
+    </section>
+
+    <section class="section container" id="contato" aria-labelledby="ct-title">
+      <div class="contact">
+        <div class="reveal">
+          <span class="eyebrow">Contato</span>
+          <h2 id="ct-title">Vamos tirar seu projeto do papel?</h2>
+          <p class="lead">Conte o que você precisa. O formulário abre o seu aplicativo de e-mail com a mensagem pronta; nada é enviado para servidores nesta versão demonstrativa.</p>
+          <ul class="files mt-2">
+            <li><a href="https://produtoramonteiro.com/" target="_blank" rel="noopener">produtoramonteiro.com <small>Site oficial</small></a></li>
+          </ul>
+        </div>
+        <form class="card reveal" id="form" novalidate>
+          <div class="grid grid-2" style="gap: 0 16px">
+            <div class="field">
+              <label for="nome">Nome</label>
+              <input class="input" id="nome" name="nome" autocomplete="name" required minlength="2" maxlength="80" />
+              <span class="err-msg" id="e-nome"></span>
+            </div>
+            <div class="field">
+              <label for="email">E-mail</label>
+              <input class="input" id="email" name="email" type="email" autocomplete="email" required maxlength="120" />
+              <span class="err-msg" id="e-email"></span>
+            </div>
+            <div class="field">
+              <label for="tel">Telefone (opcional)</label>
+              <input class="input" id="tel" name="tel" type="tel" autocomplete="tel" maxlength="20" placeholder="(11) 90000-0000" />
+              <span class="err-msg" id="e-tel"></span>
+            </div>
+            <div class="field">
+              <label for="servico">Serviço</label>
+              <select class="input" id="servico" name="servico" required>
+                <option value="">Selecione…</option>
+                <option>Vídeo institucional</option>
+                <option>Cobertura de eventos</option>
+                <option>Fotografia</option>
+                <option>Conteúdo para redes</option>
+                <option>Edição e pós-produção</option>
+                <option>Áudio e locução</option>
+              </select>
+              <span class="err-msg" id="e-servico"></span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="msg">Mensagem</label>
+            <textarea class="input" id="msg" name="msg" required minlength="20" maxlength="1500" style="font-family: var(--font-body)" placeholder="Conte sobre o projeto, data e local."></textarea>
+            <span class="err-msg" id="e-msg"></span>
+          </div>
+          <div class="hp" aria-hidden="true"><label for="site">Site</label><input id="site" name="site" tabindex="-1" autocomplete="off" /></div>
+          <label class="check"><input type="checkbox" id="lgpd" required /> <span>Concordo em ser contatado sobre este pedido. Meus dados não serão usados para outros fins.</span></label>
+          <span class="err-msg" id="e-lgpd"></span>
+          <div class="row mt-1">
+            <button class="btn btn-primary" type="submit">Enviar pedido</button>
+            <span id="formStatus" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Sobre o projeto</span>
+          <h2>Portal institucional completo</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Full stack</h4><p>Site institucional com área de conteúdo e formulário de contato integrado ao back-end.</p></div></div>
+            <div class="step"><div><h4>SEO técnico</h4><p>Meta tags, Open Graph, dados estruturados (JSON-LD), URLs canônicas e HTML semântico.</p></div></div>
+            <div class="step"><div><h4>Banco de dados</h4><p>Pedidos de orçamento e conteúdo persistidos, com validação no servidor.</p></div></div>
+            <div class="step"><div><h4>Segurança</h4><p>Validação de entrada, proteção contra spam (honeypot) e HTTPS.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/produtora-monteiro/index.html" target="_blank" rel="noopener">index.html <small>Versão demonstrativa</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/produtora-monteiro/README.md" target="_blank" rel="noopener">README.md <small>Stack e decisões</small></a></li>
+            <li><a href="https://produtoramonteiro.com/" target="_blank" rel="noopener">produtoramonteiro.com <small>Site em produção</small></a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      var $ = function (id) { return document.getElementById(id); };
+      var TO = "matheusmgmgdossantos@gmail.com";
+
+      // Timecode do "monitor" do hero
+      var t0 = performance.now();
+      function pad(n) { return String(n).padStart(2, "0"); }
+      (function tc() {
+        var ms = performance.now() - t0, s = Math.floor(ms / 1000);
+        $("tc").textContent = pad(Math.floor(s / 3600)) + ":" + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60) + ":" + pad(Math.floor(ms / 1000 * 24) % 24);
+        requestAnimationFrame(tc);
+      })();
+
+      // Filtro do portfólio
+      var btns = document.querySelectorAll(".filters button");
+      btns.forEach(function (b) {
+        b.addEventListener("click", function () {
+          var f = b.dataset.f;
+          btns.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+          document.querySelectorAll(".work").forEach(function (w) { w.hidden = f !== "todos" && w.dataset.cat !== f; });
+        });
+      });
+
+      // Formulário: validação no cliente + mailto
+      var rules = {
+        nome: function (v) { return v.trim().length >= 2 ? "" : "Informe seu nome."; },
+        email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? "" : "Informe um e-mail válido."; },
+        tel: function (v) { return !v.trim() || /^[\d\s()+-]{8,20}$/.test(v.trim()) ? "" : "Telefone inválido."; },
+        servico: function (v) { return v ? "" : "Escolha um serviço."; },
+        msg: function (v) { return v.trim().length >= 20 ? "" : "Escreva pelo menos 20 caracteres."; }
+      };
+      function check(id) {
+        var input = $(id), err = rules[id](input.value);
+        $("e-" + id).textContent = err;
+        input.setAttribute("aria-invalid", err ? "true" : "false");
+        return !err;
+      }
+      Object.keys(rules).forEach(function (id) {
+        $(id).addEventListener("blur", function () { check(id); });
+        $(id).addEventListener("input", function () { if ($(id).getAttribute("aria-invalid") === "true") check(id); });
+      });
+
+      $("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var ok = Object.keys(rules).map(check).every(Boolean);
+        var lgpd = $("lgpd").checked;
+        $("e-lgpd").textContent = lgpd ? "" : "É preciso concordar para enviar.";
+        var status = $("formStatus");
+        status.className = ""; status.textContent = "";
+        if (!ok || !lgpd) {
+          var first = document.querySelector('[aria-invalid="true"]');
+          if (first) first.focus();
+          return;
+        }
+        if ($("site").value) return; // honeypot preenchido: provável robô
+        var subject = "Orçamento: " + $("servico").value + " · " + $("nome").value.trim();
+        var body = [
+          "Nome: " + $("nome").value.trim(),
+          "E-mail: " + $("email").value.trim(),
+          "Telefone: " + ($("tel").value.trim() || "não informado"),
+          "Serviço: " + $("servico").value,
+          "",
+          $("msg").value.trim()
+        ].join("\n");
+        window.location.href = "mailto:" + TO + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+        status.className = "ok-msg";
+        status.textContent = "Abrindo seu aplicativo de e-mail…";
+      });
+    })();
+  </script>
+</body>
+</html>
