@@ -1,51 +1,102 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle - TechBlack</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08070a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e3b341'/%3E%3Cstop offset='.55' stop-color='%23ff7a1a'/%3E%3Cstop offset='1' stop-color='%23e63946'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M17.5 5 8 18h7l-1.5 9L24 14h-7z' fill='%231a0f04'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script>try{var t=localStorage.getItem("techblack-theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:"dark")}catch(e){}</script>
+  <title>Painel administrativo · TechBlack</title>
+  <meta name="description" content="Painel administrativo demonstrativo da TechBlack: KPIs, produtos, estoque e pedidos.">
+  <meta name="robots" content="noindex">
 </head>
-<body class="admin">
-    <div class="admin-panel">
-        <h1>Painel de <span class="gold">Controle</span></h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Pedido ID</th>
-                    <th>Cliente</th>
-                    <th>Produto</th>
-                    <th>Endereço</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="orders-table">
-                <!-- Pedidos serão carregados via Firebase -->
-            </tbody>
-        </table>
+<body data-page="painel">
+  <div id="tb-header"></div>
+
+  <main>
+    <section class="page-head">
+      <div class="container">
+        <nav class="crumbs" aria-label="Você está em"><a href="index.html">Início</a><span aria-hidden="true">/</span><span>Painel</span></nav>
+        <h1>Painel administrativo</h1>
+        <p>Gerencie preços, estoque e pedidos. Painel demonstrativo: as alterações ficam salvas apenas neste navegador e aparecem na loja na hora.</p>
+      </div>
+    </section>
+
+    <div class="container admin">
+      <nav class="admin-side" aria-label="Seções do painel">
+        <div role="tablist" aria-label="Seções do painel" style="display:contents">
+        <button type="button" role="tab" id="tab-visao" aria-controls="panel-visao" data-tab="visao">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15v2M12 10v7M17 6v11"/></svg> Visão geral</button>
+        <button type="button" role="tab" id="tab-produtos" aria-controls="panel-produtos" data-tab="produtos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Produtos</button>
+        <button type="button" role="tab" id="tab-pedidos" aria-controls="panel-pedidos" data-tab="pedidos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg> Pedidos <span class="badge badge-hot" id="orders-count" style="margin-left:auto">0</span></button>
+        </div>
+        <hr>
+        <a href="index.html">← Ver loja</a>
+        <a href="produtos.html">Catálogo público</a>
+      </nav>
+
+      <div>
+        <!-- Visão geral -->
+        <section class="admin-panel" id="panel-visao" role="tabpanel" aria-labelledby="tab-visao">
+          <h2>Visão geral <span class="price-sub" id="today"></span></h2>
+          <div class="kpis" id="kpis"></div>
+          <div class="panel-grid">
+            <div class="box"><h3>Vendas por categoria</h3><div class="bars" id="bars"></div></div>
+            <div class="box"><h3>Estoque baixo (até 6 unidades)</h3><ul class="low-list" id="low-list"></ul></div>
+          </div>
+          <div class="box" style="margin-top:14px"><h3>Últimos pedidos</h3><div id="last-orders"></div></div>
+        </section>
+
+        <!-- Produtos -->
+        <section class="admin-panel" id="panel-produtos" role="tabpanel" aria-labelledby="tab-produtos" hidden>
+          <h2>Produtos <span class="price-sub" id="prod-count"></span></h2>
+          <div class="admin-tools">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <label class="sr-only" for="p-busca">Buscar produto</label>
+              <input class="input" id="p-busca" type="search" placeholder="Buscar produto...">
+            </div>
+            <label class="sr-only" for="p-cat">Categoria</label>
+            <select class="input" id="p-cat" style="width:auto"><option value="">Todas as categorias</option></select>
+            <button class="btn btn-ghost btn-sm" type="button" id="p-reset">Restaurar catálogo original</button>
+          </div>
+          <div class="table-wrap">
+            <table class="table" id="p-table">
+              <thead><tr><th>Produto</th><th>Categoria</th><th>Preço (R$)</th><th>Estoque</th><th>Destaque</th><th>Situação</th><th style="text-align:right">Ações</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Pedidos -->
+        <section class="admin-panel" id="panel-pedidos" role="tabpanel" aria-labelledby="tab-pedidos" hidden>
+          <h2>Pedidos</h2>
+          <div class="admin-tools">
+            <label class="sr-only" for="o-status">Filtrar por status</label>
+            <select class="input" id="o-status" style="width:auto">
+              <option value="">Todos os status</option>
+              <option>Aguardando pagamento</option><option>Pago</option><option>Enviado</option><option>Entregue</option><option>Cancelado</option>
+            </select>
+            <button class="btn btn-dark btn-sm" type="button" id="o-seed">Gerar pedidos de exemplo</button>
+            <button class="btn btn-ghost btn-sm" type="button" id="o-clear">Limpar pedidos</button>
+          </div>
+          <div id="o-wrap"></div>
+        </section>
+      </div>
     </div>
-    <script src="firebase.js"></script>
-    <script>
-        // Carregar pedidos do Firebase
-        async function loadOrders() {
-            const querySnapshot = await getDocs(collection(db, "pedidos"));
-            const tableBody = document.getElementById('orders-table');
-            
-            querySnapshot.forEach((doc) => {
-                const order = doc.data();
-                const row = `
-                    <tr>
-                        <td>${order.id}</td>
-                        <td>${order.cliente}</td>
-                        <td>${order.produto}</td>
-                        <td>${order.endereco}</td>
-                        <td><span class="status ${order.status.toLowerCase()}">${order.status}</span></td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-        }
-        loadOrders();
-    </script>
+  </main>
+
+  <div id="tb-footer"></div>
+
+  <script src="data/produtos.js"></script>
+  <script src="script.js"></script>
+  <script src="js/painel.js"></script>
+  <script src="../assets/js/hub.js" defer></script>
 </body>
 </html>

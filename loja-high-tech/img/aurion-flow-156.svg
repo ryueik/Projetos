@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" role="img">
+<defs>
+  <radialGradient id="bg" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#1d1712"/><stop offset=".6" stop-color="#0d0b0c"/><stop offset="1" stop-color="#060608"/></radialGradient>
+  <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5ad1ff" stop-opacity=".55"/><stop offset=".5" stop-color="#8a7dff" stop-opacity=".16"/><stop offset="1" stop-color="#8a7dff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  <linearGradient id="scr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ad1ff"/><stop offset=".55" stop-color="#8a7dff"/><stop offset="1" stop-color="#14070a"/></linearGradient>
+  <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5ad1ff"/><stop offset="1" stop-color="#8a7dff"/></linearGradient>
+  <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1f2f5"/><stop offset=".45" stop-color="#c3c7d0"/><stop offset="1" stop-color="#7d828e"/></linearGradient>
+       <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d5d8df"/><stop offset="1" stop-color="#8d929e"/></linearGradient>
+  <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#fff" stroke-opacity=".035"/></pattern>
+</defs>
+<rect width="600" height="450" fill="url(#bg)"/>
+<rect width="600" height="450" fill="url(#grid)"/>
+<circle cx="300" cy="215" r="210" fill="url(#glow)"/>
+<path d="M0 372 H600" stroke="#5ad1ff" stroke-opacity=".18"/>
+<ellipse cx="300" cy="380" rx="230" ry="20" fill="url(#floor)"/>
+<path d="M150 360 L250 120 h18 L170 360z" fill="url(#m2)"/>
+<g transform="skewX(-8) translate(40 0)">
+<rect x="160" y="96" width="330" height="214" rx="10" fill="url(#m)"/>
+<clipPath id="c168104"><rect x="168" y="104" width="314" height="194" rx="4"/></clipPath>
+<g clip-path="url(#c168104)">
+  <rect x="168" y="104" width="314" height="194" fill="url(#scr)"/>
+  <path d="M168 243.68 C 262.2 191.3, 356.4 288.29999999999995, 482 210.7 V 298 H 168 Z" fill="#000" fill-opacity=".28"/>
+  <path d="M168 270.84000000000003 C 277.9 239.79999999999998, 387.79999999999995 301.88, 482 255.32 V 298 H 168 Z" fill="#000" fill-opacity=".3"/>
+  <circle cx="412.92" cy="162.2" r="42.68" fill="#fff" fill-opacity=".12"/>
+  <rect x="193.12" y="131.16" width="106.76" height="8.73" rx="2" fill="#fff" fill-opacity=".85"/>
+  <rect x="193.12" y="150.56" width="69.08" height="5.819999999999999" rx="2" fill="#fff" fill-opacity=".45"/>
+  <rect x="168" y="104" width="314" height="194" fill="url(#shine)"/>
+</g>
+</g>
+<rect x="150" y="358" width="330" height="10" rx="5" fill="url(#m2)"/>
+</svg>

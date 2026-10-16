@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-16T18:50:49.902Z",
+  "updatedAt": "2026-10-16T22:57:53.931Z",
   "categories": {
     "rpa": "RPA & Automação",
     "web": "Web",
@@ -25,6 +25,7 @@
       "url": "https://github.com/ryueik/automatizer",
       "code": "https://github.com/ryueik/automatizer",
       "thumb": "assets/thumbs/automatizer.jpg",
+      "cover": "assets/covers/automatizer.jpg",
       "gallery": [
         "assets/thumbs/automatizer.jpg",
         "assets/thumbs/automatizer-editor.jpg"
@@ -32,6 +33,7 @@
       "origin": "externo",
       "featured": true,
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/automatizer.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/automatizer.jpg",
       "codeUrl": "https://github.com/ryueik/automatizer"
     },
     {
@@ -50,9 +52,11 @@
       "url": "https://omnilicit.vercel.app",
       "code": "https://github.com/ryueik/omnilicit",
       "thumb": "assets/thumbs/omnilicit.jpg",
+      "cover": "assets/covers/omnilicit.jpg",
       "origin": "externo",
       "featured": true,
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/omnilicit.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/omnilicit.jpg",
       "codeUrl": "https://github.com/ryueik/omnilicit"
     },
     {
@@ -68,8 +72,10 @@
       ],
       "path": "sharepoint-planilhas-etl/",
       "thumb": "assets/thumbs/sharepoint-planilhas-etl.jpg",
+      "cover": "assets/covers/sharepoint-planilhas-etl.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/sharepoint-planilhas-etl.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/sharepoint-planilhas-etl.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/sharepoint-planilhas-etl"
     },
     {
@@ -85,8 +91,10 @@
       ],
       "path": "sharepoint-import-pipeline/",
       "thumb": "assets/thumbs/sharepoint-import-pipeline.jpg",
+      "cover": "assets/covers/sharepoint-import-pipeline.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/sharepoint-import-pipeline.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/sharepoint-import-pipeline.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/sharepoint-import-pipeline"
     },
     {
@@ -102,8 +110,10 @@
       ],
       "path": "consulta-medicos-api/",
       "thumb": "assets/thumbs/consulta-medicos-api.jpg",
+      "cover": "assets/covers/consulta-medicos-api.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/consulta-medicos-api.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/consulta-medicos-api.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/consulta-medicos-api"
     },
     {
@@ -120,8 +130,10 @@
       ],
       "path": "crm-scraper/",
       "thumb": "assets/thumbs/crm-scraper.jpg",
+      "cover": "assets/covers/crm-scraper.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/crm-scraper.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/crm-scraper.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/crm-scraper"
     },
     {
@@ -137,8 +149,10 @@
       ],
       "path": "PDF-Splitter-Utility/",
       "thumb": "assets/thumbs/pdf-splitter.jpg",
+      "cover": "assets/covers/pdf-splitter.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/pdf-splitter.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/pdf-splitter.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/PDF-Splitter-Utility"
     },
     {
@@ -154,8 +168,10 @@
       ],
       "path": "limpeza-arquivos/",
       "thumb": "assets/thumbs/limpeza-arquivos.jpg",
+      "cover": "assets/covers/limpeza-arquivos.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/limpeza-arquivos.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/limpeza-arquivos.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/limpeza-arquivos"
     },
     {
@@ -170,8 +186,10 @@
       ],
       "path": "sharepoint-delecao-lote/",
       "thumb": "assets/thumbs/sharepoint-delecao-lote.jpg",
+      "cover": "assets/covers/sharepoint-delecao-lote.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/sharepoint-delecao-lote.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/sharepoint-delecao-lote.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/sharepoint-delecao-lote"
     },
     {
@@ -186,8 +204,10 @@
       ],
       "path": "registro-ponto/",
       "thumb": "assets/thumbs/registro-ponto.jpg",
+      "cover": "assets/covers/registro-ponto.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/registro-ponto.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/registro-ponto.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/registro-ponto"
     },
     {
@@ -204,8 +224,10 @@
       "path": "produtora-monteiro/",
       "url": "https://produtoramonteiro.com/",
       "thumb": "assets/thumbs/produtora-monteiro.jpg",
+      "cover": "assets/covers/produtora-monteiro.jpg",
       "origin": "portfolio",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/produtora-monteiro.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/produtora-monteiro.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/produtora-monteiro"
     },
     {
@@ -221,8 +243,10 @@
       ],
       "path": "PYTHON INSIGHTS/",
       "thumb": "assets/thumbs/python-insights.jpg",
+      "cover": "assets/covers/python-insights.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/python-insights.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/python-insights.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/PYTHON%20INSIGHTS"
     },
     {
@@ -238,61 +262,73 @@
       ],
       "path": "PYTHON POWERUP/",
       "thumb": "assets/thumbs/python-powerup.jpg",
+      "cover": "assets/covers/python-powerup.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/python-powerup.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/python-powerup.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/PYTHON%20POWERUP"
     },
     {
       "slug": "codequest",
       "title": "CodeQuest",
-      "desc": "Jogo de desafios de programação web (HTML, CSS e JavaScript) com fases e pontuação.",
+      "desc": "Jogo de 10 desafios de programação web com vidas, pontuação, atalhos de teclado e ranking final.",
       "category": "jogos",
       "tags": [
         "JavaScript",
+        "Jogo",
         "HTML",
         "CSS"
       ],
       "path": "CodeQuest/",
       "thumb": "assets/thumbs/codequest.jpg",
+      "cover": "assets/covers/codequest.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/codequest.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/codequest.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/CodeQuest"
     },
     {
       "slug": "loja-high-tech",
       "title": "TechBlack · Loja High-Tech",
-      "desc": "Simulação de loja virtual com catálogo, carrinho, checkout e painel administrativo.",
+      "desc": "Loja de eletrônicos com 24 produtos, filtros, carrinho com frete e cupom, checkout com Pix, comprovante em PDF e painel de pedidos.",
       "category": "ecommerce",
       "tags": [
-        "HTML",
-        "CSS",
-        "JavaScript"
+        "JavaScript",
+        "E-commerce",
+        "Checkout",
+        "Dashboard"
       ],
       "path": "loja-high-tech/",
       "thumb": "assets/thumbs/loja-high-tech.jpg",
+      "cover": "assets/covers/loja-high-tech.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/loja-high-tech.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/loja-high-tech.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/loja-high-tech"
     },
     {
       "slug": "brecho",
       "title": "Brechó da Família Guimarães",
-      "desc": "Vitrine de brechó vintage com página de produtos.",
+      "desc": "Loja de brechó com 26 peças únicas, filtros por categoria, tamanho e década, sacola e reserva pelo WhatsApp.",
       "category": "ecommerce",
       "tags": [
-        "HTML",
-        "CSS"
+        "JavaScript",
+        "E-commerce",
+        "WhatsApp",
+        "Responsivo"
       ],
       "path": "brecho/",
       "thumb": "assets/thumbs/brecho.jpg",
+      "cover": "assets/covers/brecho.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/brecho.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/brecho.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/brecho"
     },
     {
       "slug": "cria-web",
       "title": "CriaWeb · Criação de Sites",
-      "desc": "Landing page de agência de criação de sites.",
+      "desc": "Landing page de agência de sites com portfólio, planos e formulário que envia o pedido pelo WhatsApp ou e-mail.",
       "category": "web",
       "tags": [
         "HTML",
@@ -301,14 +337,16 @@
       ],
       "path": "Cria Web/",
       "thumb": "assets/thumbs/cria-web.jpg",
+      "cover": "assets/covers/cria-web.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/cria-web.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/cria-web.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/Cria%20Web"
     },
     {
       "slug": "geeksforgeeks-clone",
       "title": "GeeksforGeeks Clone",
-      "desc": "Clone do portal com tutoriais, blog, fórum, login e cadastro.",
+      "desc": "Clone do portal com tutoriais, blog com editor e prévia, fórum e comentários salvos no navegador, login e cadastro.",
       "category": "web",
       "tags": [
         "HTML",
@@ -317,38 +355,45 @@
       ],
       "path": "GeeksforGeeks-clone/",
       "thumb": "assets/thumbs/geeksforgeeks-clone.jpg",
+      "cover": "assets/covers/geeksforgeeks-clone.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/geeksforgeeks-clone.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/geeksforgeeks-clone.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/GeeksforGeeks-clone"
     },
     {
       "slug": "to-do-up",
       "title": "To-Do Up",
-      "desc": "Lista de tarefas com animações e armazenamento local.",
+      "desc": "Lista de tarefas com prioridade, prazo, filtros, busca, arrastar para reordenar e desfazer exclusão.",
       "category": "web",
       "tags": [
         "JavaScript"
       ],
       "path": "to-do up/",
       "thumb": "assets/thumbs/to-do-up.jpg",
+      "cover": "assets/covers/to-do-up.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/to-do-up.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/to-do-up.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/to-do%20up"
     },
     {
       "slug": "weather-app",
       "title": "Weather App",
-      "desc": "Previsão do tempo por cidade consumindo a API do OpenWeather.",
+      "desc": "Previsão do tempo com busca de cidade, localização, próximas 24 horas e 7 dias, via Open-Meteo.",
       "category": "web",
       "tags": [
         "JavaScript",
-        "API REST",
+        "Open-Meteo",
+        "Geolocalização",
         "Python"
       ],
       "path": "Weather App/",
       "thumb": "assets/thumbs/weather-app.jpg",
+      "cover": "assets/covers/weather-app.jpg",
       "origin": "repo",
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/weather-app.jpg",
+      "coverUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/covers/weather-app.jpg",
       "codeUrl": "https://github.com/ryueik/Projetos/tree/main/Weather%20App"
     }
   ]

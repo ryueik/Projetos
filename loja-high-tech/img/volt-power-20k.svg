@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" role="img">
+<defs>
+  <radialGradient id="bg" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#1d1712"/><stop offset=".6" stop-color="#0d0b0c"/><stop offset="1" stop-color="#060608"/></radialGradient>
+  <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2fe0a6" stop-opacity=".55"/><stop offset=".5" stop-color="#5ad1ff" stop-opacity=".16"/><stop offset="1" stop-color="#5ad1ff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  <linearGradient id="scr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2fe0a6"/><stop offset=".55" stop-color="#5ad1ff"/><stop offset="1" stop-color="#14070a"/></linearGradient>
+  <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2fe0a6"/><stop offset="1" stop-color="#5ad1ff"/></linearGradient>
+  <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3a44"/><stop offset=".5" stop-color="#1d1d24"/><stop offset="1" stop-color="#0b0b10"/></linearGradient>
+       <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c2c35"/><stop offset="1" stop-color="#101016"/></linearGradient>
+  <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#fff" stroke-opacity=".035"/></pattern>
+</defs>
+<rect width="600" height="450" fill="url(#bg)"/>
+<rect width="600" height="450" fill="url(#grid)"/>
+<circle cx="300" cy="215" r="210" fill="url(#glow)"/>
+<path d="M0 372 H600" stroke="#2fe0a6" stroke-opacity=".18"/>
+<ellipse cx="300" cy="380" rx="230" ry="20" fill="url(#floor)"/>
+<g transform="rotate(-10 300 230)">
+<rect x="170" y="110" width="260" height="230" rx="30" fill="url(#m)"/>
+<rect x="196" y="140" width="110" height="64" rx="12" fill="#050507"/>
+<text x="251" y="186" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="36" fill="url(#acc)">98%</text>
+<g fill="url(#acc)"><circle cx="340" cy="172" r="7"/><circle cx="364" cy="172" r="7"/><circle cx="388" cy="172" r="7"/><circle cx="412" cy="172" r="7" fill-opacity=".3"/></g>
+<rect x="196" y="300" width="208" height="8" rx="4" fill="url(#acc)" opacity=".85"/>
+<rect x="170" y="110" width="260" height="230" rx="30" fill="url(#shine)"/></g>
+</svg>

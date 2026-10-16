@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08070a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e3b341'/%3E%3Cstop offset='.55' stop-color='%23ff7a1a'/%3E%3Cstop offset='1' stop-color='%23e63946'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M17.5 5 8 18h7l-1.5 9L24 14h-7z' fill='%231a0f04'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script>try{var t=localStorage.getItem("techblack-theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:"dark")}catch(e){}</script>
+  <title>Produtos · TechBlack</title>
+  <meta name="description" content="Catálogo TechBlack com filtros por categoria, faixa de preço, busca e ordenação.">
+</head>
+<body data-page="produtos">
+  <div id="tb-header"></div>
+
+  <main>
+    <section class="page-head">
+      <div class="container">
+        <nav class="crumbs" aria-label="Você está em"><a href="index.html">Início</a><span aria-hidden="true">/</span><span id="crumb-cur">Produtos</span></nav>
+        <h1 id="page-title">Catálogo</h1>
+        <p id="page-sub">Tecnologia selecionada com garantia, nota fiscal e até 12x sem juros.</p>
+      </div>
+    </section>
+
+    <div class="container shop">
+      <div class="scrim" id="scrim" hidden></div>
+      <aside class="filters" id="filters" aria-label="Filtros">
+        <div class="filters-head">
+          <h2>Filtros</h2>
+          <button class="icon-btn" type="button" id="filters-close" aria-label="Fechar filtros">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+        <div>
+          <h3>Categoria</h3>
+          <div class="cat-list" id="cat-list" role="radiogroup" aria-label="Categoria"></div>
+        </div>
+        <div>
+          <h3>Faixa de preço</h3>
+          <div class="price-row">
+            <label class="sr-only" for="pmin">Preço mínimo</label>
+            <input class="input" id="pmin" type="number" min="0" step="50" placeholder="Mín. R$" inputmode="numeric">
+            <label class="sr-only" for="pmax">Preço máximo</label>
+            <input class="input" id="pmax" type="number" min="0" step="50" placeholder="Máx. R$" inputmode="numeric">
+          </div>
+          <div class="chips" id="price-chips">
+            <button class="chip" type="button" data-min="" data-max="500">Até R$ 500</button>
+            <button class="chip" type="button" data-min="500" data-max="2000">R$ 500 a 2 mil</button>
+            <button class="chip" type="button" data-min="2000" data-max="5000">R$ 2 a 5 mil</button>
+            <button class="chip" type="button" data-min="5000" data-max="">Acima de 5 mil</button>
+          </div>
+        </div>
+        <div>
+          <h3>Mais filtros</h3>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <label class="check"><input type="checkbox" id="f-ofertas"> Somente ofertas</label>
+            <label class="check"><input type="checkbox" id="f-estoque"> Somente em estoque</label>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-block" type="button" id="clear-all">Limpar filtros</button>
+      </aside>
+
+      <section aria-labelledby="page-title">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <label class="sr-only" for="busca">Buscar produtos</label>
+            <input class="input" id="busca" type="search" placeholder="Buscar notebook, fone, 4K..." autocomplete="off">
+          </div>
+          <button class="btn btn-dark filter-open" type="button" id="filters-open" aria-controls="filters" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+            Filtros
+          </button>
+          <label class="sr-only" for="ordem">Ordenar por</label>
+          <select class="input" id="ordem">
+            <option value="relevancia">Mais relevantes</option>
+            <option value="menor">Menor preço</option>
+            <option value="maior">Maior preço</option>
+            <option value="avaliacao">Mais bem avaliados</option>
+            <option value="desconto">Maior desconto</option>
+            <option value="nome">Nome (A–Z)</option>
+          </select>
+        </div>
+        <div class="result-info" id="result-info" aria-live="polite"></div>
+        <div class="product-grid" id="grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="tb-footer"></div>
+
+  <script src="data/produtos.js"></script>
+  <script src="script.js"></script>
+  <script src="js/produtos.js"></script>
+  <script src="../assets/js/hub.js" defer></script>
+</body>
+</html>

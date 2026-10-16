@@ -171,9 +171,9 @@ window.PROJECTS = [
   {
     slug: "loja-high-tech",
     title: "TechBlack · Loja High-Tech",
-    desc: "Simulação de loja virtual com catálogo, carrinho, checkout e painel administrativo.",
+    desc: "Loja de eletrônicos com 24 produtos, filtros, carrinho com frete e cupom, checkout com Pix, comprovante em PDF e painel de pedidos.",
     category: "ecommerce",
-    tags: ["HTML", "CSS", "JavaScript"],
+    tags: ["JavaScript", "E-commerce", "Checkout", "Dashboard"],
     path: "loja-high-tech/",
     thumb: "assets/thumbs/loja-high-tech.jpg",
     cover: "assets/covers/loja-high-tech.jpg",

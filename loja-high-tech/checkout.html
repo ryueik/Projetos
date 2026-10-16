@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08070a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e3b341'/%3E%3Cstop offset='.55' stop-color='%23ff7a1a'/%3E%3Cstop offset='1' stop-color='%23e63946'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M17.5 5 8 18h7l-1.5 9L24 14h-7z' fill='%231a0f04'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script>try{var t=localStorage.getItem("techblack-theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:"dark")}catch(e){}</script>
+  <title>Finalizar compra · TechBlack</title>
+  <meta name="description" content="Checkout TechBlack com Pix, cartão e boleto simulados.">
+</head>
+<body data-page="checkout">
+  <div id="tb-header"></div>
+
+  <main>
+    <section class="page-head no-print">
+      <div class="container">
+        <nav class="crumbs" aria-label="Você está em"><a href="index.html">Início</a><span aria-hidden="true">/</span><a href="carrinho.html">Carrinho</a><span aria-hidden="true">/</span><span>Checkout</span></nav>
+        <h1 id="co-title">Finalizar compra</h1>
+        <ol class="steps" aria-label="Etapas da compra">
+          <li class="on"><b>1</b> Carrinho</li>
+          <li class="on" id="step-2"><b>2</b> Identificação e pagamento</li>
+          <li id="step-3"><b>3</b> Confirmação</li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="container">
+      <!-- Formulário -->
+      <div id="checkout-area" class="cart-layout">
+        <form id="co-form" novalidate>
+          <div class="demo-note" style="margin-bottom:18px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <div><strong>Ambiente de demonstração.</strong> Pix, cartão e boleto são simulados: nenhum pagamento é processado e nenhum dado sai do seu navegador.
+              <button type="button" class="link-btn" id="fill-demo" style="color:var(--gold-text)">Preencher com dados de exemplo</button></div>
+          </div>
+
+          <section class="card-block" aria-labelledby="h-dados">
+            <h2 id="h-dados"><span class="n">1</span> Seus dados</h2>
+            <div class="form-grid">
+              <div class="field col-6"><label for="nome">Nome completo</label><input id="nome" name="nome" autocomplete="name" required><span class="err" id="nome-err"></span></div>
+              <div class="field col-3 full-xs"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" required><span class="err" id="email-err"></span></div>
+              <div class="field col-3 full-xs"><label for="tel">Celular / WhatsApp</label><input id="tel" name="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" required><span class="err" id="tel-err"></span></div>
+              <div class="field col-3 full-xs"><label for="cpf">CPF</label><input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required><span class="err" id="cpf-err"></span></div>
+            </div>
+          </section>
+
+          <section class="card-block" aria-labelledby="h-end">
+            <h2 id="h-end"><span class="n">2</span> Endereço de entrega</h2>
+            <div class="form-grid">
+              <div class="field col-2"><label for="cep">CEP</label><input id="cep" name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" required><span class="err" id="cep-err"></span></div>
+              <div class="field col-4"><label for="rua">Rua / Avenida</label><input id="rua" name="rua" autocomplete="address-line1" required><span class="err" id="rua-err"></span></div>
+              <div class="field col-2"><label for="numero">Número</label><input id="numero" name="numero" inputmode="numeric" required><span class="err" id="numero-err"></span></div>
+              <div class="field col-4"><label for="comp">Complemento <span class="muted">(opcional)</span></label><input id="comp" name="comp" autocomplete="address-line2"></div>
+              <div class="field col-2 full-xs"><label for="bairro">Bairro</label><input id="bairro" name="bairro" required><span class="err" id="bairro-err"></span></div>
+              <div class="field col-4"><label for="cidade">Cidade</label><input id="cidade" name="cidade" autocomplete="address-level2" required><span class="err" id="cidade-err"></span></div>
+              <div class="field col-2"><label for="uf">UF</label>
+                <select id="uf" name="uf" required>
+                  <option value="">--</option>
+                  <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
+                </select><span class="err" id="uf-err"></span></div>
+            </div>
+            <div class="ship-opts" id="ship-opts" style="margin-top:16px" role="radiogroup" aria-label="Opções de entrega"></div>
+          </section>
+
+          <section class="card-block" aria-labelledby="h-pag">
+            <h2 id="h-pag"><span class="n">3</span> Pagamento <span class="badge badge-low" style="margin-left:auto">Simulado</span></h2>
+            <div class="pay-tabs" role="radiogroup" aria-label="Forma de pagamento">
+              <label class="pay-tab"><input type="radio" name="pag" value="pix" checked>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 4.5 4.5L12 11 7.5 6.5zM12 13l4.5 4.5L12 22l-4.5-4.5zM2 12l4.5-4.5L11 12l-4.5 4.5zM13 12l4.5-4.5L22 12l-4.5 4.5z"/></svg>
+                <span><strong>Pix</strong><br><small>5% de desconto · aprovação imediata</small></span></label>
+              <label class="pay-tab"><input type="radio" name="pag" value="cartao">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>
+                <span><strong>Cartão de crédito</strong><br><small>até 12x sem juros</small></span></label>
+              <label class="pay-tab"><input type="radio" name="pag" value="boleto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 5v14M6 5v14M10 5v14M13 5v14M17 5v14M21 5v14"/></svg>
+                <span><strong>Boleto</strong><br><small>vence em 3 dias úteis</small></span></label>
+            </div>
+
+            <div class="pay-panel" data-pay="pix">
+              <p class="hint">Após confirmar, geramos um QR Code Pix de demonstração com o código “copia e cola”. O desconto de 5% já aparece no resumo.</p>
+            </div>
+            <div class="pay-panel" data-pay="cartao" hidden>
+              <div class="form-grid">
+                <div class="field col-6"><label for="cc-num">Número do cartão</label><input id="cc-num" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000"><span class="err" id="cc-num-err"></span></div>
+                <div class="field col-6"><label for="cc-nome">Nome impresso no cartão</label><input id="cc-nome" autocomplete="cc-name"><span class="err" id="cc-nome-err"></span></div>
+                <div class="field col-2"><label for="cc-val">Validade</label><input id="cc-val" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA"><span class="err" id="cc-val-err"></span></div>
+                <div class="field col-2"><label for="cc-cvv">CVV</label><input id="cc-cvv" inputmode="numeric" autocomplete="cc-csc" placeholder="123"><span class="err" id="cc-cvv-err"></span></div>
+                <div class="field col-2 full-xs"><label for="cc-parc">Parcelas</label><select id="cc-parc"></select></div>
+              </div>
+              <p class="hint" style="margin-top:12px">Use o cartão de teste <strong>4111 1111 1111 1111</strong>, qualquer validade futura e CVV.</p>
+            </div>
+            <div class="pay-panel" data-pay="boleto" hidden>
+              <p class="hint">O boleto de demonstração é gerado na confirmação com linha digitável fictícia. Compensação simulada em até 2 dias úteis.</p>
+            </div>
+          </section>
+
+          <label class="check" style="margin-top:18px"><input type="checkbox" id="termos"> Li e concordo que este é um pedido de demonstração, sem cobrança real.</label>
+          <p class="msg bad" id="termos-err" style="margin-top:6px"></p>
+        </form>
+
+        <aside class="summary" aria-labelledby="sum-title">
+          <h2 id="sum-title">Resumo</h2>
+          <div class="mini-items" id="mini-items"></div>
+          <div>
+            <div class="sum-row"><span>Subtotal</span><span id="s-sub"></span></div>
+            <div class="sum-row discount" id="row-cupom" hidden><span id="s-cupom-l"></span><span id="s-cupom"></span></div>
+            <div class="sum-row"><span>Frete</span><span id="s-frete"></span></div>
+            <div class="sum-row discount" id="row-pix" hidden><span>Desconto Pix (5%)</span><span id="s-pix"></span></div>
+          </div>
+          <div class="sum-total"><span>Total</span><strong id="s-total"></strong></div>
+          <p class="price-sub" id="s-parc"></p>
+          <button class="btn btn-primary btn-block" type="submit" form="co-form" id="confirm-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg>
+            Confirmar pedido</button>
+          <a class="btn btn-ghost btn-block btn-sm" href="carrinho.html">Voltar ao carrinho</a>
+        </aside>
+      </div>
+
+      <!-- Carrinho vazio / pedido não encontrado -->
+      <div id="empty-area" hidden style="padding:40px 0 80px"></div>
+
+      <!-- Confirmação e comprovante -->
+      <section class="confirm" id="confirm-area" hidden aria-live="polite"></section>
+    </div>
+  </main>
+
+  <div id="tb-footer"></div>
+
+  <script src="data/produtos.js"></script>
+  <script src="script.js"></script>
+  <script src="js/comprovante.js"></script>
+  <script src="js/checkout.js"></script>
+  <script src="../assets/js/hub.js" defer></script>
+</body>
+</html>

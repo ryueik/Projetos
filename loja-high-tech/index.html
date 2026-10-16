@@ -1,61 +1,181 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechBlack - Loja High-Tech</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08070a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e3b341'/%3E%3Cstop offset='.55' stop-color='%23ff7a1a'/%3E%3Cstop offset='1' stop-color='%23e63946'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M17.5 5 8 18h7l-1.5 9L24 14h-7z' fill='%231a0f04'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script>try{var t=localStorage.getItem("techblack-theme");document.documentElement.setAttribute("data-theme",t==="light"||t==="dark"?t:"dark")}catch(e){}</script>
+  <title>TechBlack · Loja High-Tech</title>
+  <meta name="description" content="TechBlack: notebooks, smartphones, fones, smartwatches, monitores, periféricos e consoles com até 12x sem juros. Loja demonstrativa.">
 </head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <span class="gold">Tech</span>Black
-        </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Início</a></li>
-                <li><a href="produtos.html">Produtos</a></li>
-                <li><a href="#contato">Contato</a></li>
-                <li><a href="painel.html" class="admin-btn">Painel</a></li>
-            </ul>
-        </nav>
-        <div class="cart-icon">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="cart-count">0</span>
-        </div>
-        <div class="menu-toggle">
-            <i class="fas fa-bars"></i>
-        </div>
-    </header>
+<body data-page="home">
+  <div id="tb-header"></div>
 
-    <!-- Hero Section -->
+  <main>
+    <!-- Hero -->
     <section class="hero">
-        <div class="hero-content">
-            <h1>Bem-vindo à <span class="gold">TechBlack</span></h1>
-            <p>As melhores tecnologias em um só lugar.</p>
-            <a href="produtos.html" class="btn">Explorar Produtos</a>
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow"><b>NOVO</b> Coleção 2026 de notebooks e smartphones</span>
+          <h1>Tecnologia de ponta, <span class="grad-text">no seu ritmo.</span></h1>
+          <p class="lead">Notebooks, smartphones, áudio e setup gamer selecionados a dedo. Até 12x sem juros, 5% off no Pix e entrega para todo o Brasil.</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="produtos.html">Explorar produtos
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn btn-ghost" href="#ofertas">Ver ofertas do dia</a>
+          </div>
+          <div class="hero-stats">
+            <div><strong id="stat-produtos">24</strong><span>produtos no catálogo</span></div>
+            <div><strong>12x</strong><span>sem juros no cartão</span></div>
+            <div><strong>4,8★</strong><span>nota média dos clientes</span></div>
+          </div>
         </div>
-        <div class="hero-img">
-            <img src="https://via.placeholder.com/600x400" alt="Produto Destaque">
+        <div class="hero-visual">
+          <a class="hero-frame" href="produto.html?id=nexa-book-pro-14" aria-label="Ver Nexa Book Pro 14">
+            <img src="img/nexa-book-pro-14.svg" alt="Notebook Nexa Book Pro 14" width="600" height="450">
+          </a>
+          <a class="float-card fc-1" href="produto.html?id=kairo-x12-ultra">
+            <img src="img/kairo-x12-ultra.svg" alt="">
+            <div><small class="muted">Mais vendido</small><strong id="hero-phone-price">Kairo X12 Ultra</strong></div>
+          </a>
+          <div class="float-card fc-2" aria-hidden="true">
+            <span class="dot"></span>
+            <div><strong>Entrega rápida</strong><small class="muted">em até 48 h no Sudeste</small></div>
+          </div>
         </div>
+      </div>
     </section>
 
-    <!-- Produtos em Destaque -->
-    <section class="featured">
-        <h2>Destaques <span class="gold">Exclusivos</span></h2>
-        <div class="products-grid">
-            <!-- Produtos serão carregados via JavaScript -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>NEXA</span><span>VANTA</span><span>AURION</span><span>KAIRO</span><span>ORBIS</span><span>PULSE</span><span>ZENITH</span><span>VOLT</span>
+        <span>NEXA</span><span>VANTA</span><span>AURION</span><span>KAIRO</span><span>ORBIS</span><span>PULSE</span><span>ZENITH</span><span>VOLT</span>
+      </div>
+    </div>
+
+    <!-- Categorias -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="kicker">Categorias</span>
+            <h2>Encontre o seu próximo upgrade</h2>
+          </div>
+          <a class="link-arrow" href="produtos.html">Ver catálogo completo
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
+        <div class="cat-grid" id="cat-grid"></div>
+      </div>
     </section>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 <span class="gold">TechBlack</span>. Todos os direitos reservados.</p>
-    </footer>
+    <!-- Destaques -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="kicker">Destaques</span>
+            <h2>Os queridinhos da semana</h2>
+            <p>Produtos com as melhores avaliações e o melhor custo-benefício da loja.</p>
+          </div>
+          <a class="link-arrow" href="produtos.html?ordem=avaliacao">Mais bem avaliados
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="product-grid" id="destaques"></div>
+      </div>
+    </section>
 
-    <script src="script.js"></script>
-    <script src="firebase.js"></script>
+    <!-- Ofertas -->
+    <section class="section" id="ofertas" style="padding-top:0">
+      <div class="container">
+        <div class="deal reveal">
+          <div class="deal-head">
+            <div>
+              <span class="kicker">Ofertas relâmpago</span>
+              <h2 class="deal-title">Descontos que acabam hoje</h2>
+            </div>
+            <div class="countdown" id="countdown" aria-label="Tempo restante para o fim das ofertas">
+              <div><strong data-u="h">00</strong><small>horas</small></div>
+              <div><strong data-u="m">00</strong><small>min</small></div>
+              <div><strong data-u="s">00</strong><small>seg</small></div>
+            </div>
+          </div>
+          <div class="product-grid" id="ofertas-grid"></div>
+          <div style="text-align:center;margin-top:26px;position:relative;z-index:1">
+            <a class="btn btn-ghost" href="produtos.html?ofertas=1">Ver todas as ofertas</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Banner setup -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="split-banner reveal">
+          <div class="txt">
+            <span class="kicker">Setup gamer</span>
+            <h2>Monte o setup dos sonhos com <span class="grad-text">até 25% off</span></h2>
+            <p>Teclados mecânicos, mouses ultraleves, headsets 7.1 e monitores de alta taxa de atualização para jogar no nível máximo.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <a class="btn btn-primary" href="produtos.html?cat=perifericos">Ver periféricos</a>
+              <a class="btn btn-ghost" href="produtos.html?cat=monitores">Monitores</a>
+            </div>
+          </div>
+          <div class="img"><img src="img/vanta-k87-rgb.svg" alt="Teclado mecânico Vanta K87 RGB" loading="lazy"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefícios -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="perks">
+          <div class="perk reveal">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 4h14v12H1zM15 9h4l4 4v3h-8"/><circle cx="6" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/></svg></div>
+            <h3>Frete grátis</h3><p>Em compras acima de R$ 1.500 para todo o Brasil.</p>
+          </div>
+          <div class="perk reveal">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></div>
+            <h3>12x sem juros</h3><p>Parcele no cartão ou ganhe 5% de desconto no Pix.</p>
+          </div>
+          <div class="perk reveal">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <h3>Garantia de 1 ano</h3><p>Todos os produtos com nota fiscal e garantia oficial.</p>
+          </div>
+          <div class="perk reveal">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg></div>
+            <h3>Troca em 7 dias</h3><p>Não gostou? Devolução simples e sem burocracia.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="newsletter reveal">
+          <h2>Receba ofertas antes de todo mundo</h2>
+          <p class="muted">Cupons exclusivos e lançamentos direto no seu e-mail. Sem spam.</p>
+          <form id="news-form" novalidate>
+            <label class="sr-only" for="news-email">Seu e-mail</label>
+            <input class="input" id="news-email" type="email" placeholder="seuemail@exemplo.com" autocomplete="email" required>
+            <button class="btn btn-primary" type="submit">Quero receber</button>
+          </form>
+          <p class="msg" id="news-msg" style="margin-top:10px"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="tb-footer"></div>
+
+  <script src="data/produtos.js"></script>
+  <script src="script.js"></script>
+  <script src="js/home.js"></script>
+  <script src="../assets/js/hub.js" defer></script>
 </body>
 </html>

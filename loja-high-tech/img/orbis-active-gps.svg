@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" role="img">
+<defs>
+  <radialGradient id="bg" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#1d1712"/><stop offset=".6" stop-color="#0d0b0c"/><stop offset="1" stop-color="#060608"/></radialGradient>
+  <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5ad1ff" stop-opacity=".55"/><stop offset=".5" stop-color="#2fe0a6" stop-opacity=".16"/><stop offset="1" stop-color="#2fe0a6" stop-opacity="0"/></radialGradient>
+  <radialGradient id="floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  <linearGradient id="scr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ad1ff"/><stop offset=".55" stop-color="#2fe0a6"/><stop offset="1" stop-color="#14070a"/></linearGradient>
+  <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5ad1ff"/><stop offset="1" stop-color="#2fe0a6"/></linearGradient>
+  <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1f2f5"/><stop offset=".45" stop-color="#c3c7d0"/><stop offset="1" stop-color="#7d828e"/></linearGradient>
+       <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d5d8df"/><stop offset="1" stop-color="#8d929e"/></linearGradient>
+  <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#fff" stroke-opacity=".035"/></pattern>
+</defs>
+<rect width="600" height="450" fill="url(#bg)"/>
+<rect width="600" height="450" fill="url(#grid)"/>
+<circle cx="300" cy="215" r="210" fill="url(#glow)"/>
+<path d="M0 372 H600" stroke="#5ad1ff" stroke-opacity=".18"/>
+<ellipse cx="300" cy="380" rx="230" ry="20" fill="url(#floor)"/>
+<path d="M248 30 h104 l-8 120 h-88z" fill="url(#m2)"/>
+<path d="M256 290 h88 l8 120 h-104z" fill="url(#m2)"/>
+<g fill="#000" fill-opacity=".3"><rect x="292" y="330" width="16" height="6" rx="3"/><rect x="292" y="350" width="16" height="6" rx="3"/><rect x="292" y="370" width="16" height="6" rx="3"/></g>
+<rect x="222" y="128" width="156" height="184" rx="46" fill="url(#m)"/>
+<rect x="378" y="186" width="12" height="40" rx="5" fill="url(#acc)"/>
+<rect x="234" y="140" width="132" height="160" rx="36" fill="#050507"/>
+<circle cx="300" cy="220" r="52" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="10"/>
+<circle cx="300" cy="220" r="52" fill="none" stroke="url(#acc)" stroke-width="10" stroke-linecap="round" stroke-dasharray="230 400" transform="rotate(-90 300 220)"/>
+<circle cx="300" cy="220" r="36" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="8"/>
+<circle cx="300" cy="220" r="36" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="8" stroke-linecap="round" stroke-dasharray="120 400" transform="rotate(-90 300 220)"/>
+<rect x="280" y="212" width="40" height="8" rx="4" fill="#fff"/><rect x="288" y="226" width="24" height="5" rx="2.5" fill="#fff" fill-opacity=".5"/>
+<rect x="222" y="128" width="156" height="184" rx="46" fill="url(#shine)"/>
+</svg>
