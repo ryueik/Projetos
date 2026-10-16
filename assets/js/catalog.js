@@ -16,6 +16,7 @@ window.PROJECTS = [
     url: "https://github.com/ryueik/automatizer",
     code: "https://github.com/ryueik/automatizer",
     thumb: "assets/thumbs/automatizer.jpg",
+    cover: "assets/covers/automatizer.jpg",
     gallery: ["assets/thumbs/automatizer.jpg", "assets/thumbs/automatizer-editor.jpg"],
     origin: "externo",
     featured: true
@@ -30,6 +31,7 @@ window.PROJECTS = [
     url: "https://omnilicit.vercel.app",
     code: "https://github.com/ryueik/omnilicit",
     thumb: "assets/thumbs/omnilicit.jpg",
+    cover: "assets/covers/omnilicit.jpg",
     origin: "externo",
     featured: true
   },
@@ -41,6 +43,7 @@ window.PROJECTS = [
     tags: ["Power Automate Desktop", "Python", "Excel/CSV Engine", "Data Transformation"],
     path: "sharepoint-planilhas-etl/",
     thumb: "assets/thumbs/sharepoint-planilhas-etl.jpg",
+    cover: "assets/covers/sharepoint-planilhas-etl.jpg",
     origin: "portfolio"
   },
   {
@@ -51,6 +54,7 @@ window.PROJECTS = [
     tags: ["Power Automate Cloud", "SharePoint REST API", "Graph API", "Error Handling"],
     path: "sharepoint-import-pipeline/",
     thumb: "assets/thumbs/sharepoint-import-pipeline.jpg",
+    cover: "assets/covers/sharepoint-import-pipeline.jpg",
     origin: "portfolio"
   },
   {
@@ -61,6 +65,7 @@ window.PROJECTS = [
     tags: ["REST APIs", "JSON Parsing", "HTTP Requests", "Cloud Integration"],
     path: "consulta-medicos-api/",
     thumb: "assets/thumbs/consulta-medicos-api.jpg",
+    cover: "assets/covers/consulta-medicos-api.jpg",
     origin: "portfolio"
   },
   {
@@ -71,6 +76,7 @@ window.PROJECTS = [
     tags: ["Web Scraping", "DOM Parsing", "XPath", "CSV Automation", "Python"],
     path: "crm-scraper/",
     thumb: "assets/thumbs/crm-scraper.jpg",
+    cover: "assets/covers/crm-scraper.jpg",
     origin: "portfolio"
   },
   {
@@ -81,6 +87,7 @@ window.PROJECTS = [
     tags: ["Python", "PowerShell", "VBScript", "pdf-lib"],
     path: "PDF-Splitter-Utility/",
     thumb: "assets/thumbs/pdf-splitter.jpg",
+    cover: "assets/covers/pdf-splitter.jpg",
     origin: "portfolio"
   },
   {
@@ -91,6 +98,7 @@ window.PROJECTS = [
     tags: ["OS Layer Automation", "PowerShell", "Python", "File Retention Rules"],
     path: "limpeza-arquivos/",
     thumb: "assets/thumbs/limpeza-arquivos.jpg",
+    cover: "assets/covers/limpeza-arquivos.jpg",
     origin: "portfolio"
   },
   {
@@ -101,6 +109,7 @@ window.PROJECTS = [
     tags: ["Power Automate Cloud", "API Rate Limit Control", "Batching Loops"],
     path: "sharepoint-delecao-lote/",
     thumb: "assets/thumbs/sharepoint-delecao-lote.jpg",
+    cover: "assets/covers/sharepoint-delecao-lote.jpg",
     origin: "portfolio"
   },
   {
@@ -111,6 +120,7 @@ window.PROJECTS = [
     tags: ["Cloud & Desktop Integration", "DateTime Logic", "Dynamic Data Binding"],
     path: "registro-ponto/",
     thumb: "assets/thumbs/registro-ponto.jpg",
+    cover: "assets/covers/registro-ponto.jpg",
     origin: "portfolio"
   },
   {
@@ -122,6 +132,7 @@ window.PROJECTS = [
     path: "produtora-monteiro/",
     url: "https://produtoramonteiro.com/",
     thumb: "assets/thumbs/produtora-monteiro.jpg",
+    cover: "assets/covers/produtora-monteiro.jpg",
     origin: "portfolio"
   },
   {
@@ -132,6 +143,7 @@ window.PROJECTS = [
     tags: ["Python", "Pandas", "Plotly", "Análise de Dados"],
     path: "PYTHON INSIGHTS/",
     thumb: "assets/thumbs/python-insights.jpg",
+    cover: "assets/covers/python-insights.jpg",
     origin: "repo"
   },
   {
@@ -142,6 +154,7 @@ window.PROJECTS = [
     tags: ["Python", "pyautogui", "Pandas", "RPA"],
     path: "PYTHON POWERUP/",
     thumb: "assets/thumbs/python-powerup.jpg",
+    cover: "assets/covers/python-powerup.jpg",
     origin: "repo"
   },
   {
@@ -152,6 +165,7 @@ window.PROJECTS = [
     tags: ["JavaScript", "HTML", "CSS"],
     path: "CodeQuest/",
     thumb: "assets/thumbs/codequest.jpg",
+    cover: "assets/covers/codequest.jpg",
     origin: "repo"
   },
   {
@@ -162,6 +176,7 @@ window.PROJECTS = [
     tags: ["HTML", "CSS", "JavaScript"],
     path: "loja-high-tech/",
     thumb: "assets/thumbs/loja-high-tech.jpg",
+    cover: "assets/covers/loja-high-tech.jpg",
     origin: "repo"
   },
   {
@@ -172,6 +187,7 @@ window.PROJECTS = [
     tags: ["HTML", "CSS"],
     path: "brecho/",
     thumb: "assets/thumbs/brecho.jpg",
+    cover: "assets/covers/brecho.jpg",
     origin: "repo"
   },
   {
@@ -182,6 +198,7 @@ window.PROJECTS = [
     tags: ["HTML", "CSS", "JavaScript"],
     path: "Cria Web/",
     thumb: "assets/thumbs/cria-web.jpg",
+    cover: "assets/covers/cria-web.jpg",
     origin: "repo"
   },
   {
@@ -192,6 +209,7 @@ window.PROJECTS = [
     tags: ["HTML", "CSS", "JavaScript"],
     path: "GeeksforGeeks-clone/",
     thumb: "assets/thumbs/geeksforgeeks-clone.jpg",
+    cover: "assets/covers/geeksforgeeks-clone.jpg",
     origin: "repo"
   },
   {
@@ -202,6 +220,7 @@ window.PROJECTS = [
     tags: ["JavaScript"],
     path: "to-do up/",
     thumb: "assets/thumbs/to-do-up.jpg",
+    cover: "assets/covers/to-do-up.jpg",
     origin: "repo"
   },
   {
@@ -212,6 +231,7 @@ window.PROJECTS = [
     tags: ["JavaScript", "API REST", "Python"],
     path: "Weather App/",
     thumb: "assets/thumbs/weather-app.jpg",
+    cover: "assets/covers/weather-app.jpg",
     origin: "repo"
   }
 ];

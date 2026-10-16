@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Página não encontrada · Projetos MM</title>
+  <meta name="robots" content="noindex" />
+  <!-- Caminhos absolutos: a Vercel serve esta página para qualquer URL inexistente, em qualquer profundidade. -->
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="stylesheet" href="/assets/css/theme.css" />
+  <script src="/assets/js/theme.js"></script>
+  <script src="/assets/js/catalog.js"></script>
+  <style>
+    .nf { min-height: calc(100vh - 68px); display: grid; align-content: center; padding: 56px 0 96px; }
+    .code {
+      font: 800 clamp(7rem, 26vw, 18rem)/.85 var(--font-display); letter-spacing: -0.06em;
+      background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+      user-select: none;
+    }
+    .nf h1 { font-size: clamp(2rem, 5vw, 3.4rem); margin-top: 18px; max-width: 18ch; }
+    .nf .path { font-family: var(--font-mono); color: var(--text-3); word-break: break-all; }
+    .sugg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 40px; }
+    @media (max-width: 760px) { .sugg { grid-template-columns: 1fr; } }
+    .sugg a {
+      display: flex; gap: 14px; align-items: center; padding: 12px; border-radius: var(--radius);
+      border: 1px solid var(--line); background: var(--surface); text-decoration: none; transition: border-color .2s, transform .2s;
+    }
+    .sugg a:hover { border-color: var(--orange); transform: translateY(-2px); }
+    .sugg img { width: 84px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; flex: none; background: var(--surface-2); }
+    .sugg b { display: block; font-size: .95rem; line-height: 1.3; }
+    .sugg small { color: var(--text-3); font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="/"></header>
+  <main class="container nf">
+    <div class="code" aria-hidden="true">404</div>
+    <span class="eyebrow mt-1">Página não encontrada</span>
+    <h1>Esse caminho <em>não leva</em> a nenhum projeto.</h1>
+    <p class="lead">O endereço <span class="path" id="path"></span> não existe ou mudou de lugar. Volte ao painel ou abra um destes projetos.</p>
+    <div class="row mt-1">
+      <a class="btn btn-primary" href="/">Ver todos os projetos</a>
+      <a class="btn btn-ghost" href="https://dev-matheus-macario.vercel.app/" target="_blank" rel="noopener">Ir para o portfólio</a>
+    </div>
+    <nav class="sugg" id="sugg" aria-label="Sugestões de projetos"></nav>
+  </main>
+  <footer id="site-footer"></footer>
+  <script>
+    document.getElementById("path").textContent = decodeURIComponent(location.pathname);
+    (function () {
+      var list = (window.PROJECTS || []).filter(function (p) { return p.path; });
+      // Sugere projetos cujo nome lembra o endereço digitado; completa com aleatórios.
+      var words = decodeURIComponent(location.pathname).toLowerCase().split(/[^a-zà-ú0-9]+/).filter(function (w) { return w.length > 2; });
+      function score(p) {
+        var hay = (p.slug + " " + p.title + " " + p.tags.join(" ")).toLowerCase();
+        return words.reduce(function (s, w) { return s + (hay.indexOf(w) !== -1 ? 1 : 0); }, 0) + Math.random() * 0.5;
+      }
+      list.map(function (p) { return [score(p), p]; }).sort(function (a, b) { return b[0] - a[0]; }).slice(0, 3)
+        .forEach(function (pair) {
+          var p = pair[1];
+          var a = document.createElement("a");
+          a.href = "/" + p.path.split("/").map(encodeURIComponent).join("/");
+          var img = document.createElement("img");
+          img.alt = ""; img.loading = "lazy";
+          img.onerror = function () { if (p.thumb && img.src.indexOf(p.thumb) === -1) img.src = "/" + p.thumb; };
+          img.src = "/" + (p.cover || p.thumb);
+          var box = document.createElement("span");
+          var small = document.createElement("small"); small.textContent = (window.PROJECT_CATEGORIES || {})[p.category] || p.category;
+          var b = document.createElement("b"); b.textContent = p.title;
+          box.append(small, b);
+          a.append(img, box);
+          document.getElementById("sugg").append(a);
+        });
+    })();
+  </script>
+</body>
+</html>
