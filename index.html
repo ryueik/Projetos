@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projetos · Matheus Macário</title>
+  <meta name="description" content="Painel com todos os projetos de Matheus Macário: automação (RPA), integrações com SharePoint e APIs, scripts, dados e sites." />
+  <meta property="og:title" content="Projetos · Matheus Macário" />
+  <meta property="og:description" content="Automação, integrações, scripts, dados e web em um só lugar." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0b0907" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/catalog.js"></script>
+  <style>
+    .hero { padding: clamp(64px, 11vw, 140px) 0 48px; position: relative; }
+    .hero h1 { font-size: clamp(3rem, 10vw, 8.4rem); line-height: .92; letter-spacing: -0.045em; max-width: 12ch; }
+    .hero-foot { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: end; margin-top: 40px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+    .stats div { padding: 18px 20px; border-right: 1px solid var(--line); }
+    .stats div:last-child { border-right: 0; }
+    .stats b { display: block; font: 800 2.2rem/1 var(--font-body); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .stats span { font: 500 .72rem var(--font-mono); color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; }
+    @media (max-width: 800px) { .hero-foot { grid-template-columns: 1fr; } }
+
+    .marquee { border-block: 1px solid var(--line); overflow: hidden; padding: 16px 0; }
+    .marquee-track { display: flex; gap: 48px; width: max-content; animation: scroll 38s linear infinite; }
+    .marquee span { font: 700 1.3rem var(--font-display); color: var(--text-3); white-space: nowrap; display: inline-flex; align-items: center; gap: 48px; }
+    .marquee span::after { content: "✦"; color: var(--orange); font-size: .9rem; }
+    @keyframes scroll { to { transform: translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+    .sec-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+    .sec-head h2 { margin: 8px 0 0; }
+
+    .featured { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 860px) { .featured { grid-template-columns: 1fr; } }
+    .feat {
+      position: relative; display: flex; flex-direction: column; border-radius: var(--radius-lg); overflow: hidden;
+      border: 1px solid var(--line); background: var(--surface); text-decoration: none; transition: box-shadow .3s, transform .3s, border-color .3s;
+    }
+    .feat:hover { box-shadow: var(--glow); transform: translateY(-4px); border-color: var(--line-strong); }
+    .feat .shot { aspect-ratio: 16 / 9; }
+    .feat .body { padding: 24px; }
+    .feat h3 { font-size: 1.8rem; margin-bottom: 8px; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 28px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter {
+      padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line-strong); background: transparent;
+      color: var(--text-2); font: 500 .85rem var(--font-body); cursor: pointer; transition: all .2s;
+    }
+    .filter:hover { color: var(--text); border-color: var(--orange); }
+    .filter[aria-pressed="true"] { background: var(--grad); color: #1a0f04; border-color: transparent; font-weight: 700; }
+    .search { flex: 1; min-width: 220px; max-width: 340px; margin-left: auto; }
+
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    @media (max-width: 1000px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+    .pcard {
+      display: flex; flex-direction: column; border-radius: var(--radius-lg); overflow: hidden; background: var(--surface);
+      border: 1px solid var(--line); transition: transform .3s ease, box-shadow .3s ease, border-color .3s;
+    }
+    .pcard:hover { transform: translateY(-4px); box-shadow: var(--glow); border-color: var(--line-strong); }
+    .shot { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--surface-2); }
+    .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform .6s ease; }
+    .pcard:hover .shot img, .feat:hover .shot img { transform: scale(1.05); }
+    .shot .ph {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--orange) 35%, transparent), transparent 60%),
+                  radial-gradient(circle at 80% 90%, color-mix(in srgb, var(--red) 30%, transparent), transparent 55%), var(--surface-2);
+      font: 800 2.4rem var(--font-display); color: var(--gold);
+    }
+    .shot .num {
+      position: absolute; top: 12px; left: 12px; font: 700 .72rem var(--font-mono); padding: 4px 8px; border-radius: 8px;
+      background: rgba(11, 9, 7, .72); color: var(--gold-soft); backdrop-filter: blur(6px);
+    }
+    .shot .origin {
+      position: absolute; top: 12px; right: 12px; font: 600 .68rem var(--font-mono); padding: 4px 8px; border-radius: 8px;
+      background: var(--grad); color: #1a0f04; text-transform: uppercase; letter-spacing: .06em;
+    }
+    .pcard .body { padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .pcard .cat { font: 600 .72rem var(--font-mono); color: var(--accent); text-transform: uppercase; letter-spacing: .1em; }
+    .pcard h3 { margin: 0; font-size: 1.15rem; }
+    .pcard p { margin: 0; font-size: .92rem; }
+    .pcard .actions { display: flex; gap: 8px; margin-top: auto; padding-top: 8px; }
+    .empty { text-align: center; padding: 60px 0; color: var(--text-3); }
+
+    .cta { text-align: center; }
+    .cta h2 { font-size: clamp(2rem, 6vw, 4rem); max-width: 18ch; margin-inline: auto; }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="./"></header>
+
+  <main>
+    <section class="hero container">
+      <span class="eyebrow">Painel de projetos · Matheus Macário</span>
+      <h1 class="mt-1">Código que <span class="grad-text">trabalha</span> por você.</h1>
+      <div class="hero-foot">
+        <p class="lead">Automação de processos, integrações com SharePoint e APIs, scripts de sistema, análise de dados e sites. Cada projeto abre aqui mesmo, com uma demonstração funcionando e o código ao lado.</p>
+        <div class="stats" aria-label="Resumo">
+          <div><b class="grad-text" id="statTotal">0</b><span>Projetos</span></div>
+          <div><b id="statRpa">0</b><span>Automação</span></div>
+          <div><b id="statCats">0</b><span>Áreas</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track" id="marquee"></div>
+    </div>
+
+    <section class="section container" id="destaques">
+      <div class="sec-head">
+        <div><span class="eyebrow">Destaques</span><h2>Plataformas completas</h2></div>
+        <p class="muted" style="max-width:40ch;margin:0">Produtos maiores, cada um no seu próprio repositório.</p>
+      </div>
+      <div class="featured" id="featured"></div>
+    </section>
+
+    <section class="section container" id="projetos">
+      <div class="sec-head">
+        <div><span class="eyebrow">Todos os projetos</span><h2>Explore por área</h2></div>
+      </div>
+      <div class="toolbar">
+        <div class="filters" id="filters" role="group" aria-label="Filtrar por área"></div>
+        <input class="input search" id="search" type="search" placeholder="Buscar por nome ou tecnologia…" aria-label="Buscar projetos" />
+      </div>
+      <div class="cards" id="cards"></div>
+      <p class="empty" id="empty" hidden>Nenhum projeto encontrado com esse filtro.</p>
+    </section>
+
+    <section class="section container cta">
+      <span class="eyebrow">Vamos conversar</span>
+      <h2 class="mt-1">Precisa automatizar algo no seu <span class="grad-text">dia a dia</span>?</h2>
+      <p class="lead" style="margin-inline:auto">Veja experiência, certificações e contato no portfólio.</p>
+      <div class="row" style="justify-content:center">
+        <a class="btn btn-primary" href="https://dev-matheus-macario.vercel.app/" target="_blank" rel="noopener">Abrir portfólio</a>
+        <a class="btn btn-ghost" href="https://github.com/ryueik" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      var projects = window.PROJECTS || [];
+      var cats = window.PROJECT_CATEGORIES || {};
+      var state = { cat: "todos", q: "" };
+
+      function el(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      function href(p) {
+        if (p.path) return p.path.split("/").map(encodeURIComponent).join("/");
+        return p.url;
+      }
+      function codeUrl(p) {
+        return p.code || ("https://github.com/ryueik/Projetos/tree/main/" + encodeURIComponent(p.path.replace(/\/$/, "")));
+      }
+      function shot(p, idx) {
+        var s = el("div", "shot");
+        var ph = el("div", "ph", p.title.split(/\s+/).slice(0, 2).map(function (w) { return w[0]; }).join("").toUpperCase());
+        s.append(ph);
+        if (p.thumb) {
+          var img = new Image();
+          img.loading = "lazy";
+          img.alt = "Captura de tela de " + p.title;
+          img.onload = function () { ph.remove(); };
+          img.onerror = function () { img.remove(); };
+          img.src = p.thumb;
+          s.append(img);
+        }
+        if (idx != null) s.append(el("span", "num", "[" + String(idx).padStart(2, "0") + "]"));
+        if (p.origin === "portfolio") s.append(el("span", "origin", "Portfólio"));
+        return s;
+      }
+      function tags(list) {
+        var c = el("div", "chips");
+        list.slice(0, 4).forEach(function (t, i) { c.append(el("span", "chip" + (i === 0 ? " gold" : ""), t)); });
+        return c;
+      }
+
+      // Estatísticas
+      var inRepo = projects.filter(function (p) { return p.path; });
+      document.getElementById("statTotal").textContent = projects.length;
+      document.getElementById("statRpa").textContent = projects.filter(function (p) { return p.category === "rpa"; }).length;
+      document.getElementById("statCats").textContent = new Set(projects.map(function (p) { return p.category; })).size;
+
+      // Faixa de tecnologias
+      var techs = Array.from(new Set(projects.flatMap(function (p) { return p.tags; }))).slice(0, 18);
+      var track = document.getElementById("marquee");
+      techs.concat(techs).forEach(function (t) { track.append(el("span", null, t)); });
+
+      // Destaques
+      var feat = document.getElementById("featured");
+      projects.filter(function (p) { return p.featured; }).forEach(function (p) {
+        var a = el("a", "feat reveal");
+        a.href = p.url; a.target = "_blank"; a.rel = "noopener";
+        var body = el("div", "body");
+        body.append(el("span", "eyebrow", cats[p.category] || p.category), el("h3", "mt-1", p.title), el("p", null, p.desc), tags(p.tags));
+        a.append(shot(p), body);
+        feat.append(a);
+      });
+
+      // Filtros
+      var counts = {};
+      inRepo.forEach(function (p) { counts[p.category] = (counts[p.category] || 0) + 1; });
+      var filters = document.getElementById("filters");
+      [["todos", "Todos (" + inRepo.length + ")"], ["portfolio", "Do portfólio"]]
+        .concat(Object.keys(cats).filter(function (k) { return counts[k]; }).map(function (k) { return [k, cats[k] + " (" + counts[k] + ")"]; }))
+        .forEach(function (f) {
+          var b = el("button", "filter", f[1]);
+          b.type = "button";
+          b.dataset.cat = f[0];
+          b.setAttribute("aria-pressed", f[0] === state.cat ? "true" : "false");
+          b.onclick = function () {
+            state.cat = f[0];
+            filters.querySelectorAll(".filter").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            renderCards();
+          };
+          filters.append(b);
+        });
+      document.getElementById("search").addEventListener("input", function (e) {
+        state.q = e.target.value.trim().toLowerCase();
+        renderCards();
+      });
+
+      function matches(p) {
+        if (state.cat === "portfolio" && p.origin !== "portfolio") return false;
+        if (state.cat !== "todos" && state.cat !== "portfolio" && p.category !== state.cat) return false;
+        if (!state.q) return true;
+        return (p.title + " " + p.desc + " " + p.tags.join(" ")).toLowerCase().indexOf(state.q) !== -1;
+      }
+
+      function renderCards() {
+        var wrap = document.getElementById("cards");
+        wrap.textContent = "";
+        var list = inRepo.filter(matches);
+        list.forEach(function (p) {
+          var card = el("article", "pcard");
+          var link = el("a"); link.href = href(p); link.setAttribute("aria-label", "Abrir " + p.title);
+          link.append(shot(p, inRepo.indexOf(p) + 1));
+          var body = el("div", "body");
+          body.append(el("span", "cat", cats[p.category] || p.category), el("h3", null, p.title), el("p", null, p.desc), tags(p.tags));
+          var actions = el("div", "actions");
+          var open = el("a", "btn btn-primary btn-sm", "Abrir projeto"); open.href = href(p);
+          var code = el("a", "btn btn-ghost btn-sm", "Código"); code.href = codeUrl(p); code.target = "_blank"; code.rel = "noopener";
+          actions.append(open, code);
+          if (p.url) {
+            var live = el("a", "btn btn-ghost btn-sm", "Site real"); live.href = p.url; live.target = "_blank"; live.rel = "noopener";
+            actions.append(live);
+          }
+          body.append(actions);
+          card.append(link, body);
+          wrap.append(card);
+        });
+        document.getElementById("empty").hidden = list.length > 0;
+      }
+      renderCards();
+    })();
+  </script>
+</body>
+</html>
