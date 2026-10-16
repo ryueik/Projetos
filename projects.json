@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-16T18:32:58.849Z",
+  "updatedAt": "2026-10-16T18:50:49.902Z",
   "categories": {
     "rpa": "RPA & Automação",
     "web": "Web",
@@ -25,6 +25,10 @@
       "url": "https://github.com/ryueik/automatizer",
       "code": "https://github.com/ryueik/automatizer",
       "thumb": "assets/thumbs/automatizer.jpg",
+      "gallery": [
+        "assets/thumbs/automatizer.jpg",
+        "assets/thumbs/automatizer-editor.jpg"
+      ],
       "origin": "externo",
       "featured": true,
       "thumbUrl": "https://raw.githubusercontent.com/ryueik/Projetos/main/assets/thumbs/automatizer.jpg",

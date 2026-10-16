@@ -1,0 +1,182 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "description": "Módulo de Deleção em Lote para SharePoint: expurgo agendado de itens que casam com um filtro, em páginas com $top, Apply to each com concorrência limitada, pausa quando recebe 429 e teto de 5.000 itens por execução.",
+  "parameters": {
+    "$connections": { "defaultValue": {}, "type": "Object" },
+    "siteUrl": { "defaultValue": "https://contoso.sharepoint.com/sites/Patrimonio", "type": "String" },
+    "listName": { "defaultValue": "InventarioPatrimonial", "type": "String" },
+    "filtroOData": { "defaultValue": "Status eq 'Baixado' and Modified lt '@{addDays(utcNow(), -90)}'", "type": "String" },
+    "tamanhoPagina": { "defaultValue": 100, "type": "Int" },
+    "maxPorExecucao": { "defaultValue": 5000, "type": "Int" },
+    "concorrencia": { "defaultValue": 5, "type": "Int" },
+    "pausaEntrePaginasSeg": { "defaultValue": 10, "type": "Int" },
+    "emailRelatorio": { "defaultValue": "patrimonio@empresa.com.br", "type": "String" }
+  },
+  "triggers": {
+    "Recorrencia_noturna": {
+      "type": "Recurrence",
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1,
+        "timeZone": "E. South America Standard Time",
+        "schedule": { "hours": ["1"], "minutes": [30] }
+      }
+    }
+  },
+  "actions": {
+    "Inicializar_deletados": {
+      "type": "InitializeVariable",
+      "inputs": { "variables": [{ "name": "deletados", "type": "integer", "value": 0 }] },
+      "runAfter": {}
+    },
+    "Inicializar_throttles": {
+      "type": "InitializeVariable",
+      "inputs": { "variables": [{ "name": "respostas429", "type": "integer", "value": 0 }] },
+      "runAfter": { "Inicializar_deletados": ["Succeeded"] }
+    },
+    "Inicializar_fim": {
+      "type": "InitializeVariable",
+      "inputs": { "variables": [{ "name": "semMaisItens", "type": "boolean", "value": false }] },
+      "runAfter": { "Inicializar_throttles": ["Succeeded"] }
+    },
+    "Inicializar_pausa": {
+      "type": "InitializeVariable",
+      "inputs": { "variables": [{ "name": "pausaSeg", "type": "integer", "value": "@parameters('pausaEntrePaginasSeg')" }] },
+      "runAfter": { "Inicializar_fim": ["Succeeded"] }
+    },
+    "Ate_acabar_ou_bater_o_teto": {
+      "type": "Until",
+      "expression": "@or(variables('semMaisItens'), greaterOrEquals(variables('deletados'), parameters('maxPorExecucao')))",
+      "limit": { "count": 200, "timeout": "PT4H" },
+      "runAfter": { "Inicializar_pausa": ["Succeeded"] },
+      "actions": {
+        "Obter_itens": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": { "connection": { "name": "@parameters('$connections')['sharepointonline']['connectionId']" } },
+            "method": "get",
+            "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/tables/@{encodeURIComponent(encodeURIComponent(parameters('listName')))}/items",
+            "queries": {
+              "$filter": "@parameters('filtroOData')",
+              "$top": "@min(parameters('tamanhoPagina'), sub(parameters('maxPorExecucao'), variables('deletados')))",
+              "$select": "ID"
+            },
+            "retryPolicy": { "type": "exponential", "count": 4, "interval": "PT20S" }
+          },
+          "runAfter": {}
+        },
+        "Pagina_vazia": {
+          "type": "If",
+          "expression": { "and": [{ "equals": ["@length(body('Obter_itens')?['value'])", 0] }] },
+          "runAfter": { "Obter_itens": ["Succeeded"] },
+          "actions": {
+            "Marcar_fim": {
+              "type": "SetVariable",
+              "inputs": { "name": "semMaisItens", "value": true },
+              "runAfter": {}
+            }
+          },
+          "else": {
+            "actions": {
+              "Aplicar_a_cada_item": {
+                "type": "Foreach",
+                "foreach": "@body('Obter_itens')?['value']",
+                "runtimeConfiguration": { "concurrency": { "repetitions": "@parameters('concorrencia')" } },
+                "actions": {
+                  "Excluir_item": {
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "host": { "connection": { "name": "@parameters('$connections')['sharepointonline']['connectionId']" } },
+                      "method": "delete",
+                      "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/tables/@{encodeURIComponent(encodeURIComponent(parameters('listName')))}/items/@{encodeURIComponent(items('Aplicar_a_cada_item')?['ID'])}",
+                      "retryPolicy": { "type": "none" }
+                    },
+                    "runAfter": {}
+                  },
+                  "Contar_exclusao": {
+                    "type": "IncrementVariable",
+                    "inputs": { "name": "deletados", "value": 1 },
+                    "runAfter": { "Excluir_item": ["Succeeded"] }
+                  },
+                  "Foi_throttling": {
+                    "type": "If",
+                    "expression": { "and": [{ "equals": ["@outputs('Excluir_item')?['statusCode']", 429] }] },
+                    "runAfter": { "Excluir_item": ["Failed"] },
+                    "actions": {
+                      "Contar_429": {
+                        "type": "IncrementVariable",
+                        "inputs": { "name": "respostas429", "value": 1 },
+                        "runAfter": {}
+                      },
+                      "Aguardar_Retry_After": {
+                        "type": "Wait",
+                        "inputs": {
+                          "interval": {
+                            "count": "@int(coalesce(outputs('Excluir_item')?['headers']?['Retry-After'], '30'))",
+                            "unit": "Second"
+                          }
+                        },
+                        "runAfter": { "Contar_429": ["Succeeded"] }
+                      },
+                      "Excluir_item_novamente": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                          "host": { "connection": { "name": "@parameters('$connections')['sharepointonline']['connectionId']" } },
+                          "method": "delete",
+                          "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/tables/@{encodeURIComponent(encodeURIComponent(parameters('listName')))}/items/@{encodeURIComponent(items('Aplicar_a_cada_item')?['ID'])}",
+                          "retryPolicy": { "type": "exponential", "count": 4, "interval": "PT30S", "maximumInterval": "PT5M" }
+                        },
+                        "runAfter": { "Aguardar_Retry_After": ["Succeeded"] }
+                      },
+                      "Contar_exclusao_apos_retry": {
+                        "type": "IncrementVariable",
+                        "inputs": { "name": "deletados", "value": 1 },
+                        "runAfter": { "Excluir_item_novamente": ["Succeeded"] }
+                      }
+                    },
+                    "else": { "actions": {} }
+                  }
+                },
+                "runAfter": {}
+              },
+              "Houve_429_nesta_pagina": {
+                "type": "If",
+                "expression": { "and": [{ "greater": ["@variables('respostas429')", 0] }] },
+                "runAfter": { "Aplicar_a_cada_item": ["Succeeded", "Failed"] },
+                "actions": {
+                  "Dobrar_pausa": {
+                    "type": "SetVariable",
+                    "inputs": { "name": "pausaSeg", "value": "@min(mul(variables('pausaSeg'), 2), 300)" },
+                    "runAfter": {}
+                  }
+                },
+                "else": { "actions": {} }
+              },
+              "Pausa_entre_paginas": {
+                "type": "Wait",
+                "inputs": { "interval": { "count": "@variables('pausaSeg')", "unit": "Second" } },
+                "runAfter": { "Houve_429_nesta_pagina": ["Succeeded"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Enviar_relatorio": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": { "connection": { "name": "@parameters('$connections')['office365']['connectionId']" } },
+        "method": "post",
+        "path": "/v2/Mail",
+        "body": {
+          "To": "@parameters('emailRelatorio')",
+          "Subject": "[Expurgo SharePoint] @{variables('deletados')} itens removidos de @{parameters('listName')}",
+          "Body": "<p>Itens excluídos: <b>@{variables('deletados')}</b> (teto por execução: @{parameters('maxPorExecucao')})</p><p>Respostas 429 recebidas: @{variables('respostas429')}</p><p>@{if(variables('semMaisItens'), 'Não restam itens no filtro.', 'Ainda há itens no filtro: a próxima execução continua.')}</p>"
+        }
+      },
+      "runAfter": { "Ate_acabar_ou_bater_o_teto": ["Succeeded", "Failed", "TimedOut"] }
+    }
+  },
+  "outputs": {}
+}

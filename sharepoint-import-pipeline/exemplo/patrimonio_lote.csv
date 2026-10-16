@@ -1,0 +1,58 @@
+Title,Descricao,Categoria,Localizacao,Responsavel,DataAquisicao,ValorAquisicao,Status
+PAT-1100,Ar-condicionado 12000 BTU,Climatização,Filial Campinas,Fernanda Rocha,2023-01-03,2799.99,Em manutenção
+PAT-1101,"Monitor LG 24""",Informática,Almoxarifado,Ana Souza,2022-04-02,1249.00,Ativo
+PAT-1102,Projetor Epson,Audiovisual,Diretoria,Carlos Lima,2019-02-18,3100.00,Ativo
+PAT-1103,Notebook Dell Latitude 5440,Informática,Matriz - Financeiro,Rafael Nunes,2023-11-19,5899.90,Ativo
+PAT-1104,Nobreak 3kVA,Energia,Diretoria,Ana Souza,2019-01-18,3890.00,Ativo
+PAT-1105,Impressora HP M428,Informática,Diretoria,Juliana Prado,2022-02-19,2350.00,Ativo
+PAT-1106,Switch 24 portas,Rede,Filial Campinas,Carlos Lima,2022-10-21,7450.00,Ativo
+PAT-1107,Ar-condicionado 12000 BTU,Climatização,Matriz - Financeiro,Diego Castro,2023-02-19,2799.99,Ativo
+PAT-1108,Nobreak 3kVA,Energia,Comercial,Luiza Martins,2023-09-14,3890.00,Ativo
+PAT-1109,Smartphone Samsung A54,Telefonia,Marketing,Patrícia Gomes,2020-04-26,1999.00,Ativo
+PAT-1110,Câmera IP,Segurança,Comercial,Carlos Lima,2022-05-17,459.00,Ativo
+PAT-1111,Ar-condicionado 12000 BTU,Climatização,Marketing,Bruno Alves,2022-02-04,2799.99,Em manutenção
+PAT-1112,Projetor Epson,Audiovisual,Filial Campinas,Patrícia Gomes,2019-08-14,3100.00,Ativo
+PAT-1113,Armário de aço,Mobiliário,Matriz - Financeiro,Diego Castro,2022-06-11,650.00,Ativo
+PAT-1114,Nobreak 3kVA,Energia,Marketing,Luiza Martins,2018-02-09,3890.00,Ativo
+PAT-1115,Câmera IP,Segurança,Matriz - Financeiro,Ana Souza,2023-12-10,459.00,Inativo
+PAT-1116,Armário de aço,Mobiliário,Marketing,Bruno Alves,2023-07-22,650.00,Ativo
+PAT-1117,Notebook Dell Latitude 5440,Informática,Marketing,Patrícia Gomes,2019-10-04,5899.90,Ativo
+PAT-1118,Notebook Dell Latitude 5440,Informática,Comercial,Bruno Alves,2019-12-08,5899.90,Ativo
+PAT-1119,Projetor Epson,Audiovisual,Marketing,Carlos Lima,2019-08-13,3100.00,Em manutenção
+PAT-1120,Impressora HP M428,Informática,Filial Campinas,Fernanda Rocha,2024-09-09,2350.00,Ativo
+PAT-1121,Ar-condicionado 12000 BTU,Climatização,Diretoria,Rafael Nunes,2019-02-06,2799.99,Ativo
+PAT-1122,Mesa em L,Mobiliário,Comercial,Ana Souza,2021-10-06,980.00,Ativo
+PAT-1123,Impressora HP M428,Informática,Matriz - TI,Juliana Prado,2021-09-12,2350.00,Inativo
+PAT-1124,Nobreak 3kVA,Energia,Almoxarifado,Juliana Prado,2023-09-20,3890.00,Ativo
+PAT-1125,Smartphone Samsung A54,Telefonia,RH,Fernanda Rocha,2021-07-13,1999.00,Ativo
+PAT-1126,Smartphone Samsung A54,Telefonia,Diretoria,Ana Souza,2019-02-07,1999.00,Ativo
+PAT-1127,Cadeira ergonômica,Mobiliário,Matriz - Financeiro,Patrícia Gomes,2022-01-04,1780.50,Ativo
+PAT-1128,Nobreak 3kVA,Energia,Filial Campinas,Diego Castro,2018-06-20,3890.00,Ativo
+PAT-1129,"Monitor LG 24""",Informática,Comercial,Fernanda Rocha,2019-11-09,1249.00,Ativo
+PAT-1130,Nobreak 3kVA,Energia,Almoxarifado,Luiza Martins,2018-02-28,3890.00,Ativo
+PAT-1131,Smartphone Samsung A54,Telefonia,Marketing,Luiza Martins,2020-02-05,1999.00,Ativo
+PAT-1132,Câmera IP,Segurança,Almoxarifado,Bruno Alves,2021-12-06,459.00,Em manutenção
+PAT-1133,Notebook Dell Latitude 5440,Informática,Comercial,Diego Castro,2020-03-23,5899.90,Em manutenção
+PAT-1134,Notebook Dell Latitude 5440,Informática,RH,Bruno Alves,2023-02-23,5899.90,Ativo
+PAT-1135,Switch 24 portas,Rede,Almoxarifado,Juliana Prado,2020-04-18,7450.00,Em manutenção
+PAT-1136,Tablet iPad,Informática,RH,Patrícia Gomes,2023-04-20,3499.00,Ativo
+PAT-1137,Tablet iPad,Informática,Comercial,Fernanda Rocha,2023-04-07,3499.00,Em manutenção
+PAT-1138,Smartphone Samsung A54,Telefonia,Almoxarifado,Ana Souza,2018-05-16,1999.00,Ativo
+PAT-1139,Mesa em L,Mobiliário,Almoxarifado,Luiza Martins,2024-12-12,980.00,Ativo
+PAT-1140,"Monitor LG 24""",Informática,Comercial,Carlos Lima,2019-08-07,1249.00,Ativo
+PAT-1141,Mesa em L,Mobiliário,Marketing,Ana Souza,2021-11-12,980.00,Ativo
+PAT-1142,Webcam Logitech,Informática,Matriz - Financeiro,Fernanda Rocha,2024-12-25,549.90,Ativo
+PAT-1143,Smartphone Samsung A54,Telefonia,Filial Campinas,Fernanda Rocha,2024-11-11,1999.00,Ativo
+PAT-1144,Tablet iPad,Informática,Diretoria,Luiza Martins,2021-12-03,3499.00,Ativo
+PAT-1145,Cadeira ergonômica,Mobiliário,Filial Campinas,Ana Souza,2019-10-15,1780.50,Ativo
+PAT-1146,Nobreak 3kVA,Energia,Marketing,Patrícia Gomes,2019-09-18,3890.00,Ativo
+PAT-1147,Notebook Dell Latitude 5440,Informática,Matriz - TI,Carlos Lima,2022-12-05,5899.90,Ativo
+PAT-1148,Webcam Logitech,Informática,Comercial,Rafael Nunes,2018-05-07,549.90,Ativo
+PAT-1149,Switch 24 portas,Rede,Comercial,Patrícia Gomes,2020-09-14,7450.00,Ativo
+PAT-1150,Notebook Dell Latitude 5440,Informática,Almoxarifado,Luiza Martins,2023-10-27,5899.90,Em manutenção
+PAT-1151,Projetor Epson,Audiovisual,RH,Juliana Prado,2022-03-17,3100.00,Em manutenção
+PAT-1152,Notebook Dell Latitude 5440,Informática,Marketing,Juliana Prado,2022-01-25,5899.90,Ativo
+PAT-1153,Cadeira ergonômica,Mobiliário,Filial Campinas,Luiza Martins,2022-12-04,1780.50,Em manutenção
+PAT-1154,Notebook Dell Latitude 5440,Informática,Almoxarifado,Diego Castro,2022-09-16,5899.90,Ativo
+PAT-1155,Switch 24 portas,Rede,Matriz - TI,Rafael Nunes,2019-05-02,7450.00,Ativo
+PAT-1156,Switch 24 portas,Rede,Marketing,Diego Castro,2018-02-15,7450.00,Ativo

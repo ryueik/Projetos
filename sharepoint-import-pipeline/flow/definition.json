@@ -1,0 +1,568 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "description": "Pipeline de Importação Automática para SharePoint: a cada 15 min lê os CSVs deixados pelas rotinas desktop (PAD), converte em itens e envia em lotes de 20 via Microsoft Graph $batch, com try/catch, retry exponencial e dead-letter.",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "siteUrl": {
+      "defaultValue": "https://contoso.sharepoint.com/sites/Patrimonio",
+      "type": "String"
+    },
+    "siteId": {
+      "defaultValue": "contoso.sharepoint.com,00000000-0000-0000-0000-000000000001,00000000-0000-0000-0000-000000000002",
+      "type": "String"
+    },
+    "listId": {
+      "defaultValue": "InventarioPatrimonial",
+      "type": "String"
+    },
+    "pastaEntrada": {
+      "defaultValue": "/Importacao/Entrada",
+      "type": "String"
+    },
+    "pastaProcessados": {
+      "defaultValue": "/Importacao/Processados",
+      "type": "String"
+    },
+    "pastaErro": {
+      "defaultValue": "/Importacao/Erro",
+      "type": "String"
+    },
+    "tamanhoLote": {
+      "defaultValue": 20,
+      "type": "Int"
+    },
+    "tenantId": {
+      "defaultValue": "<tenant-guid>",
+      "type": "String"
+    },
+    "clientId": {
+      "defaultValue": "<app-registration-client-id>",
+      "type": "String"
+    },
+    "clientSecret": {
+      "defaultValue": "",
+      "type": "SecureString"
+    },
+    "emailAlerta": {
+      "defaultValue": "patrimonio@empresa.com.br",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "Recorrencia": {
+      "type": "Recurrence",
+      "recurrence": {
+        "frequency": "Minute",
+        "interval": 15,
+        "timeZone": "E. South America Standard Time",
+        "schedule": {
+          "hours": [
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19"
+          ]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Inicializar_DeadLetter": {
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "deadLetter",
+            "type": "array",
+            "value": []
+          }
+        ]
+      },
+      "runAfter": {}
+    },
+    "Inicializar_Inseridos": {
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "inseridos",
+            "type": "integer",
+            "value": 0
+          }
+        ]
+      },
+      "runAfter": {
+        "Inicializar_DeadLetter": [
+          "Succeeded"
+        ]
+      }
+    },
+    "Listar_arquivos_da_pasta": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/folders/@{encodeURIComponent(encodeURIComponent(parameters('pastaEntrada')))}"
+      },
+      "runAfter": {
+        "Inicializar_Inseridos": [
+          "Succeeded"
+        ]
+      }
+    },
+    "Filtrar_CSVs": {
+      "type": "Query",
+      "inputs": {
+        "from": "@body('Listar_arquivos_da_pasta')",
+        "where": "@and(equals(item()?['IsFolder'], false), endsWith(toLower(item()?['Name']), '.csv'))"
+      },
+      "runAfter": {
+        "Listar_arquivos_da_pasta": [
+          "Succeeded"
+        ]
+      }
+    },
+    "Para_cada_arquivo": {
+      "type": "Foreach",
+      "foreach": "@body('Filtrar_CSVs')",
+      "runtimeConfiguration": {
+        "concurrency": {
+          "repetitions": 1
+        }
+      },
+      "runAfter": {
+        "Filtrar_CSVs": [
+          "Succeeded"
+        ]
+      },
+      "actions": {
+        "Try": {
+          "type": "Scope",
+          "actions": {
+            "Obter_conteudo_do_arquivo": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/files/@{encodeURIComponent(items('Para_cada_arquivo')?['Id'])}/content",
+                "queries": {
+                  "inferContentType": false
+                }
+              },
+              "runAfter": {}
+            },
+            "Separar_linhas": {
+              "type": "Compose",
+              "inputs": "@skip(split(replace(base64ToString(body('Obter_conteudo_do_arquivo')?['$content']), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A')), 1)",
+              "runAfter": {
+                "Obter_conteudo_do_arquivo": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Cabecalho": {
+              "type": "Compose",
+              "inputs": "@split(first(split(replace(base64ToString(body('Obter_conteudo_do_arquivo')?['$content']), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'))), ',')",
+              "runAfter": {
+                "Separar_linhas": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Linhas_nao_vazias": {
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Separar_linhas')",
+                "where": "@not(empty(trim(item())))"
+              },
+              "runAfter": {
+                "Cabecalho": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Montar_requisicoes": {
+              "type": "Select",
+              "inputs": {
+                "from": "@range(0, length(body('Linhas_nao_vazias')))",
+                "select": {
+                  "id": "@{add(item(), 2)}",
+                  "method": "POST",
+                  "url": "/sites/@{parameters('siteId')}/lists/@{parameters('listId')}/items",
+                  "headers": {
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "fields": {
+                      "Title": "@split(body('Linhas_nao_vazias')[item()], ',')[0]",
+                      "Descricao": "@split(body('Linhas_nao_vazias')[item()], ',')[1]",
+                      "Categoria": "@split(body('Linhas_nao_vazias')[item()], ',')[2]",
+                      "Localizacao": "@split(body('Linhas_nao_vazias')[item()], ',')[3]",
+                      "Responsavel": "@split(body('Linhas_nao_vazias')[item()], ',')[4]",
+                      "DataAquisicao": "@split(body('Linhas_nao_vazias')[item()], ',')[5]",
+                      "ValorAquisicao": "@float(split(body('Linhas_nao_vazias')[item()], ',')[6])",
+                      "Status": "@split(body('Linhas_nao_vazias')[item()], ',')[7]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Linhas_nao_vazias": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Para_cada_lote": {
+              "type": "Foreach",
+              "foreach": "@chunk(body('Montar_requisicoes'), parameters('tamanhoLote'))",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 1
+                }
+              },
+              "runAfter": {
+                "Montar_requisicoes": [
+                  "Succeeded"
+                ]
+              },
+              "actions": {
+                "Graph_batch": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "https://graph.microsoft.com/v1.0/$batch",
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "requests": "@items('Para_cada_lote')"
+                    },
+                    "authentication": {
+                      "type": "ActiveDirectoryOAuth",
+                      "authority": "https://login.microsoftonline.com",
+                      "tenant": "@parameters('tenantId')",
+                      "audience": "https://graph.microsoft.com",
+                      "clientId": "@parameters('clientId')",
+                      "secret": "@parameters('clientSecret')"
+                    },
+                    "retryPolicy": {
+                      "type": "exponential",
+                      "count": 5,
+                      "interval": "PT10S",
+                      "minimumInterval": "PT5S",
+                      "maximumInterval": "PT1M"
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "Respostas_com_throttling": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@body('Graph_batch')?['responses']",
+                    "where": "@or(equals(item()?['status'], 429), equals(item()?['status'], 503), equals(item()?['status'], 504))"
+                  },
+                  "runAfter": {
+                    "Graph_batch": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Houve_throttling": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "greater": [
+                          "@length(body('Respostas_com_throttling'))",
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "runAfter": {
+                    "Respostas_com_throttling": [
+                      "Succeeded"
+                    ]
+                  },
+                  "actions": {
+                    "Aguardar_Retry_After": {
+                      "type": "Wait",
+                      "inputs": {
+                        "interval": {
+                          "count": "@int(coalesce(first(body('Respostas_com_throttling'))?['headers']?['Retry-After'], '10'))",
+                          "unit": "Second"
+                        }
+                      },
+                      "runAfter": {}
+                    },
+                    "Selecionar_ids_estrangulados": {
+                      "type": "Select",
+                      "inputs": {
+                        "from": "@body('Respostas_com_throttling')",
+                        "select": "@item()?['id']"
+                      },
+                      "runAfter": {
+                        "Aguardar_Retry_After": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Filtrar_para_reenvio": {
+                      "type": "Query",
+                      "inputs": {
+                        "from": "@items('Para_cada_lote')",
+                        "where": "@contains(body('Selecionar_ids_estrangulados'), item()?['id'])"
+                      },
+                      "runAfter": {
+                        "Selecionar_ids_estrangulados": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Reenviar_itens_estrangulados": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "https://graph.microsoft.com/v1.0/$batch",
+                        "headers": {
+                          "Content-Type": "application/json"
+                        },
+                        "body": {
+                          "requests": "@body('Filtrar_para_reenvio')"
+                        },
+                        "authentication": {
+                          "type": "ActiveDirectoryOAuth",
+                          "authority": "https://login.microsoftonline.com",
+                          "tenant": "@parameters('tenantId')",
+                          "audience": "https://graph.microsoft.com",
+                          "clientId": "@parameters('clientId')",
+                          "secret": "@parameters('clientSecret')"
+                        },
+                        "retryPolicy": {
+                          "type": "exponential",
+                          "count": 4,
+                          "interval": "PT15S"
+                        }
+                      },
+                      "runAfter": {
+                        "Filtrar_para_reenvio": [
+                          "Succeeded"
+                        ]
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {}
+                  }
+                },
+                "Respostas_com_erro": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@union(body('Graph_batch')?['responses'], coalesce(body('Reenviar_itens_estrangulados')?['responses'], json('[]')))",
+                    "where": "@and(greaterOrEquals(item()?['status'], 400), not(contains(createArray(429, 503, 504), item()?['status'])))"
+                  },
+                  "runAfter": {
+                    "Houve_throttling": [
+                      "Succeeded",
+                      "Skipped"
+                    ]
+                  }
+                },
+                "Para_cada_erro": {
+                  "type": "Foreach",
+                  "foreach": "@body('Respostas_com_erro')",
+                  "runAfter": {
+                    "Respostas_com_erro": [
+                      "Succeeded"
+                    ]
+                  },
+                  "actions": {
+                    "Adicionar_ao_dead_letter": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "deadLetter",
+                        "value": {
+                          "arquivo": "@items('Para_cada_arquivo')?['Name']",
+                          "linha": "@items('Para_cada_erro')?['id']",
+                          "status": "@items('Para_cada_erro')?['status']",
+                          "erro": "@items('Para_cada_erro')?['body']?['error']?['message']"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  }
+                },
+                "Somar_inseridos": {
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "inseridos",
+                    "value": "@sub(length(items('Para_cada_lote')), length(body('Respostas_com_erro')))"
+                  },
+                  "runAfter": {
+                    "Para_cada_erro": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              }
+            },
+            "Mover_para_Processados": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/movefileasync",
+                "body": {
+                  "sourceFileId": "@items('Para_cada_arquivo')?['Id']",
+                  "destinationDataset": "@parameters('siteUrl')",
+                  "destinationFolderPath": "@parameters('pastaProcessados')",
+                  "nameConflictBehavior": 1
+                }
+              },
+              "runAfter": {
+                "Para_cada_lote": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "runAfter": {}
+        },
+        "Catch": {
+          "type": "Scope",
+          "runAfter": {
+            "Try": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "actions": {
+            "Mover_para_Erro": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/movefileasync",
+                "body": {
+                  "sourceFileId": "@items('Para_cada_arquivo')?['Id']",
+                  "destinationDataset": "@parameters('siteUrl')",
+                  "destinationFolderPath": "@parameters('pastaErro')",
+                  "nameConflictBehavior": 1
+                }
+              },
+              "runAfter": {}
+            },
+            "Alertar_falha": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['office365']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/v2/Mail",
+                "body": {
+                  "To": "@parameters('emailAlerta')",
+                  "Subject": "[Importação SharePoint] Falha em @{items('Para_cada_arquivo')?['Name']}",
+                  "Body": "<p>O arquivo foi movido para <b>@{parameters('pastaErro')}</b>.</p><p>Execução: @{workflow()?['run']?['name']}</p><pre>@{string(result('Try'))}</pre>",
+                  "Importance": "High"
+                }
+              },
+              "runAfter": {
+                "Mover_para_Erro": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Tem_dead_letter": {
+      "type": "If",
+      "expression": {
+        "and": [
+          {
+            "greater": [
+              "@length(variables('deadLetter'))",
+              0
+            ]
+          }
+        ]
+      },
+      "runAfter": {
+        "Para_cada_arquivo": [
+          "Succeeded",
+          "Failed"
+        ]
+      },
+      "actions": {
+        "Gerar_CSV_dead_letter": {
+          "type": "Table",
+          "inputs": {
+            "from": "@variables('deadLetter')",
+            "format": "CSV"
+          },
+          "runAfter": {}
+        },
+        "Gravar_dead_letter": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('siteUrl')))}/files",
+            "queries": {
+              "folderPath": "@parameters('pastaErro')",
+              "name": "dead_letter_@{formatDateTime(utcNow(), 'yyyyMMdd_HHmm')}.csv"
+            },
+            "body": "@body('Gerar_CSV_dead_letter')"
+          },
+          "runAfter": {
+            "Gerar_CSV_dead_letter": [
+              "Succeeded"
+            ]
+          }
+        }
+      },
+      "else": {
+        "actions": {}
+      }
+    }
+  },
+  "outputs": {}
+}

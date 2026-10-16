@@ -1,0 +1,58 @@
+# ==========================================================================
+#  Power Automate Desktop · "Inventário → SharePoint (ETL)"
+#  Cole este texto num fluxo vazio do PAD (Ctrl+V no editor) para recriar
+#  as ações. Ajuste as variáveis do bloco CONFIGURAÇÃO.
+#
+#  O que faz:
+#   1. Pega todas as planilhas novas da pasta de entrada (.csv / .xlsx)
+#   2. Para cada uma, chama o etl.py (Python) que limpa e valida os dados
+#   3. Código 0 = tudo válido · 2 = há rejeitados · outro = falha
+#   4. Move o arquivo original para Processados/ ou Erro/
+#   5. Copia o CSV limpo para a pasta sincronizada com a biblioteca do
+#      SharePoint (o fluxo Cloud "Pipeline de Importação" consome de lá)
+#   6. Envia e-mail com o relatório de rejeitados, quando houver
+# ==========================================================================
+
+# ---------- CONFIGURAÇÃO ----------
+SET PastaEntrada TO $'''C:\\RPA\\Inventario\\Entrada'''
+SET PastaProcessados TO $'''C:\\RPA\\Inventario\\Processados'''
+SET PastaErro TO $'''C:\\RPA\\Inventario\\Erro'''
+SET PastaSaida TO $'''C:\\RPA\\Inventario\\Saida'''
+SET PastaScripts TO $'''C:\\RPA\\Inventario\\sharepoint-planilhas-etl'''
+SET PastaSharePoint TO $'''C:\\Users\\%UserName%\\Empresa\\Inventario Patrimonial - Importacao'''
+SET EmailResponsavel TO $'''patrimonio@empresa.com.br'''
+SET Python TO $'''C:\\Python312\\python.exe'''
+
+# ---------- 1. Arquivos novos ----------
+Folder.GetFiles Folder: PastaEntrada FileFilter: $'''*.csv;*.xlsx''' IncludeSubfolders: False FailOnAccessDenied: True SortBy1: Folder.SortBy.CreationTime SortDescending1: False SortBy2: Folder.SortBy.NoSort SortDescending2: False SortBy3: Folder.SortBy.NoSort SortDescending3: False Files=> Arquivos
+IF Arquivos.Count = 0 THEN
+    # Nada a fazer nesta execução
+    EXIT Code: 0
+END
+
+LOOP FOREACH Arquivo IN Arquivos
+    SET PastaLote TO $'''%PastaSaida%\\%Arquivo.NameWithoutExtension%'''
+
+    # ---------- 2. ETL em Python ----------
+    Scripting.RunDOSCommand.RunDOSCommand DOSCommandOrApplication: $'''\"%Python%\" etl.py \"%Arquivo.FullName%\" -o \"%PastaLote%\"''' WorkingDirectory: PastaScripts StandardOutput=> SaidaEtl StandardError=> ErroEtl ExitCode=> CodigoEtl
+    Text.AppendLine Text: LogExecucao LineToAppend: $'''[%CurrentDateTime%] %Arquivo.Name% -> código %CodigoEtl% | %SaidaEtl%''' Result=> LogExecucao
+
+    # ---------- 3/4. Decide pelo código de saída ----------
+    IF CodigoEtl = 0 OR CodigoEtl = 2 THEN
+        File.Copy Files: $'''%PastaLote%\\inventario_sharepoint.csv''' Destination: PastaSharePoint IfFileExists: File.IfExists.Overwrite CopiedFiles=> ArquivoPublicado
+        File.Move Files: Arquivo Destination: PastaProcessados IfFileExists: File.IfExists.Overwrite MovedFiles=> ArquivoMovido
+
+        # ---------- 6. Avisa sobre rejeitados ----------
+        IF CodigoEtl = 2 THEN
+            Outlook.Launch Instance=> Outlook
+            Outlook.SendEmailThroughOutlook.SendEmail Instance: Outlook Account: EmailResponsavel SendTo: EmailResponsavel Subject: $'''[Inventário] Linhas rejeitadas em %Arquivo.Name%''' Body: $'''Olá,\r\n\r\nO ETL processou %Arquivo.Name% e algumas linhas não puderam ser importadas.\r\n\r\n%SaidaEtl%\r\n\r\nO relatório com o motivo de cada linha está em anexo.''' IsBodyHtml: False Attachments: $'''%PastaLote%\\rejeitados.csv'''
+            Outlook.Close Instance: Outlook
+        END
+    ELSE
+        File.Move Files: Arquivo Destination: PastaErro IfFileExists: File.IfExists.Overwrite MovedFiles=> ArquivoMovido
+        Display.ShowMessageDialog.ShowMessageWithTimeout Title: $'''ETL Inventário''' Message: $'''Falha ao processar %Arquivo.Name%:\r\n%ErroEtl%''' Icon: Display.Icon.ErrorIcon Buttons: Display.Buttons.OK DefaultButton: Display.DefaultButton.Button1 IsTopMost: False Timeout: 30 ButtonPressed=> Botao
+    END
+END
+
+# ---------- Log da execução ----------
+File.WriteText File: $'''%PastaSaida%\\execucoes.log''' TextToWrite: LogExecucao AppendNewLine: True IfFileExists: File.IfExists.Append Encoding: File.TextFileEncoding.UTF8
