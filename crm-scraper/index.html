@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extrator Cadastral de Médicos (CRM) · Projetos MM</title>
+  <meta name="description" content="Robô de web scraping em Python e Power Automate Desktop que percorre o portal médico, extrai a situação cadastral por UF com XPath e gera um CSV consolidado." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .uf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .uf-chips button { cursor: pointer; min-width: 46px; justify-content: center; transition: background .2s, color .2s, border-color .2s; }
+    .uf-chips button[aria-pressed="true"] { background: var(--grad); color: #1a0f04; border-color: transparent; font-weight: 700; }
+    .uf-progress { display: grid; gap: 10px; max-height: 300px; overflow: auto; padding-right: 4px; }
+    .uf-row { display: grid; grid-template-columns: 38px 1fr 92px; gap: 10px; align-items: center; font: 500 .8rem var(--font-mono); }
+    .uf-row .meta { color: var(--text-3); text-align: right; }
+    .uf-row.done .meta { color: var(--ok); }
+    .uf-row.active strong { color: var(--orange); }
+    .chart { width: 100%; height: auto; display: block; }
+    .chart text { font-family: var(--font-mono); font-size: 11px; fill: var(--text-3); }
+    .chart .grid-line { stroke: var(--line); }
+    .legend { display: flex; gap: 16px; font: 500 .78rem var(--font-mono); color: var(--text-2); }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+    .filters { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; margin-bottom: 14px; }
+    @media (max-width: 640px) { .filters { grid-template-columns: 1fr 1fr; } .filters .f-busca { grid-column: 1 / -1; } }
+    .pg { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 10px; font: 500 .8rem var(--font-mono); color: var(--text-3); }
+    .matches { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow: auto; }
+    .matches li { padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; font: 400 .82rem var(--font-mono); word-break: break-word; }
+    .matches li b { color: var(--accent); margin-right: 8px; }
+    .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .presets button { cursor: pointer; }
+    .xp-err { color: var(--err); font: 500 .82rem var(--font-mono); min-height: 1.2em; }
+    .empty-state { padding: 26px 10px; text-align: center; color: var(--text-3); }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="crm-scraper"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">RPA · Web Scraping</span>
+      <h1>Extrator cadastral de <span class="grad-text">médicos (CRM)</span></h1>
+      <p class="lead">Robô em Python (e alternativa em Power Automate Desktop) que navega pelo portal médico, percorre a paginação de cada estado, extrai nome, CRM, situação e especialidades com XPath e entrega um CSV por UF mais um consolidado.</p>
+      <div class="meta chips">
+        <span class="chip gold">Web Scraping</span>
+        <span class="chip orange">DOM Parsing</span>
+        <span class="chip red">XPath</span>
+        <span class="chip">CSV Automation</span>
+        <span class="chip">Python</span>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px; align-items: start;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>Estados</h3>
+          <div class="row">
+            <button class="btn btn-ghost btn-sm" id="btnAll" type="button">Todos</button>
+            <button class="btn btn-ghost btn-sm" id="btnNone" type="button">Nenhum</button>
+          </div>
+        </div>
+        <div class="uf-chips" id="ufChips" role="group" aria-label="UFs para coletar"></div>
+        <div class="grid grid-2 mt-2" style="gap: 12px">
+          <div class="field" style="margin:0">
+            <label for="delay">Atraso entre páginas</label>
+            <select class="input" id="delay">
+              <option value="60">Rápido (demo)</option>
+              <option value="180" selected>Normal</option>
+              <option value="420">Educado (1,5 s real)</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label for="maxPages">Máx. páginas por UF</label>
+            <input class="input" id="maxPages" type="number" min="1" max="20" value="6" />
+          </div>
+        </div>
+        <div class="row mt-2">
+          <button class="btn btn-primary" id="btnStart" type="button">Iniciar coleta</button>
+          <button class="btn btn-danger" id="btnStop" type="button" disabled>Parar</button>
+          <span class="spacer"></span>
+          <span class="chip" id="ufCount">0 UFs</span>
+        </div>
+        <div class="progress mt-2"><span id="totalBar"></span></div>
+        <div class="uf-progress mt-2" id="ufProgress"><div class="muted" style="font-size:.88rem">Escolha as UFs e clique em <strong>Iniciar coleta</strong>.</div></div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title"><h3>Log do robô</h3><span class="chip" id="elapsed">00:00</span></div>
+        <div class="log" id="log" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="grid grid-4 reveal">
+        <div class="kpi"><div class="num" id="kPages">0</div><div class="lbl">Páginas lidas</div></div>
+        <div class="kpi"><div class="num" id="kRecords">0</div><div class="lbl">Registros</div></div>
+        <div class="kpi"><div class="num" id="kRegular" style="color: var(--ok)">0%</div><div class="lbl">Regulares</div></div>
+        <div class="kpi"><div class="num" id="kIrregular" style="color: var(--err)">0</div><div class="lbl">Irregulares</div></div>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px; align-items: start;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>Situação por UF</h3>
+          <div class="legend"><span><i style="background: var(--ok)"></i>Regular</span><span><i style="background: var(--red)"></i>Irregular</span></div>
+        </div>
+        <svg class="chart" id="chart" viewBox="0 0 520 260" role="img" aria-label="Gráfico de registros por UF e situação"></svg>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>Registros consolidados</h3>
+          <button class="btn btn-ghost btn-sm" id="btnCsv" type="button" disabled>Baixar CSV</button>
+        </div>
+        <div class="filters">
+          <select class="input" id="fUf" aria-label="Filtrar por UF"><option value="">Todas as UFs</option></select>
+          <select class="input" id="fSit" aria-label="Filtrar por situação">
+            <option value="">Todas</option><option>Regular</option><option>Irregular</option>
+          </select>
+          <input class="input f-busca" id="fBusca" placeholder="Buscar nome, CRM ou especialidade" aria-label="Buscar" />
+        </div>
+        <div class="table-wrap" style="max-height: 340px">
+          <table class="table">
+            <thead><tr><th>UF</th><th>CRM</th><th>Nome</th><th>Situação</th><th>Especialidades</th><th>Pág.</th></tr></thead>
+            <tbody id="rows"><tr><td colspan="6" class="muted">Nenhum registro coletado ainda.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pg"><span id="pgInfo">0 registros</span><button class="btn btn-ghost btn-sm" id="pgPrev" type="button">‹</button><button class="btn btn-ghost btn-sm" id="pgNext" type="button">›</button></div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title"><h3>XPath playground</h3><span class="chip gold">document.evaluate</span></div>
+        <p class="muted" style="font-size:.9rem">Teste os seletores do <code>config.json</code> contra um trecho de HTML de resultado. Cole o HTML do portal real para ajustar os seletores antes de rodar o robô.</p>
+        <div class="grid grid-2">
+          <div>
+            <div class="field">
+              <label for="xpHtml">HTML de amostra</label>
+              <textarea class="input" id="xpHtml" style="min-height: 300px" spellcheck="false"></textarea>
+            </div>
+          </div>
+          <div>
+            <div class="presets" id="presets"></div>
+            <div class="field">
+              <label for="xpExpr">Expressão XPath</label>
+              <input class="input mono" id="xpExpr" spellcheck="false" />
+            </div>
+            <div class="row"><button class="btn btn-primary btn-sm" id="btnEval" type="button">Avaliar</button><span class="chip" id="xpCount">—</span></div>
+            <div class="xp-err mt-1" id="xpErr"></div>
+            <ul class="matches mt-1" id="xpOut"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Do portal ao CSV</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Configuração declarativa</h4><p><code>config.json</code> guarda a URL com <code>{uf}</code> e <code>{pagina}</code>, os seletores XPath, o atraso entre requisições, o número de tentativas e o timeout.</p></div></div>
+            <div class="step"><div><h4>Navegação educada</h4><p>Uma sessão <code>requests</code> percorre a paginação seguindo o link “Próxima”, espera entre páginas e repete com backoff exponencial em 429/5xx.</p></div></div>
+            <div class="step"><div><h4>Parsing com XPath</h4><p><code>lxml</code> monta a árvore DOM e cada campo sai de uma expressão XPath; situação e datas são normalizadas e duplicados por UF+CRM são descartados.</p></div></div>
+            <div class="step"><div><h4>CSV por UF e consolidado</h4><p>Cada estado gera <code>medicos_UF.csv</code>; no fim, <code>medicos_consolidado.csv</code> e um resumo Regular/Irregular por UF no terminal.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/crm-scraper/scraper.py" target="_blank" rel="noopener">scraper.py <small>Robô (requests + lxml)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/crm-scraper/config.json" target="_blank" rel="noopener">config.json <small>URL e seletores XPath</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/crm-scraper/pad/fluxo.txt" target="_blank" rel="noopener">pad/fluxo.txt <small>Fluxo Power Automate Desktop</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/crm-scraper/exemplo/pagina_resultado.html" target="_blank" rel="noopener">exemplo/pagina_resultado.html <small>Página de exemplo (offline)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/crm-scraper/tests/test_scraper.py" target="_blank" rel="noopener">tests/test_scraper.py <small>Testes</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/crm-scraper/README.md" target="_blank" rel="noopener">README.md <small>Como usar</small></a></li>
+          </ul>
+          <pre class="code mt-2">pip install -r requirements.txt
+python scraper.py --offline          # sem rede, usa exemplo/
+python scraper.py --ufs SP RJ MG     # portal configurado</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <template id="sampleHtml"><main id="resultados">
+  <div class="resultado-item" data-uf="SP">
+    <h4 class="nome">ANA BEATRIZ SOUZA</h4>
+    <div class="campo"><b>CRM:</b> <span class="crm">104233</span>-<span class="uf">SP</span></div>
+    <div class="campo"><b>Situação:</b> <span class="situacao">Regular</span></div>
+    <div class="campo"><b>Especialidades:</b> <span class="especialidade">Cardiologia</span></div>
+    <div class="campo"><b>Inscrição:</b> <span class="inscricao">Principal</span> desde <span class="data">12/03/2004</span></div>
+  </div>
+  <div class="resultado-item" data-uf="SP">
+    <h4 class="nome">CARLOS EDUARDO LIMA</h4>
+    <div class="campo"><b>CRM:</b> <span class="crm">88712</span>-<span class="uf">SP</span></div>
+    <div class="campo"><b>Situação:</b> <span class="situacao">Regular</span></div>
+    <div class="campo"><b>Especialidades:</b> <span class="especialidade">Clínica Médica</span>, <span class="especialidade">Medicina Intensiva</span></div>
+    <div class="campo"><b>Inscrição:</b> <span class="inscricao">Principal</span> desde <span class="data">05/08/1998</span></div>
+  </div>
+  <div class="resultado-item" data-uf="SP">
+    <h4 class="nome">FERNANDA OLIVEIRA ROCHA</h4>
+    <div class="campo"><b>CRM:</b> <span class="crm">152901</span>-<span class="uf">SP</span></div>
+    <div class="campo"><b>Situação:</b> <span class="situacao">Irregular</span></div>
+    <div class="campo"><b>Inscrição:</b> <span class="inscricao">Principal</span> desde <span class="data">22/01/2015</span></div>
+  </div>
+</main>
+<nav class="paginacao">
+  <span class="atual">1</span>
+  <a class="proxima" href="?uf=SP&amp;pagina=2">Próxima »</a>
+</nav></template>
+
+  <script>
+    (function () {
+      "use strict";
+      var $ = function (id) { return document.getElementById(id); };
+      var UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+      var DEFAULT = ["SP", "RJ", "MG", "BA", "RS", "PR"];
+      var NOMES = ["Ana", "Bruno", "Camila", "Daniel", "Eduarda", "Felipe", "Gabriela", "Henrique", "Isabela", "João", "Larissa", "Lucas", "Mariana", "Matheus", "Natália", "Otávio", "Paula", "Rafael", "Sofia", "Thiago", "Vanessa", "Vinícius"];
+      var SOBRENOMES = ["Almeida", "Araújo", "Barbosa", "Cardoso", "Carvalho", "Costa", "Duarte", "Ferreira", "Freitas", "Gomes", "Lima", "Martins", "Mendes", "Moraes", "Nunes", "Oliveira", "Pereira", "Ribeiro", "Rocha", "Santos", "Silva", "Souza", "Teixeira"];
+      var ESPS = ["Clínica Médica", "Pediatria", "Cardiologia", "Dermatologia", "Ortopedia e Traumatologia", "Ginecologia e Obstetrícia", "Psiquiatria", "Anestesiologia", "Medicina de Família e Comunidade", "Neurologia", "Oftalmologia", "Cirurgia Geral", "Radiologia"];
+      var PAGE_SIZE = 25;
+
+      var selected = new Set(DEFAULT);
+      var records = [];
+      var running = false, stopFlag = false, startedAt = 0, timer = null, page = 0;
+      var stats = { pages: 0 };
+
+      // ---------------- Seleção de UFs ----------------
+      var chipsBox = $("ufChips");
+      UFS.forEach(function (uf) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "chip"; b.textContent = uf; b.dataset.uf = uf;
+        b.addEventListener("click", function () {
+          if (running) return;
+          if (selected.has(uf)) selected.delete(uf); else selected.add(uf);
+          syncChips();
+        });
+        chipsBox.append(b);
+      });
+      function syncChips() {
+        chipsBox.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", selected.has(b.dataset.uf) ? "true" : "false"); });
+        $("ufCount").textContent = selected.size + (selected.size === 1 ? " UF" : " UFs");
+        $("btnStart").disabled = running || selected.size === 0;
+      }
+      $("btnAll").onclick = function () { if (!running) { UFS.forEach(function (u) { selected.add(u); }); syncChips(); } };
+      $("btnNone").onclick = function () { if (!running) { selected.clear(); syncChips(); } };
+      syncChips();
+
+      // ---------------- Utilidades ----------------
+      function rand(n) { return Math.floor(Math.random() * n); }
+      function pick(a) { return a[rand(a.length)]; }
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+      function pad(n) { return String(n).padStart(2, "0"); }
+      function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+      function log(kind, msg) {
+        var box = $("log");
+        var d = new Date();
+        var line = el("span", kind, "[" + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + "] " + msg + "\n");
+        box.append(line);
+        while (box.childNodes.length > 400) box.firstChild.remove();
+        box.scrollTop = box.scrollHeight;
+      }
+
+      function fakeDoctor(uf, pg) {
+        var nome = pick(NOMES) + " " + pick(SOBRENOMES) + " " + pick(SOBRENOMES);
+        var esp = [];
+        if (Math.random() > .12) esp.push(pick(ESPS));
+        if (Math.random() > .8) { var e2 = pick(ESPS); if (esp.indexOf(e2) < 0) esp.push(e2); }
+        var regular = Math.random() > (uf === "SP" || uf === "RJ" ? .1 : .16);
+        return { uf: uf, crm: String(10000 + rand(190000)), nome: nome, situacao: regular ? "Regular" : "Irregular", especialidades: esp, inscricao: Math.random() > .85 ? "Secundária" : "Principal", pagina: pg };
+      }
+
+      // ---------------- Coleta simulada ----------------
+      function buildProgress(list) {
+        var box = $("ufProgress"); box.textContent = "";
+        list.forEach(function (uf) {
+          var row = el("div", "uf-row"); row.id = "p-" + uf;
+          var bar = el("div", "progress"); bar.append(el("span"));
+          row.append(el("strong", null, uf), bar, el("span", "meta", "na fila"));
+          box.append(row);
+        });
+      }
+      function setUfProgress(uf, pct, meta, state) {
+        var row = $("p-" + uf); if (!row) return;
+        row.querySelector(".progress > span").style.width = pct + "%";
+        row.querySelector(".meta").textContent = meta;
+        row.classList.toggle("active", state === "active");
+        row.classList.toggle("done", state === "done");
+      }
+
+      $("btnStart").onclick = async function () {
+        if (running || !selected.size) return;
+        running = true; stopFlag = false;
+        records = []; stats.pages = 0; page = 0;
+        $("log").textContent = "";
+        $("btnStop").disabled = false; $("btnCsv").disabled = true;
+        chipsBox.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+        syncChips();
+        var list = UFS.filter(function (u) { return selected.has(u); });
+        var delay = Number($("delay").value);
+        var maxPages = Math.max(1, Math.min(20, Number($("maxPages").value) || 6));
+        buildProgress(list); refreshUfFilter(list); render();
+        startedAt = Date.now();
+        timer = setInterval(function () {
+          var s = Math.floor((Date.now() - startedAt) / 1000);
+          $("elapsed").textContent = pad(Math.floor(s / 60)) + ":" + pad(s % 60);
+        }, 500);
+        log("info", "Iniciando coleta de " + list.length + " UF(s) · atraso " + delay + " ms · máx. " + maxPages + " páginas");
+
+        for (var i = 0; i < list.length && !stopFlag; i++) {
+          var uf = list[i];
+          var totalPages = 1 + rand(maxPages);
+          var got = 0;
+          log("info", "[" + uf + "] Abrindo busca por UF");
+          setUfProgress(uf, 0, "página 0/" + totalPages, "active");
+          for (var p = 1; p <= totalPages && !stopFlag; p++) {
+            var url = "GET /busca?uf=" + uf + "&pagina=" + p;
+            await sleep(delay + rand(delay));
+            if (Math.random() < .07) {
+              log("warn", "[" + uf + "] " + url + " → 429 Too Many Requests · aguardando " + (delay * 2) + " ms (tentativa 1/3)");
+              await sleep(delay * 2);
+            }
+            var n = p === totalPages ? 3 + rand(15) : 20;
+            for (var k = 0; k < n; k++) records.push(fakeDoctor(uf, p));
+            got += n; stats.pages++;
+            log("ok", "[" + uf + "] " + url + " → 200 · " + n + " registros (XPath //div[@class='resultado-item'])");
+            setUfProgress(uf, Math.round(p / totalPages * 100), "pág. " + p + "/" + totalPages, "active");
+            $("totalBar").style.width = Math.round(((i + p / totalPages) / list.length) * 100) + "%";
+            render();
+          }
+          if (stopFlag) { setUfProgress(uf, 0, "interrompida", ""); break; }
+          if (got) log("info", "[" + uf + "] Sem link “Próxima” · " + got + " registros → medicos_" + uf + ".csv");
+          setUfProgress(uf, 100, got + " reg.", "done");
+        }
+
+        clearInterval(timer);
+        dedupe();
+        if (stopFlag) log("err", "Coleta interrompida pelo usuário · " + records.length + " registros mantidos");
+        else { $("totalBar").style.width = "100%"; log("ok", "Concluído · " + records.length + " registros em " + stats.pages + " páginas → medicos_consolidado.csv"); }
+        running = false;
+        $("btnStop").disabled = true; $("btnCsv").disabled = !records.length;
+        chipsBox.querySelectorAll("button").forEach(function (b) { b.disabled = false; });
+        syncChips(); render();
+      };
+      $("btnStop").onclick = function () { stopFlag = true; };
+
+      function dedupe() {
+        var seen = {};
+        records = records.filter(function (r) { var k = r.uf + r.crm; if (seen[k]) return false; seen[k] = 1; return true; });
+      }
+
+      // ---------------- KPIs, gráfico e tabela ----------------
+      function render() {
+        var reg = records.filter(function (r) { return r.situacao === "Regular"; }).length;
+        $("kPages").textContent = String(stats.pages);
+        $("kRecords").textContent = records.length.toLocaleString("pt-BR");
+        $("kRegular").textContent = records.length ? Math.round(reg / records.length * 100) + "%" : "0%";
+        $("kIrregular").textContent = String(records.length - reg);
+        drawChart(); renderTable();
+      }
+
+      var SVGNS = "http://www.w3.org/2000/svg";
+      function svg(tag, attrs, text) {
+        var e = document.createElementNS(SVGNS, tag);
+        Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      function drawChart() {
+        var c = $("chart"); c.textContent = "";
+        var by = {};
+        records.forEach(function (r) { by[r.uf] = by[r.uf] || { Regular: 0, Irregular: 0 }; by[r.uf][r.situacao]++; });
+        var ufs = Object.keys(by);
+        var W = 520, H = 260, L = 40, B = 28, T = 12, R = 8;
+        if (!ufs.length) {
+          c.append(svg("text", { x: W / 2, y: H / 2, "text-anchor": "middle" }, "O gráfico aparece durante a coleta"));
+          return;
+        }
+        var max = Math.max.apply(null, ufs.map(function (u) { return by[u].Regular + by[u].Irregular; }));
+        var step = Math.max(1, Math.ceil(max / 4 / 5) * 5);
+        var top = Math.max(step * 4, max);
+        for (var g = 0; g <= 4; g++) {
+          var val = Math.round(top / 4 * g);
+          var y = H - B - (H - B - T) * g / 4;
+          c.append(svg("line", { x1: L, x2: W - R, y1: y, y2: y, "class": "grid-line" }));
+          c.append(svg("text", { x: L - 6, y: y + 4, "text-anchor": "end" }, String(val)));
+        }
+        var slot = (W - L - R) / ufs.length;
+        var bw = Math.min(34, slot * .62);
+        ufs.forEach(function (u, i) {
+          var x = L + slot * i + (slot - bw) / 2;
+          var hReg = (H - B - T) * by[u].Regular / top;
+          var hIrr = (H - B - T) * by[u].Irregular / top;
+          var yReg = H - B - hReg;
+          var r1 = svg("rect", { x: x, y: yReg, width: bw, height: Math.max(0, hReg), rx: 3, style: "fill: var(--ok)" });
+          r1.append(svg("title", {}, u + " · Regular: " + by[u].Regular));
+          var r2 = svg("rect", { x: x, y: yReg - hIrr - (hIrr ? 2 : 0), width: bw, height: Math.max(0, hIrr), rx: 3, style: "fill: var(--red)" });
+          r2.append(svg("title", {}, u + " · Irregular: " + by[u].Irregular));
+          c.append(r1, r2);
+          c.append(svg("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle" }, u));
+        });
+      }
+
+      function refreshUfFilter(list) {
+        var s = $("fUf"); var cur = s.value;
+        while (s.options.length > 1) s.remove(1);
+        list.forEach(function (u) { var o = document.createElement("option"); o.value = u; o.textContent = u; s.append(o); });
+        if (list.indexOf(cur) >= 0) s.value = cur;
+      }
+
+      function filtered() {
+        var uf = $("fUf").value, sit = $("fSit").value, q = $("fBusca").value.trim().toLowerCase();
+        return records.filter(function (r) {
+          if (uf && r.uf !== uf) return false;
+          if (sit && r.situacao !== sit) return false;
+          if (q && (r.nome + " " + r.crm + " " + r.especialidades.join(" ")).toLowerCase().indexOf(q) < 0) return false;
+          return true;
+        });
+      }
+
+      function renderTable() {
+        var list = filtered();
+        var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (page >= pages) page = pages - 1;
+        var tb = $("rows"); tb.textContent = "";
+        if (!list.length) {
+          var tr0 = el("tr"); var td0 = el("td", "muted", records.length ? "Nenhum registro com esses filtros." : "Nenhum registro coletado ainda.");
+          td0.colSpan = 6; tr0.append(td0); tb.append(tr0);
+        }
+        list.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).forEach(function (r) {
+          var tr = el("tr");
+          var sit = el("td"); sit.append(el("span", "badge " + (r.situacao === "Regular" ? "ok" : "err"), r.situacao));
+          tr.append(el("td", null, r.uf), el("td", "mono", r.crm), el("td", null, r.nome), sit, el("td", null, r.especialidades.join(", ") || "—"), el("td", null, String(r.pagina)));
+          tb.append(tr);
+        });
+        $("pgInfo").textContent = list.length.toLocaleString("pt-BR") + " registros · página " + (page + 1) + "/" + pages;
+        $("pgPrev").disabled = page <= 0; $("pgNext").disabled = page >= pages - 1;
+      }
+      ["fUf", "fSit", "fBusca"].forEach(function (id) { $(id).addEventListener("input", function () { page = 0; renderTable(); }); });
+      $("pgPrev").onclick = function () { if (page > 0) { page--; renderTable(); } };
+      $("pgNext").onclick = function () { page++; renderTable(); };
+
+      $("btnCsv").onclick = function () {
+        var esc = function (v) { v = String(v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+        var lines = ["uf;crm;nome;situacao;especialidades;inscricao;pagina"].concat(records.map(function (r) {
+          return [r.uf, r.crm, r.nome, r.situacao, r.especialidades.join(" | "), r.inscricao, r.pagina].map(esc).join(";");
+        }));
+        var blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "medicos_consolidado.csv";
+        document.body.append(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      };
+
+      // ---------------- XPath playground ----------------
+      var PRESETS = [
+        ["Itens", "//div[contains(@class,'resultado-item')]"],
+        ["Nomes", "//div[contains(@class,'resultado-item')]/h4[@class='nome']"],
+        ["CRMs", "//span[@class='crm']/text()"],
+        ["Irregulares", "//div[contains(@class,'resultado-item')][.//span[@class='situacao']='Irregular']//h4"],
+        ["Especialidades", "//span[@class='especialidade']"],
+        ["Próxima página", "//nav[@class='paginacao']//a[contains(@class,'proxima')]/@href"],
+        ["Contagem", "count(//div[contains(@class,'resultado-item')])"]
+      ];
+      PRESETS.forEach(function (p) {
+        var b = el("button", "chip btnlike", p[0]); b.type = "button"; b.style.cursor = "pointer";
+        b.onclick = function () { $("xpExpr").value = p[1]; evaluate(); };
+        $("presets").append(b);
+      });
+      $("xpHtml").value = $("sampleHtml").innerHTML.trim();
+      $("xpExpr").value = PRESETS[1][1];
+
+      function evaluate() {
+        var out = $("xpOut"); out.textContent = ""; $("xpErr").textContent = "";
+        var doc = new DOMParser().parseFromString($("xpHtml").value, "text/html");
+        var expr = $("xpExpr").value.trim();
+        if (!expr) { $("xpCount").textContent = "—"; return; }
+        var res;
+        try { res = doc.evaluate(expr, doc, null, XPathResult.ANY_TYPE, null); }
+        catch (e) { $("xpErr").textContent = "Expressão inválida: " + e.message; $("xpCount").textContent = "erro"; return; }
+        var items = [];
+        switch (res.resultType) {
+          case XPathResult.NUMBER_TYPE: items.push(["number", String(res.numberValue)]); break;
+          case XPathResult.STRING_TYPE: items.push(["string", res.stringValue]); break;
+          case XPathResult.BOOLEAN_TYPE: items.push(["boolean", String(res.booleanValue)]); break;
+          default:
+            var n;
+            while ((n = res.iterateNext())) {
+              var label = n.nodeType === 1 ? "<" + n.nodeName.toLowerCase() + ">" : n.nodeType === 2 ? "@" + n.nodeName : "#text";
+              items.push([label, (n.nodeType === 2 ? n.value : n.textContent).replace(/\s+/g, " ").trim()]);
+            }
+        }
+        $("xpCount").textContent = items.length + (items.length === 1 ? " resultado" : " resultados");
+        if (!items.length) out.append(el("li", "muted", "Nenhum nó corresponde à expressão."));
+        items.forEach(function (it, i) {
+          var li = el("li"); li.append(el("b", null, (i + 1) + ". " + it[0]), document.createTextNode(it[1]));
+          out.append(li);
+        });
+      }
+      $("btnEval").onclick = evaluate;
+      $("xpExpr").addEventListener("keydown", function (e) { if (e.key === "Enter") evaluate(); });
+      evaluate();
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "_comentario": "Ajuste base_url e os seletores XPath para o portal-alvo. {uf} e {pagina} são substituídos em cada requisição.",
+  "base_url": "https://portal-medico.exemplo.org.br/busca?uf={uf}&pagina={pagina}",
+  "ufs": ["SP", "RJ", "MG", "BA", "RS", "PR"],
+  "seletores": {
+    "item": "//div[contains(concat(' ', normalize-space(@class), ' '), ' resultado-item ')]",
+    "nome": "normalize-space(.//h4[@class='nome'])",
+    "crm": "normalize-space(.//span[@class='crm'])",
+    "uf": "normalize-space(.//span[@class='uf'])",
+    "situacao": "normalize-space(.//span[@class='situacao'])",
+    "especialidade": ".//span[@class='especialidade']/text()",
+    "inscricao": "normalize-space(.//span[@class='inscricao'])",
+    "data_inscricao": "normalize-space(.//span[@class='data'])",
+    "proxima_pagina": "//nav[@class='paginacao']//a[contains(@class, 'proxima')]/@href"
+  },
+  "atraso_segundos": 1.5,
+  "max_paginas": 50,
+  "tentativas": 3,
+  "timeout_segundos": 20,
+  "user_agent": "crm-scraper/1.0 (+https://github.com/ryueik/Projetos)",
+  "pasta_saida": "saida",
+  "offline_pagina_inicial": "exemplo/pagina_resultado.html"
+}

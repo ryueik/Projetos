@@ -1,0 +1,53 @@
+# ============================================================================
+#  Power Automate Desktop · Extrator Cadastral de Médicos (CRM)
+#  Alternativa sem código ao scraper.py, para portais que só renderizam com JS.
+#  Cole as ações no designer do PAD (Ctrl+V) ou recrie-as na mesma ordem.
+# ============================================================================
+
+# --- Variáveis de entrada ----------------------------------------------------
+SET ListaUFs TO ['SP', 'RJ', 'MG', 'BA', 'RS', 'PR']
+SET PastaSaida TO $'''C:\\Automacoes\\crm-scraper\\saida'''
+SET UrlBusca TO $'''https://portal-medico.exemplo.org.br/busca'''
+Folder.Create FolderPath: PastaSaida
+Variables.CreateNewDatatable InputTable: { ^['UF', 'CRM', 'Nome', 'Situacao', 'Especialidades', 'Inscricao', 'DataInscricao', 'Pagina'] } DataTable=> Consolidado
+
+# --- Abre o navegador uma única vez ------------------------------------------
+WebAutomation.LaunchEdge.LaunchEdge Url: UrlBusca WindowState: WebAutomation.BrowserWindowState.Maximized ClearCache: False ClearCookies: False BrowserInstance=> Navegador
+
+LOOP FOREACH UF IN ListaUFs
+    # Preenche o filtro de UF e pesquisa
+    WebAutomation.SelectOptionsInDropDownList.SelectOptionsByName BrowserInstance: Navegador Control: appmask['Busca']['Select UF'] Options: UF
+    WebAutomation.Click.Click BrowserInstance: Navegador Control: appmask['Busca']['Botao Pesquisar'] WaitForPageToLoadTimeout: 60
+    WAIT 2
+    SET Pagina TO 1
+
+    LABEL ProximaPagina
+    # Extrai a lista de resultados (seletores equivalentes ao config.json)
+    #   item:          div.resultado-item
+    #   nome:          h4.nome
+    #   crm / uf:      span.crm / span.uf
+    #   situacao:      span.situacao
+    #   especialidade: span.especialidade
+    WebAutomation.ExtractData.ExtractListUsingPagination BrowserInstance: Navegador Control: $'''html > body > main > div.resultado-item''' ExtractionParameters: {[$'''h4.nome''', $'''Own Text''', $''''''], [$'''span.crm''', $'''Own Text''', $''''''], [$'''span.uf''', $'''Own Text''', $''''''], [$'''span.situacao''', $'''Own Text''', $''''''], [$'''span.especialidade''', $'''Own Text''', $''''''], [$'''span.inscricao''', $'''Own Text''', $''''''], [$'''span.data''', $'''Own Text''', $'''''']} ExtractedData=> PaginaDados
+
+    LOOP FOREACH Linha IN PaginaDados
+        Variables.AddRowToDataTable.AppendRowToDataTable DataTable: Consolidado RowToAdd: [UF, Linha[1], Linha[0], Linha[3], Linha[4], Linha[5], Linha[6], Pagina]
+    END
+
+    # Paginação: clica em "Próxima" enquanto existir; pausa de cortesia de 1,5 s
+    WebAutomation.IfWebPageContains.IfWebPageContainsElement BrowserInstance: Navegador Control: appmask['Busca']['Link Proxima']
+        WAIT 1.5
+        WebAutomation.Click.Click BrowserInstance: Navegador Control: appmask['Busca']['Link Proxima'] WaitForPageToLoadTimeout: 60
+        Variables.IncreaseVariable Value: Pagina IncrementValue: 1
+        GOTO ProximaPagina
+    END
+
+    # CSV por UF (filtra o consolidado)
+    Variables.FilterDataTable DataTable: Consolidado FilterParameters: { ^['Rule', 'ColumnName', 'FilterOperator', 'Value'], ['', 'UF', 'Equals', UF] } FilteredDataTable=> DadosUF
+    File.WriteToCSVFile.WriteCSV VariableToWrite: DadosUF CSVFile: $'''%PastaSaida%\\medicos_%UF%.csv''' CsvFileEncoding: File.CSVEncoding.UTF8 IncludeColumnNames: True IfFileExists: File.IfFileExists.Overwrite ColumnsSeparator: File.CSVColumnsSeparator.Custom CustomColumnsSeparator: $''';'''
+END
+
+# --- Consolidação --------------------------------------------------------------
+File.WriteToCSVFile.WriteCSV VariableToWrite: Consolidado CSVFile: $'''%PastaSaida%\\medicos_consolidado.csv''' CsvFileEncoding: File.CSVEncoding.UTF8 IncludeColumnNames: True IfFileExists: File.IfFileExists.Overwrite ColumnsSeparator: File.CSVColumnsSeparator.Custom CustomColumnsSeparator: $''';'''
+WebAutomation.CloseWebBrowser BrowserInstance: Navegador
+Display.ShowMessageDialog.ShowMessage Title: $'''Extração concluída''' Message: $'''%Consolidado.RowsCount% registro(s) salvos em %PastaSaida%''' Icon: Display.Icon.Information Buttons: Display.Buttons.OK

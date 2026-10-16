@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Governança e Limpeza de Arquivos · Projetos MM</title>
+  <meta name="description" content="Script de manutenção em Python e PowerShell que varre diretórios, lê datas de criação e modificação e remove com segurança arquivos com mais de 30 dias." />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <script src="../assets/js/theme.js"></script>
+  <style>
+    .range-row { display: flex; align-items: center; gap: 14px; }
+    .range-row input[type=range] { flex: 1; accent-color: var(--orange); }
+    .range-val { font: 800 1.6rem/1 var(--font-display); min-width: 3.2ch; text-align: right; }
+    .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .modes label { display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid var(--line-strong); border-radius: 12px; cursor: pointer; transition: border-color .2s, background .2s; }
+    .modes label small { color: var(--text-3); font-size: .76rem; }
+    .modes input { position: absolute; opacity: 0; pointer-events: none; }
+    .modes label:has(input:checked) { border-color: var(--orange); background: color-mix(in srgb, var(--orange) 10%, transparent); }
+    .modes label:has(input:focus-visible) { outline: 2px solid var(--orange); outline-offset: 2px; }
+    .modes strong { font-size: .92rem; }
+    @media (max-width: 480px) { .modes { grid-template-columns: 1fr; } }
+    .tree-row td:first-child { font-family: var(--font-mono); font-size: .8rem; }
+    .tree-row.folder td { background: var(--surface-2); color: var(--text-2); font-weight: 600; }
+    .tree-row.cand td { background: color-mix(in srgb, var(--red) 11%, transparent); }
+    .tree-row.cand td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+    .tree-row.prot td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
+    .tree-row.gone td { opacity: .45; text-decoration: line-through; }
+    .indent { display: inline-block; width: 18px; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 6px; font: 600 .7rem var(--font-mono); }
+    .tag.rm { background: color-mix(in srgb, var(--red) 20%, transparent); color: var(--red); }
+    .tag.q { background: color-mix(in srgb, var(--orange) 20%, transparent); color: var(--orange); }
+    .tag.keep { background: var(--surface-2); color: var(--text-3); }
+    .tag.prot { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--gold); }
+    .hist { width: 100%; height: auto; display: block; }
+    .hist text { font-family: var(--font-mono); font-size: 11px; fill: var(--text-3); }
+    .hist .axis { stroke: var(--line-strong); }
+    .hist .cut { stroke: var(--red); stroke-width: 2; stroke-dasharray: 5 4; }
+    .hist .cut-lbl { fill: var(--red); font-weight: 700; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; font: 500 .78rem var(--font-mono); color: var(--text-2); }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+    .check { display: inline-flex; gap: 8px; align-items: center; font-size: .88rem; color: var(--text-2); cursor: pointer; }
+    .check input { accent-color: var(--orange); }
+  </style>
+</head>
+<body>
+  <header id="site-header" data-root="../" data-repo="limpeza-arquivos"></header>
+
+  <main>
+    <section class="project-hero container">
+      <span class="eyebrow">Automação · Sistema operacional</span>
+      <h1>Governança e limpeza <span class="grad-text">automática</span> de arquivos</h1>
+      <p class="lead">Script de manutenção que varre diretórios, lê as datas de criação e modificação de cada arquivo e remove com segurança o que passou de 30 dias, com simulação por padrão, quarentena opcional, extensões protegidas e log de auditoria.</p>
+      <div class="meta chips">
+        <span class="chip gold">OS Layer Automation</span>
+        <span class="chip orange">PowerShell</span>
+        <span class="chip red">Python</span>
+        <span class="chip">File Retention Rules</span>
+      </div>
+    </section>
+
+    <section class="container grid grid-2" style="padding-bottom: 40px; align-items: start;">
+      <div class="card reveal">
+        <div class="card-title"><h3>Regra de retenção</h3><button class="btn btn-ghost btn-sm" id="btnGen" type="button">Gerar novo cenário</button></div>
+        <div class="field">
+          <label for="days">Retenção em dias</label>
+          <div class="range-row"><input type="range" id="days" min="1" max="180" value="30" /><span class="range-val" id="daysVal">30</span></div>
+        </div>
+        <div class="grid grid-2" style="gap: 0 14px">
+          <div class="field">
+            <label for="criterio">Data usada</label>
+            <select class="input" id="criterio">
+              <option value="mod">Modificação</option>
+              <option value="cri">Criação</option>
+              <option value="ambos">As duas (mais recente)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="exclude">Padrões excluídos</label>
+            <input class="input mono" id="exclude" value="*/Manter/*" spellcheck="false" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="protect">Extensões protegidas</label>
+          <input class="input mono" id="protect" value=".db, .pst, .key, .kdbx" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label>Modo</label>
+          <div class="modes" role="radiogroup">
+            <label><input type="radio" name="mode" value="simular" checked /><strong>Simular</strong><small>Só lista (padrão)</small></label>
+            <label><input type="radio" name="mode" value="quarentena" /><strong>Quarentena</strong><small>Move para D:\Quarentena</small></label>
+            <label><input type="radio" name="mode" value="excluir" /><strong>Excluir</strong><small>Remove de vez</small></label>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" id="btnRun" type="button">Executar limpeza</button>
+          <span class="muted" id="cmdHint" style="font-size:.82rem"></span>
+        </div>
+        <pre class="code mt-1" id="cmd" style="white-space: pre-wrap; word-break: break-all; font-size: .76rem"></pre>
+      </div>
+
+      <div class="card reveal">
+        <div class="grid grid-2" style="gap: 12px">
+          <div class="kpi"><div class="num" id="kFiles">0</div><div class="lbl">Arquivos analisados</div></div>
+          <div class="kpi"><div class="num" id="kCand" style="color: var(--red)">0</div><div class="lbl">Acima da retenção</div></div>
+          <div class="kpi"><div class="num grad-text" id="kFree">0 B</div><div class="lbl" id="kFreeLbl">Espaço a liberar</div></div>
+          <div class="kpi"><div class="num" id="kProt" style="color: var(--gold)">0</div><div class="lbl">Protegidos / excluídos</div></div>
+        </div>
+        <div class="card-title mt-2"><h3>Idade dos arquivos</h3>
+          <div class="legend"><span><i style="background: var(--gold)"></i>Dentro da regra</span><span><i style="background: var(--red)"></i>Acima</span></div>
+        </div>
+        <svg class="hist" id="hist" viewBox="0 0 520 220" role="img" aria-label="Histograma da idade dos arquivos com a linha de corte"></svg>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>Árvore de diretórios <span class="muted mono" style="font-size:.8rem; font-weight:500">D:\Dados</span></h3>
+          <label class="check"><input type="checkbox" id="onlyCand" /> Só candidatos</label>
+        </div>
+        <div class="table-wrap" style="max-height: 520px">
+          <table class="table">
+            <thead><tr><th>Caminho</th><th>Tamanho</th><th>Criado</th><th>Modificado</th><th>Idade</th><th>Ação</th></tr></thead>
+            <tbody id="tree"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 40px;">
+      <div class="card reveal">
+        <div class="card-title">
+          <h3>Log de auditoria</h3>
+          <div class="row">
+            <button class="btn btn-ghost btn-sm" id="btnJson" type="button" disabled>Exportar JSON</button>
+            <button class="btn btn-ghost btn-sm" id="btnCsv" type="button" disabled>Exportar CSV</button>
+          </div>
+        </div>
+        <div class="log" id="log" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="grid grid-2">
+        <div class="reveal">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Seguro por padrão</h2>
+          <div class="steps mt-2">
+            <div class="step"><div><h4>Varredura sem atalhos</h4><p>Percorre as pastas com <code>os.walk</code> / <code>Get-ChildItem</code> sem seguir links simbólicos nem junções, e recusa a raiz do disco, o perfil do usuário e pastas de sistema.</p></div></div>
+            <div class="step"><div><h4>Metadados e regra</h4><p>Lê criação e modificação de cada arquivo e compara com a retenção. Padrões de inclusão/exclusão e extensões protegidas (<code>.db</code>, <code>.pst</code>, <code>.key</code>…) são avaliados antes da idade.</p></div></div>
+            <div class="step"><div><h4>Simular, mover ou excluir</h4><p>Sem <code>--executar</code> (ou com <code>-WhatIf</code>) nada é alterado. Com <code>--quarentena</code>, os arquivos são movidos mantendo a estrutura de pastas, para devolução fácil.</p></div></div>
+            <div class="step"><div><h4>Auditoria e agendamento</h4><p>Cada execução grava JSON e CSV com caminho, datas, idade, ação e resultado. O <code>agendar.md</code> traz o Agendador de Tarefas do Windows e o cron prontos.</p></div></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Arquivos</span>
+          <h2>Código</h2>
+          <ul class="files mt-2">
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/limpeza-arquivos/limpeza.py" target="_blank" rel="noopener">limpeza.py <small>Script Python</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/limpeza-arquivos/Limpeza-Arquivos.ps1" target="_blank" rel="noopener">Limpeza-Arquivos.ps1 <small>Versão PowerShell (-WhatIf)</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/limpeza-arquivos/agendar.md" target="_blank" rel="noopener">agendar.md <small>Agendador de Tarefas e cron</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/limpeza-arquivos/tests/test_limpeza.py" target="_blank" rel="noopener">tests/test_limpeza.py <small>Testes</small></a></li>
+            <li><a href="https://github.com/ryueik/Projetos/blob/main/limpeza-arquivos/README.md" target="_blank" rel="noopener">README.md <small>Como usar</small></a></li>
+          </ul>
+          <pre class="code mt-2">python limpeza.py D:\Dados                 # simula
+python limpeza.py D:\Dados --executar --quarentena D:\Quarentena
+.\Limpeza-Arquivos.ps1 -Path D:\Dados -WhatIf</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    (function () {
+      "use strict";
+      var $ = function (id) { return document.getElementById(id); };
+      var DAY = 86400000;
+      var ROOT = "D:\\Dados";
+      var FOLDERS = {
+        "Exportacoes": ["relatorio_vendas_{n}.xlsx", "extrato_{n}.csv", "nf_{n}.xml", "pedidos_{n}.json"],
+        "Exportacoes\\2026": ["consolidado_{n}.xlsx", "base_clientes_{n}.csv"],
+        "Logs": ["robo_{n}.log", "erro_{n}.log", "app_{n}.log.gz"],
+        "Temp": ["tmp_{n}.tmp", "~lock_{n}.tmp", "cache_{n}.bin"],
+        "Downloads": ["boleto_{n}.pdf", "instalador_{n}.exe", "planilha_{n}.xlsx", "imagem_{n}.png"],
+        "Backup": ["backup_{n}.zip", "dump_{n}.sql", "financeiro_{n}.db"],
+        "Correio": ["arquivo_{n}.pst"],
+        "Manter": ["contrato_{n}.pdf", "procuracao_{n}.pdf"],
+        "Certificados": ["empresa_{n}.key", "senhas_{n}.kdbx"]
+      };
+      var files = [];
+      var audit = [];
+      var lastRun = null;
+
+      function rand(n) { return Math.floor(Math.random() * n); }
+      function pad(n) { return String(n).padStart(2, "0"); }
+      function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+      function human(b) {
+        var u = ["B", "KB", "MB", "GB", "TB"], i = 0;
+        while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+        return (i ? b.toFixed(1).replace(".", ",") : String(Math.round(b))) + " " + u[i];
+      }
+      function fmtDate(t) { var d = new Date(t); return pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + "/" + d.getFullYear(); }
+      function log(kind, msg) {
+        var box = $("log"), d = new Date();
+        box.append(el("span", kind, "[" + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + "] " + msg + "\n"));
+        box.scrollTop = box.scrollHeight;
+      }
+
+      // ---------------- Cenário ----------------
+      function generate() {
+        var now = Date.now();
+        files = [];
+        Object.keys(FOLDERS).forEach(function (folder) {
+          var count = 2 + rand(6);
+          for (var i = 0; i < count; i++) {
+            var tpl = FOLDERS[folder][rand(FOLDERS[folder].length)];
+            var name = tpl.replace("{n}", String(1000 + rand(9000)));
+            // Mistura arquivos recentes e antigos (idade de 0 a ~200 dias, com cauda longa).
+            var ageMod = Math.round(Math.pow(Math.random(), 1.4) * 200 * 10) / 10;
+            var ageCre = ageMod + Math.round(Math.random() * 40 * 10) / 10;
+            var ext = name.slice(name.lastIndexOf(".")).toLowerCase();
+            var big = /\.(zip|sql|pst|exe|bin|gz|db)$/.test(ext);
+            files.push({
+              path: folder + "\\" + name,
+              folder: folder,
+              name: name,
+              ext: ext,
+              size: big ? 5e6 + rand(800e6) : 2e3 + rand(4e6),
+              created: now - ageCre * DAY,
+              modified: now - ageMod * DAY,
+              gone: null
+            });
+          }
+        });
+        files.sort(function (a, b) { return a.path.localeCompare(b.path); });
+        audit = []; lastRun = null;
+        $("btnJson").disabled = true; $("btnCsv").disabled = true;
+        $("log").textContent = "";
+        log("info", "Novo cenário: " + files.length + " arquivos em " + Object.keys(FOLDERS).length + " pastas de " + ROOT);
+        evaluate();
+      }
+
+      // ---------------- Regra ----------------
+      function settings() {
+        return {
+          days: Number($("days").value),
+          criterio: $("criterio").value,
+          protect: $("protect").value.split(/[,\s]+/).filter(Boolean).map(function (e) { e = e.toLowerCase(); return e.charAt(0) === "." ? e : "." + e; }),
+          exclude: $("exclude").value.split(/[,;]+/).map(function (s) { return s.trim(); }).filter(Boolean),
+          mode: document.querySelector('input[name="mode"]:checked').value
+        };
+      }
+
+      function globToRegex(g) {
+        var s = g.replace(/\\/g, "/").replace(/[.+^${}()|[\]]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
+        return new RegExp("^" + s + "$", "i");
+      }
+
+      function ageOf(f, criterio, now) {
+        var ref = criterio === "cri" ? f.created : criterio === "ambos" ? Math.max(f.created, f.modified) : f.modified;
+        return (now - ref) / DAY;
+      }
+
+      function classify(f, s, now) {
+        var age = ageOf(f, s.criterio, now);
+        var rel = "/" + f.path.replace(/\\/g, "/");
+        if (s.protect.indexOf(f.ext) >= 0) return { action: "protegido", reason: "extensão protegida (" + f.ext + ")", age: age };
+        for (var i = 0; i < s.exclude.length; i++) {
+          var re = globToRegex(s.exclude[i]);
+          if (re.test(rel) || re.test(f.name)) return { action: "excluido", reason: "padrão de exclusão (" + s.exclude[i] + ")", age: age };
+        }
+        if (age < s.days) return { action: "manter", reason: Math.floor(age) + " dia(s) < " + s.days, age: age };
+        return { action: s.mode === "quarentena" ? "quarentena" : "remover", reason: Math.floor(age) + " dia(s) ≥ " + s.days, age: age };
+      }
+
+      function evaluate() {
+        var s = settings(), now = Date.now();
+        $("daysVal").textContent = String(s.days);
+        var live = files.filter(function (f) { return !f.gone; });
+        var cand = 0, bytes = 0, prot = 0;
+        live.forEach(function (f) {
+          f.cls = classify(f, s, now);
+          if (f.cls.action === "remover" || f.cls.action === "quarentena") { cand++; bytes += f.size; }
+          if (f.cls.action === "protegido" || f.cls.action === "excluido") prot++;
+        });
+        $("kFiles").textContent = String(live.length);
+        $("kCand").textContent = String(cand);
+        $("kFree").textContent = human(bytes);
+        $("kFreeLbl").textContent = s.mode === "simular" ? "Espaço a liberar" : s.mode === "quarentena" ? "A mover p/ quarentena" : "A excluir";
+        $("kProt").textContent = String(prot);
+        $("btnRun").textContent = s.mode === "simular" ? "Simular limpeza" : s.mode === "quarentena" ? "Mover para quarentena" : "Excluir arquivos";
+        $("btnRun").className = "btn " + (s.mode === "excluir" ? "btn-danger" : "btn-primary");
+        var critPy = { mod: "modificacao", cri: "criacao", ambos: "ambos" }[s.criterio];
+        var cmd = "python limpeza.py " + ROOT + " --dias " + s.days + (critPy !== "modificacao" ? " --criterio " + critPy : "") +
+          (s.exclude.length ? " --excluir " + s.exclude.map(function (e) { return '"' + e.replace(/\\/g, "/") + '"'; }).join(" ") : "") +
+          " --proteger-ext " + s.protect.join(" ") +
+          (s.mode === "simular" ? "" : " --executar") + (s.mode === "quarentena" ? " --quarentena D:\\Quarentena" : "");
+        $("cmd").textContent = cmd;
+        $("cmdHint").textContent = "Comando equivalente:";
+        drawHist(live, s, now);
+        drawTree(s);
+      }
+
+      // ---------------- Histograma ----------------
+      var SVGNS = "http://www.w3.org/2000/svg";
+      function svg(tag, attrs, text) {
+        var e = document.createElementNS(SVGNS, tag);
+        Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      function drawHist(live, s, now) {
+        var c = $("hist"); c.textContent = "";
+        var W = 520, H = 220, L = 30, R = 10, T = 22, B = 30;
+        var maxAge = 240, bin = 10, n = maxAge / bin;
+        var counts = new Array(n).fill(0);
+        live.forEach(function (f) { var a = ageOf(f, s.criterio, now); counts[Math.min(n - 1, Math.floor(a / bin))]++; });
+        var top = Math.max(4, Math.max.apply(null, counts));
+        var x = function (age) { return L + (W - L - R) * age / maxAge; };
+        var y = function (v) { return H - B - (H - B - T) * v / top; };
+        c.append(svg("line", { x1: L, x2: W - R, y1: H - B, y2: H - B, "class": "axis" }));
+        for (var t = 0; t <= maxAge; t += 30) {
+          c.append(svg("text", { x: x(t), y: H - B + 16, "text-anchor": t === 0 ? "start" : t === maxAge ? "end" : "middle" }, t + "d"));
+        }
+        c.append(svg("text", { x: L - 6, y: y(top) + 4, "text-anchor": "end" }, String(top)));
+        c.append(svg("text", { x: L - 6, y: H - B + 4, "text-anchor": "end" }, "0"));
+        counts.forEach(function (v, i) {
+          if (!v) return;
+          var a0 = i * bin, over = a0 + bin / 2 >= s.days;
+          var r = svg("rect", { x: x(a0) + 1.5, y: y(v), width: (W - L - R) / n - 3, height: H - B - y(v), rx: 3, style: "fill: " + (over ? "var(--red)" : "var(--gold)") });
+          r.append(svg("title", {}, a0 + "–" + (a0 + bin) + " dias: " + v + " arquivo(s)"));
+          c.append(r);
+        });
+        var cx = x(Math.min(s.days, maxAge));
+        c.append(svg("line", { x1: cx, x2: cx, y1: T - 8, y2: H - B, "class": "cut" }));
+        c.append(svg("text", { x: Math.min(cx + 6, W - 80), y: T - 10 + 10, "class": "cut-lbl" }, "corte: " + s.days + " dias"));
+      }
+
+      // ---------------- Árvore ----------------
+      var TAGS = { remover: ["rm", "remover"], quarentena: ["q", "quarentena"], manter: ["keep", "manter"], protegido: ["prot", "protegido"], excluido: ["prot", "excluído"] };
+      function drawTree(s) {
+        var tb = $("tree"); tb.textContent = "";
+        var only = $("onlyCand").checked;
+        var byFolder = {};
+        files.forEach(function (f) { (byFolder[f.folder] = byFolder[f.folder] || []).push(f); });
+        var rootRow = el("tr", "tree-row folder");
+        var tdr = el("td", null, "▾ " + ROOT); tdr.colSpan = 6; rootRow.append(tdr); tb.append(rootRow);
+        Object.keys(byFolder).sort().forEach(function (folder) {
+          var list = byFolder[folder].filter(function (f) {
+            return !only || (f.gone == null && (f.cls.action === "remover" || f.cls.action === "quarentena"));
+          });
+          if (!list.length) return;
+          var depth = folder.split("\\").length;
+          var fr = el("tr", "tree-row folder");
+          var ftd = el("td");
+          for (var d = 0; d < depth - 1; d++) ftd.append(el("span", "indent"));
+          ftd.append(document.createTextNode("▸ " + folder.split("\\").pop() + "\\"));
+          var total = list.reduce(function (a, f) { return a + f.size; }, 0);
+          fr.append(ftd, el("td", null, human(total)), el("td"), el("td"), el("td"), el("td", "muted", list.length + " arq."));
+          tb.append(fr);
+          list.forEach(function (f) {
+            var act = f.gone ? f.gone : f.cls.action;
+            var tr = el("tr", "tree-row" + (f.gone ? " gone" : act === "remover" || act === "quarentena" ? " cand" : act === "protegido" || act === "excluido" ? " prot" : ""));
+            var name = el("td");
+            for (var d2 = 0; d2 < depth; d2++) name.append(el("span", "indent"));
+            name.append(document.createTextNode(f.name));
+            name.title = f.gone ? "" : f.cls.reason;
+            var tagInfo = f.gone ? (f.gone === "quarentena" ? ["q", "movido"] : ["rm", "excluído"]) : TAGS[act];
+            var tdAct = el("td"); tdAct.append(el("span", "tag " + tagInfo[0], tagInfo[1]));
+            tr.append(name, el("td", null, human(f.size)), el("td", null, fmtDate(f.created)), el("td", null, fmtDate(f.modified)),
+              el("td", null, f.gone ? "—" : Math.floor(f.cls.age) + " d"), tdAct);
+            tb.append(tr);
+          });
+        });
+        if (tb.children.length === 1) {
+          var er = el("tr"); var etd = el("td", "muted", "Nenhum arquivo acima da retenção com essa regra."); etd.colSpan = 6; er.append(etd); tb.append(er);
+        }
+      }
+
+      // ---------------- Execução ----------------
+      $("btnRun").onclick = function () {
+        var s = settings(), now = Date.now();
+        evaluate();
+        var cand = files.filter(function (f) { return !f.gone && (f.cls.action === "remover" || f.cls.action === "quarentena"); });
+        var modoLog = s.mode === "simular" ? "SIMULAÇÃO" : s.mode === "quarentena" ? "QUARENTENA" : "EXCLUSÃO";
+        if (s.mode === "excluir" && cand.length && !confirm("Excluir " + cand.length + " arquivo(s) do cenário simulado? (nada no seu computador é alterado)")) return;
+        log("info", "== " + modoLog + " · regra: " + ({ mod: "modificação", cri: "criação", ambos: "ambas as datas" }[s.criterio]) + " há " + s.days + "+ dias ==");
+        var run = { inicio: new Date(now).toISOString(), modo: s.mode === "simular" ? "simulacao" : s.mode === "quarentena" ? "quarentena" : "exclusao", dias: s.days, criterio: s.criterio, diretorio: ROOT, analisados: 0, candidatos: cand.length, bytes: 0, itens: [] };
+        run.analisados = files.filter(function (f) { return !f.gone; }).length;
+        files.forEach(function (f) {
+          if (f.gone) return;
+          if (f.cls.action === "protegido" || f.cls.action === "excluido") log("warn", "  ! " + ROOT + "\\" + f.path + " · ignorado: " + f.cls.reason);
+        });
+        cand.forEach(function (f) {
+          var full = ROOT + "\\" + f.path;
+          var item = { caminho: full, tamanho: f.size, criado_em: new Date(f.created).toISOString(), modificado_em: new Date(f.modified).toISOString(), idade_dias: Math.round(f.cls.age * 10) / 10, acao: f.cls.action, motivo: f.cls.reason, resultado: "simulado" };
+          if (s.mode === "simular") {
+            log("info", "  ~ " + full + " (" + human(f.size) + ", " + Math.floor(f.cls.age) + " dias)");
+          } else if (s.mode === "quarentena") {
+            f.gone = "quarentena"; item.resultado = "ok"; item.motivo += " → D:\\Quarentena\\Dados\\" + f.path;
+            log("ok", "  → " + full + " movido para D:\\Quarentena\\Dados\\" + f.path);
+          } else {
+            f.gone = "remover"; item.resultado = "ok";
+            log("err", "  ✗ " + full + " excluído (" + human(f.size) + ")");
+          }
+          run.bytes += f.size;
+          run.itens.push(item);
+        });
+        run.fim = new Date().toISOString();
+        log(cand.length ? "ok" : "warn", "Analisados: " + run.analisados + " · candidatos: " + cand.length + " · " +
+          (s.mode === "simular" ? "seria liberado: " : "liberado: ") + human(run.bytes));
+        if (s.mode === "simular" && cand.length) log("info", "Nada foi alterado. Escolha Quarentena ou Excluir para aplicar.");
+        audit.push(run); lastRun = run;
+        $("btnJson").disabled = false; $("btnCsv").disabled = false;
+        evaluate();
+      };
+
+      function download(name, text, type) {
+        var blob = new Blob([text], { type: type });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.append(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      }
+      function stamp() { var d = new Date(); return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + "_" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()); }
+      $("btnJson").onclick = function () { download("limpeza_" + stamp() + ".json", JSON.stringify(audit, null, 2), "application/json"); };
+      $("btnCsv").onclick = function () {
+        var cols = ["execucao", "modo", "caminho", "tamanho", "criado_em", "modificado_em", "idade_dias", "acao", "motivo", "resultado"];
+        var esc = function (v) { v = String(v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+        var lines = [cols.join(";")];
+        audit.forEach(function (r, i) {
+          r.itens.forEach(function (it) {
+            lines.push([i + 1, r.modo, it.caminho, it.tamanho, it.criado_em, it.modificado_em, String(it.idade_dias).replace(".", ","), it.acao, it.motivo, it.resultado].map(esc).join(";"));
+          });
+        });
+        download("limpeza_" + stamp() + ".csv", "\ufeff" + lines.join("\n"), "text/csv;charset=utf-8");
+      };
+
+      ["days", "criterio", "exclude", "protect"].forEach(function (id) { $(id).addEventListener("input", evaluate); });
+      document.querySelectorAll('input[name="mode"]').forEach(function (r) { r.addEventListener("change", evaluate); });
+      $("onlyCand").addEventListener("change", function () { drawTree(settings()); });
+      $("btnGen").onclick = generate;
+      generate();
+    })();
+  </script>
+</body>
+</html>

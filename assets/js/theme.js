@@ -62,6 +62,14 @@
   }
 
   function init() {
+    if (!document.querySelector('link[rel~="icon"]')) {
+      var me = document.querySelector('script[src$="assets/js/theme.js"]');
+      var icon = document.createElement("link");
+      icon.rel = "icon";
+      icon.type = "image/svg+xml";
+      icon.href = me ? me.getAttribute("src").replace("js/theme.js", "favicon.svg") : "/assets/favicon.svg";
+      document.head.append(icon);
+    }
     var h = document.getElementById("site-header");
     if (h && !h.children.length) renderHeader(h);
     var f = document.getElementById("site-footer");
