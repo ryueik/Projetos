@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img">
+<defs>
+<filter id="g24" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .17 0 0 0 0 .13 0 0 0 0 .1 0 0 0 .55 0"/></filter>
+<filter id="s24" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="10" stdDeviation="0" flood-color="#2b211a" flood-opacity=".14"/></filter>
+<pattern id="dots24" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2.2" fill="#2b211a" opacity=".12"/></pattern>
+
+</defs>
+<rect width="600" height="750" fill="#f4eadb"/>
+<rect width="600" height="750" fill="url(#dots24)"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690 Z" fill="#ff9d5c"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690" fill="none" stroke="#2b211a" stroke-width="2" opacity=".35" transform="translate(-12 -12)"/>
+<ellipse cx="300" cy="668" rx="170" ry="16" fill="#2b211a" opacity=".12"/>
+<g filter="url(#s24)" stroke="#2b211a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="143.0" y="526" width="300" height="74" rx="6" fill="#e63946"/><rect x="161.0" y="542" width="264" height="42" fill="none" stroke="#e3b341" stroke-width="2"/><text x="300" y="570.0" text-anchor="middle" font-family="Georgia,serif" font-size="20" fill="#f7efe2" stroke="none" letter-spacing="2">RECEITAS</text><rect x="172.0" y="452" width="270" height="74" rx="6" fill="#d9a21b"/><rect x="190.0" y="468" width="234" height="42" fill="none" stroke="#e3b341" stroke-width="2"/><text x="300" y="496.0" text-anchor="middle" font-family="Georgia,serif" font-size="20" fill="#f7efe2" stroke="none" letter-spacing="2">DA VOVÓ</text><rect x="133.0" y="378" width="320" height="74" rx="6" fill="#6b7a4b"/><rect x="151.0" y="394" width="284" height="42" fill="none" stroke="#e3b341" stroke-width="2"/><text x="300" y="422.0" text-anchor="middle" font-family="Georgia,serif" font-size="20" fill="#f7efe2" stroke="none" letter-spacing="2">1984</text><path d="M370 378 q20 -60 -10 -100 q40 30 30 100" fill="#6b7a4b"/></g>
+
+<rect width="600" height="750" filter="url(#g24)" opacity=".35"/>
+</svg>

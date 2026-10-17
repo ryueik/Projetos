@@ -1,58 +1,129 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fórum - GFG Clone</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fórum · GFG Clone</title>
+  <meta name="description" content="Fórum de discussões do GFG Clone: tire dúvidas e compartilhe conhecimento.">
+  <meta name="theme-color" content="#0b0907">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e3b341'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial' font-weight='700' font-size='16' fill='%23160c03'%3EGC%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    try { var t = localStorage.getItem('gfg:theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
 </head>
-<body>
-    <header>
-        <nav>
-            <div class="logo">
-                <a href="index.html">GFG Clone</a>
-            </div>
-            <ul class="menu">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="tutorials.html">Tutoriais</a></li>
-                <li><a href="blog.html">Blog</a></li>
-                <li><a href="forum.html">Fórum</a></li>
-                <li><a href="login.html">Login</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <section class="forum">
-        <h2>Fórum de Discussões</h2>
-        <div class="discussion-item">
-            <h3>Qual a melhor linguagem para aprendizado?</h3>
-            <p>O que você acha sobre começar a aprender Python ou JavaScript? Compartilhe suas experiências!</p>
-            <a href="#" class="btn">Ver Discussão</a>
+<body data-page="forum">
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+  <header class="site-header">
+    <div class="container header__inner">
+      <a class="logo" href="index.html" aria-label="GFG Clone — página inicial">
+        <span class="logo__mark" aria-hidden="true">GC</span>
+        <span class="logo__text">GFG<b>Clone</b></span>
+      </a>
+      <nav class="nav" id="nav" aria-label="Principal">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="tutorials.html" data-nav="tutorials">Tutoriais</a>
+        <a href="blog.html" data-nav="blog">Blog</a>
+        <a href="forum.html" data-nav="forum">Fórum</a>
+        <a href="post-creat.html" data-nav="write">Escrever</a>
+        <div class="nav__auth" id="navAuth">
+          <a href="login.html" class="btn btn--ghost btn--sm" data-nav="login">Entrar</a>
+          <a href="register.html" class="btn btn--primary btn--sm" data-nav="register">Cadastrar</a>
         </div>
+      </nav>
+      <div class="header__tools">
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Alternar tema claro/escuro">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-controls="nav" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-        <div class="discussion-item">
-            <h3>Desafios de Algoritmos</h3>
-            <p>Venha compartilhar desafios de algoritmos e resoluções com a comunidade.</p>
-            <a href="#" class="btn">Ver Discussão</a>
+  <main id="conteudo">
+    <section class="page-head">
+      <div class="container page-head__row">
+        <div>
+          <span class="kicker">Fórum</span>
+          <h1>Fórum de discussões</h1>
+          <p class="lead">Pergunte, responda e troque experiências com outros estudantes.</p>
         </div>
-
-        <div class="discussion-item">
-            <h3>Inteligência Artificial no Mercado</h3>
-            <p>Como você vê o impacto da inteligência artificial no futuro da tecnologia?</p>
-            <a href="#" class="btn">Ver Discussão</a>
-        </div>
-
-        <div class="discussion-item">
-            <h3>Desenvolvimento Web Responsivo</h3>
-            <p>Troque dicas sobre como criar designs responsivos e otimizar a experiência do usuário.</p>
-            <a href="#" class="btn">Ver Discussão</a>
-        </div>
+        <a class="btn btn--primary" href="#novoTopico">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Novo tópico
+        </a>
+      </div>
     </section>
 
-    <footer>
-        <p>&copy; 2025 Geeks for Geeks Clone</p>
-    </footer>
+    <section class="section section--tight">
+      <div class="container forum">
+        <div class="forum__list" id="topicList" aria-live="polite"></div>
 
-    <script src="assets/js/main.js"></script>
+        <aside class="forum__side">
+          <form class="card form" id="novoTopico" novalidate>
+            <h2>Abrir um novo tópico</h2>
+            <div class="field">
+              <label for="topicTitle">Título</label>
+              <input id="topicTitle" name="title" type="text" maxlength="120" placeholder="Ex.: Como estudar algoritmos?" required>
+              <small class="field__error"></small>
+            </div>
+            <div class="field">
+              <label for="topicBody">Mensagem</label>
+              <textarea id="topicBody" name="body" rows="4" maxlength="1500" placeholder="Descreva sua dúvida ou ideia…" required></textarea>
+              <small class="field__error"></small>
+            </div>
+            <div class="field">
+              <label for="topicAuthor">Seu nome</label>
+              <input id="topicAuthor" name="author" type="text" maxlength="40" placeholder="Como quer ser chamado" required>
+              <small class="field__error"></small>
+            </div>
+            <button class="btn btn--primary btn--block" type="submit">Publicar tópico</button>
+          </form>
+          <div class="card rules-card">
+            <h2>Boas práticas</h2>
+            <ul>
+              <li>Seja respeitoso e objetivo.</li>
+              <li>Mostre o que já tentou.</li>
+              <li>Use títulos claros.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer__grid">
+      <div>
+        <a class="logo" href="index.html"><span class="logo__mark" aria-hidden="true">GC</span><span class="logo__text">GFG<b>Clone</b></span></a>
+        <p class="muted">Projeto de estudo inspirado no GeeksforGeeks: tutoriais, blog e fórum para quem está aprendendo programação.</p>
+      </div>
+      <nav aria-label="Aprender">
+        <h3>Aprender</h3>
+        <a href="tutorials.html">Tutoriais</a>
+        <a href="blog.html">Blog</a>
+        <a href="forum.html">Fórum</a>
+      </nav>
+      <nav aria-label="Comunidade">
+        <h3>Comunidade</h3>
+        <a href="post-creat.html">Escrever um post</a>
+        <a href="register.html">Criar conta</a>
+        <a href="login.html">Entrar</a>
+      </nav>
+    </div>
+    <div class="container footer__bottom">
+      <span>© <span data-year>2025</span> GFG Clone · Desenvolvido por Matheus Macário</span>
+      <span class="muted">Projeto educacional sem vínculo com o GeeksforGeeks.</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/main.js" defer></script>
+  <script src="../assets/js/hub.js" defer></script>
 </body>
 </html>

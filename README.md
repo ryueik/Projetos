@@ -26,6 +26,10 @@ python -m http.server 8000   # depois abra http://localhost:8000
 
 Os dados do painel ficam em `assets/js/catalog.js`; `node scripts/build-catalog.mjs` gera o `projects.json` que o portfólio pode consumir, e `node scripts/screenshots.mjs` refaz as fotos em `assets/thumbs/`.
 
+- **Capas:** `node scripts/covers.mjs [slug ...]` monta as capas de `assets/covers/` (moldura de navegador + celular sobre o tema dourado/laranja/vermelho), a partir das páginas reais de cada projeto.
+- **Navegação entre projetos:** toda página de projeto carrega `assets/js/hub.js` (automático para quem usa `assets/js/theme.js`), uma barra com projeto anterior, painel, portfólio e próximo projeto.
+- **404:** `404.html` é servida pela Vercel em qualquer endereço inexistente e sugere projetos parecidos com o que foi digitado.
+
 ## 📋 Índice de Projetos
 
 ### Do portfólio

@@ -1,96 +1,377 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CriaWeb - Criação de Sites</title>
+  <title>CriaWeb · Criação de Sites Profissionais</title>
+  <meta name="description" content="CriaWeb — criação de sites, landing pages e lojas virtuais rápidas, responsivas e com design sob medida.">
+  <meta name="theme-color" content="#0c0a08">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="logo_criaweb.png" type="image/x-icon">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script>
+    try { var t = localStorage.getItem('criaweb-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
 </head>
 <body>
-  <!-- Header -->
-  <header id="hero">
-    <div class="container">
-      <div class="logo">
-        <img src="logo_criaweb_sem_fund.png" alt="Logo do CriaWeb">
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+  <!-- ============ CABEÇALHO ============ -->
+  <header class="topbar" id="topo">
+    <div class="container topbar__inner">
+      <a class="logo" href="#topo" aria-label="CriaWeb — início">
+        <img src="logo_criaweb_marca.png" alt="CriaWeb" width="520" height="249">
+      </a>
+
+      <nav class="nav" id="menu" aria-label="Principal">
+        <a href="#servicos">Serviços</a>
+        <a href="#processo">Processo</a>
+        <a href="#portfolio">Portfólio</a>
+        <a href="#planos">Planos</a>
+        <a href="#depoimentos">Depoimentos</a>
+        <a href="#contato" class="nav__cta">Fale comigo</a>
+      </nav>
+
+      <div class="topbar__tools">
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Alternar tema claro/escuro">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="icon-btn menu-btn" id="menu-toggle" type="button" aria-label="Abrir menu" aria-controls="menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
       </div>
-      <h1>Crie seu site de forma fácil e rápida</h1>
-      <p>Transforme suas ideias em um site profissional. Pronto para começar?</p>
-      <a href="#formulario" class="btn-primary">Peça seu site agora</a>
-      <!-- Botão de alternar tema -->
-      <button id="theme-toggle" class="btn-toggle-theme">
-        <span id="theme-icon">🌙</span>
-      </button>
     </div>
   </header>
-  <hr>
-  <!-- Seção Sobre -->
-  <section id="sobre">
-    <div class="container">
-      <h2>Como Funciona</h2>
-      <p>Ofereço um processo simples e rápido para criar o seu site, do início ao fim. Com um design de sua escolha e funcionalidades avançadas, o seu site estará pronto para brilhar na web.</p>
-      <div class="processo">
-        <div class="passo">
-          <h3>1. Planejamento</h3>
-          <p>Entendo suas necessidades e crio um plano estratégico para garantir que seu site atenda às expectativas.</p>
+
+  <main id="conteudo">
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="container hero__grid">
+        <div class="hero__copy reveal">
+          <span class="eyebrow"><span class="dot"></span> Agenda aberta para novos projetos</span>
+          <h1>Sites que <em>vendem</em>, carregam rápido e ficam lindos em qualquer tela.</h1>
+          <p class="lead">A CriaWeb transforma a sua ideia em um site profissional — do planejamento ao lançamento — com design exclusivo, SEO e atendimento direto pelo WhatsApp.</p>
+          <div class="hero__actions">
+            <a href="#contato" class="btn btn--primary">Peça seu orçamento
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#portfolio" class="btn btn--ghost">Ver portfólio</a>
+          </div>
+          <ul class="hero__stats" aria-label="Destaques">
+            <li><strong>7 dias</strong><span>prazo médio de entrega</span></li>
+            <li><strong>100%</strong><span>responsivo</span></li>
+            <li><strong>SEO</strong><span>otimizado desde o início</span></li>
+          </ul>
         </div>
-        <div class="passo">
-          <h3>2. Design Personalizado</h3>
-          <p>Desenvolvo um design exclusivo, alinhado à sua marca e com a experiência do usuário em mente.</p>
-        </div>
-        <div class="passo">
-          <h3>3. Desenvolvimento</h3>
-          <p>Implemento funcionalidades avançadas, garantindo que seu site seja rápido, funcional e responsivo.</p>
-        </div>
-        <div class="passo">
-          <h3>4. Lançamento</h3>
-          <p>Após testes e ajustes, seu site estará pronto para ser lançado e brilhar na web!</p>
+
+        <div class="hero__visual reveal" aria-hidden="true">
+          <div class="mock">
+            <div class="mock__bar"><i></i><i></i><i></i><span>seunegocio.com.br</span></div>
+            <div class="mock__body">
+              <div class="mock__nav"><b></b><span></span><span></span><span></span></div>
+              <div class="mock__hero">
+                <div class="mock__lines"><b></b><b></b><span></span><span></span><em></em></div>
+                <div class="mock__img"></div>
+              </div>
+              <div class="mock__cards"><div></div><div></div><div></div></div>
+            </div>
+          </div>
+          <div class="float-card float-card--a">
+            <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+            <div><strong>+38%</strong><span>contatos no 1º mês</span></div>
+          </div>
+          <div class="float-card float-card--b">
+            <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <div><strong>98</strong><span>nota no Lighthouse</span></div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-  <hr><br><br><br>
-  <!-- Seção Portfólio -->
-  <section id="portfolio">
-    <div class="container">
-      <center><h2>Meu Portfólio</h2>
-      <p>Alguns Exemplos de Sites Criados por Mim!</p>
-      <br><br></center>
-      <div class="portfolio-gallery">
-        <div class="portfolio-item">
-          <a href="https://jecatatour.w3spaces.com/" target="_blank">
-            <img src="jecatatuor.png" alt="Exemplo 1" class="portfolio-img">
+
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee__track">
+          <span>Landing pages</span><span>Sites institucionais</span><span>Lojas virtuais</span><span>Portfólios</span><span>Blogs</span><span>Manutenção</span>
+          <span>Landing pages</span><span>Sites institucionais</span><span>Lojas virtuais</span><span>Portfólios</span><span>Blogs</span><span>Manutenção</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SERVIÇOS ============ -->
+    <section class="section" id="servicos">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="kicker">01 — Serviços</span>
+          <h2>Tudo o que o seu negócio precisa para crescer online.</h2>
+        </header>
+        <div class="grid grid--3">
+          <article class="card reveal">
+            <div class="card__icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 21h8"/></svg></div>
+            <h3>Sites institucionais</h3>
+            <p>Apresente sua empresa com credibilidade: páginas de serviços, sobre, equipe e contato integradas ao WhatsApp.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v6H4zM4 14h7v6H4zM15 14h5v6h-5z"/></svg></div>
+            <h3>Landing pages</h3>
+            <p>Páginas focadas em conversão para campanhas, lançamentos e captação de leads — com copy e layout persuasivos.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><svg viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 3H3"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg></div>
+            <h3>Lojas virtuais</h3>
+            <p>Catálogo, carrinho e checkout simples. Venda pelo site ou feche pedidos direto no WhatsApp.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+            <h3>SEO &amp; desempenho</h3>
+            <p>Código limpo, imagens otimizadas e estrutura pensada para aparecer no Google e carregar em segundos.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+            <h3>Identidade visual</h3>
+            <p>Paleta, tipografia e componentes alinhados à sua marca para uma presença digital consistente.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></div>
+            <h3>Manutenção</h3>
+            <p>Atualizações de conteúdo, backups e melhorias contínuas para o site nunca ficar desatualizado.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROCESSO ============ -->
+    <section class="section section--alt" id="processo">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="kicker">02 — Como funciona</span>
+          <h2>Um processo simples, do briefing ao site no ar.</h2>
+        </header>
+        <ol class="steps">
+          <li class="step reveal"><span class="step__n">01</span><h3>Planejamento</h3><p>Entendo seu negócio, público e objetivos e monto um plano estratégico para o site.</p></li>
+          <li class="step reveal"><span class="step__n">02</span><h3>Design personalizado</h3><p>Crio um layout exclusivo, alinhado à sua marca e pensado na experiência do usuário.</p></li>
+          <li class="step reveal"><span class="step__n">03</span><h3>Desenvolvimento</h3><p>Implemento com código moderno, rápido, seguro e 100% responsivo.</p></li>
+          <li class="step reveal"><span class="step__n">04</span><h3>Lançamento</h3><p>Testes, ajustes finais, publicação no domínio e suporte após a entrega.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ PORTFÓLIO ============ -->
+    <section class="section" id="portfolio">
+      <div class="container">
+        <header class="section__head section__head--row reveal">
+          <div>
+            <span class="kicker">03 — Portfólio</span>
+            <h2>Projetos que já saíram do papel.</h2>
+          </div>
+          <a class="link-arrow" href="https://dev-matheus-macario.vercel.app/" target="_blank" rel="noopener">Ver portfólio completo →</a>
+        </header>
+        <div class="grid grid--2">
+          <a class="work reveal" href="https://jecatatour.w3spaces.com/" target="_blank" rel="noopener">
+            <div class="work__thumb work__thumb--a" aria-hidden="true">
+              <span class="work__tag">Turismo · Cultura</span>
+              <strong>Jecatatour</strong>
+            </div>
+            <div class="work__info">
+              <h3>Projeto Jecatatour</h3>
+              <p>Projeto de TCC com a finalidade de promover a cultura presente na cidade de Taubaté.</p>
+            </div>
           </a>
-          <p class="portfolio-description">Projeto Jecatatour - Desenvolvido como meu projeto de TCC com a finalidade de promover a cultura presente na cidade de Taubaté.</p>
-        </div>
-        <div class="portfolio-item">
-          <a href="https://lightandloose1.wordpress.com/" target="_blank">
-            <img src="ligthandloose.png" alt="Exemplo 2" class="portfolio-img">
+          <a class="work reveal" href="https://lightandloose1.wordpress.com/" target="_blank" rel="noopener">
+            <div class="work__thumb work__thumb--b" aria-hidden="true">
+              <span class="work__tag">E-commerce · Educação</span>
+              <strong>Light &amp; Loose</strong>
+            </div>
+            <div class="work__info">
+              <h3>Projeto Light and Loose</h3>
+              <p>Loja criada com WordPress para ensinar programação em blocos.</p>
+            </div>
           </a>
-          <p class="portfolio-description">Projeto Light and Loose - Loja criada com WordPress para ensinar programação em blocos.</p>
+          <a class="work reveal" href="../loja-high-tech/index.html">
+            <div class="work__thumb work__thumb--c" aria-hidden="true">
+              <span class="work__tag">Loja virtual</span>
+              <strong>Loja High-Tech</strong>
+            </div>
+            <div class="work__info">
+              <h3>Loja High-Tech</h3>
+              <p>Loja de eletrônicos com catálogo, filtros e carrinho — feita para vender pelo celular.</p>
+            </div>
+          </a>
+          <a class="work reveal" href="../produtora-monteiro/index.html">
+            <div class="work__thumb work__thumb--d" aria-hidden="true">
+              <span class="work__tag">Institucional</span>
+              <strong>Produtora Monteiro</strong>
+            </div>
+            <div class="work__info">
+              <h3>Produtora Monteiro</h3>
+              <p>Site institucional desenvolvido de ponta a ponta: SEO, banco de dados, segurança e infraestrutura.</p>
+            </div>
+          </a>
         </div>
       </div>
-    </div>
-  </section>
-  <hr>
-  <!-- Formulário de Contato -->
-  <section id="formulario" class="hero-contato">
-    <div class="container">
-      <h2>Entre em Contato</h2>
-      <p>Escolha a forma mais fácil para tirar dúvidas ou fazer seu pedido:</p>
-      <div class="contato-opcoes">   
-  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=criawebdev@gmail.com&su=Quero%20um%20site&body=Olá,%20gostaria%20de%20fazer%20um%20site.%20Como%20funciona?" class="btn-primary">Enviar por E-mail</a>
-        <a href="https://wa.me/5512974117747" class="btn-primary">Enviar por WhatsApp</a>
+    </section>
+
+    <!-- ============ PLANOS ============ -->
+    <section class="section section--alt" id="planos">
+      <div class="container">
+        <header class="section__head section__head--center reveal">
+          <span class="kicker">04 — Planos</span>
+          <h2>Escolha o ponto de partida ideal.</h2>
+          <p class="muted">Valores de referência. O orçamento final é feito sob medida para o seu projeto.</p>
+        </header>
+        <div class="grid grid--3 plans">
+          <article class="plan reveal">
+            <h3>Essencial</h3>
+            <p class="plan__desc">Para quem precisa estar online rápido.</p>
+            <p class="plan__price"><small>a partir de</small> R$ 497</p>
+            <ul class="plan__list">
+              <li>Landing page de 1 página</li>
+              <li>Botão de WhatsApp</li>
+              <li>Design responsivo</li>
+              <li>Entrega em até 5 dias</li>
+            </ul>
+            <button class="btn btn--ghost btn--block" type="button" data-plano="Essencial">Quero este plano</button>
+          </article>
+          <article class="plan plan--featured reveal">
+            <span class="plan__badge">Mais escolhido</span>
+            <h3>Profissional</h3>
+            <p class="plan__desc">Site completo para empresas e profissionais.</p>
+            <p class="plan__price"><small>a partir de</small> R$ 1.290</p>
+            <ul class="plan__list">
+              <li>Até 6 páginas</li>
+              <li>SEO básico + Google Meu Negócio</li>
+              <li>Formulário e integração com WhatsApp</li>
+              <li>30 dias de suporte</li>
+            </ul>
+            <button class="btn btn--primary btn--block" type="button" data-plano="Profissional">Quero este plano</button>
+          </article>
+          <article class="plan reveal">
+            <h3>Loja virtual</h3>
+            <p class="plan__desc">Para vender seus produtos na internet.</p>
+            <p class="plan__price"><small>a partir de</small> R$ 2.490</p>
+            <ul class="plan__list">
+              <li>Catálogo com categorias</li>
+              <li>Carrinho e pedido pelo WhatsApp</li>
+              <li>Painel para cadastrar produtos</li>
+              <li>60 dias de suporte</li>
+            </ul>
+            <button class="btn btn--ghost btn--block" type="button" data-plano="Loja virtual">Quero este plano</button>
+          </article>
+        </div>
       </div>
+    </section>
+
+    <!-- ============ DEPOIMENTOS ============ -->
+    <section class="section" id="depoimentos">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="kicker">05 — Depoimentos</span>
+          <h2>O que os clientes costumam dizer.</h2>
+          <p class="muted note">Depoimentos ilustrativos (exemplos) para demonstração do layout.</p>
+        </header>
+        <div class="grid grid--3">
+          <figure class="quote reveal">
+            <span class="quote__flag">Exemplo</span>
+            <blockquote>“O site ficou exatamente como eu imaginava e os pedidos pelo WhatsApp aumentaram logo na primeira semana.”</blockquote>
+            <figcaption><span class="avatar">AL</span><span><strong>Ana L.</strong><small>Confeitaria artesanal</small></span></figcaption>
+          </figure>
+          <figure class="quote reveal">
+            <span class="quote__flag">Exemplo</span>
+            <blockquote>“Atendimento rápido, explicou cada etapa e entregou antes do prazo. Recomendo para quem quer algo profissional.”</blockquote>
+            <figcaption><span class="avatar">RS</span><span><strong>Rafael S.</strong><small>Consultoria financeira</small></span></figcaption>
+          </figure>
+          <figure class="quote reveal">
+            <span class="quote__flag">Exemplo</span>
+            <blockquote>“Finalmente tenho uma página que passa confiança. Ficou ótima no celular, que é onde meus clientes estão.”</blockquote>
+            <figcaption><span class="avatar">MC</span><span><strong>Mariana C.</strong><small>Estúdio de estética</small></span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTATO ============ -->
+    <section class="section section--contact" id="contato">
+      <div class="container contact">
+        <div class="contact__copy reveal">
+          <span class="kicker">06 — Contato</span>
+          <h2>Vamos tirar o seu site do papel?</h2>
+          <p class="muted">Preencha o formulário e escolha como prefere enviar: WhatsApp ou e-mail. Respondo em até 24 horas úteis.</p>
+          <ul class="contact__list">
+            <li><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z" opacity="0"/><path d="M4 6l8 6 8-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg> criawebdev@gmail.com</li>
+            <li><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg> (12) 97411-7747</li>
+            <li><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> Taubaté · SP — atendimento em todo o Brasil</li>
+          </ul>
+        </div>
+
+        <form class="form reveal" id="contact-form" novalidate>
+          <div class="field">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome" required minlength="2">
+            <small class="field__error" aria-live="polite"></small>
+          </div>
+          <div class="form__row">
+            <div class="field">
+              <label for="email">E-mail</label>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+              <small class="field__error" aria-live="polite"></small>
+            </div>
+            <div class="field">
+              <label for="telefone">WhatsApp <span class="opt">(opcional)</span></label>
+              <input id="telefone" name="telefone" type="tel" autocomplete="tel" placeholder="(12) 99999-9999" inputmode="tel">
+              <small class="field__error" aria-live="polite"></small>
+            </div>
+          </div>
+          <div class="field">
+            <label for="tipo">Tipo de projeto</label>
+            <select id="tipo" name="tipo" required>
+              <option value="">Selecione…</option>
+              <option>Landing page</option>
+              <option>Site institucional</option>
+              <option>Loja virtual</option>
+              <option>Portfólio</option>
+              <option>Outro</option>
+            </select>
+            <small class="field__error" aria-live="polite"></small>
+          </div>
+          <div class="field">
+            <label for="mensagem">Mensagem</label>
+            <textarea id="mensagem" name="mensagem" rows="4" placeholder="Conte um pouco sobre o seu projeto…" required minlength="10"></textarea>
+            <small class="field__error" aria-live="polite"></small>
+          </div>
+          <div class="form__actions">
+            <button class="btn btn--primary" type="submit" data-canal="whatsapp">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/></svg>
+              Enviar pelo WhatsApp
+            </button>
+            <button class="btn btn--ghost" type="submit" data-canal="email">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+              Enviar por e-mail
+            </button>
+          </div>
+          <p class="form__status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <img src="logo_criaweb_marca.png" alt="CriaWeb" class="footer__logo" width="520" height="249" loading="lazy">
+      <p>© <span id="ano">2025</span> CriaWeb · Criação de sites. Desenvolvido por Matheus Macário.</p>
+      <nav aria-label="Rodapé">
+        <a href="#servicos">Serviços</a>
+        <a href="#planos">Planos</a>
+        <a href="https://wa.me/5512974117747" target="_blank" rel="noopener">WhatsApp</a>
+      </nav>
     </div>
-  </section>
-  <hr>
-  <h4><footer>
-    <div class="container">
-      <p>&copy; 2025 CriaWeb - Todos os direitos reservados.</p>
-    </div>      
-  </footer></h4>
-  <script src="script.js"></script>
+  </footer>
+
+  <a class="wa-float" href="https://wa.me/5512974117747?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20CriaWeb." target="_blank" rel="noopener" aria-label="Conversar no WhatsApp">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 9.5c.3 1.8 2.7 4.3 4.5 4.6l1-1.1 1.6.8-.4 1.5c-3 .3-6.6-3.2-6.4-6.4l1.5-.4.8 1.6z"/></svg>
+  </a>
+
+  <script src="script.js" defer></script>
+  <script src="../assets/js/hub.js" defer></script>
 </body>
 </html>

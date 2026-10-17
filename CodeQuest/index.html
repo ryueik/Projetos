@@ -1,54 +1,72 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="CodeQuest — jogo interativo de desafios de programação Web (HTML, CSS e JavaScript)." />
-  <meta name="theme-color" content="#06060d" />
+  <meta name="theme-color" content="#0b0907" />
   <meta name="author" content="Matheus Macário" />
   <title>CodeQuest · Desafios de Programação Web</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff7a1a'/%3E%3Cpath d='M12 10l-6 6 6 6M20 10l6 6-6 6' fill='none' stroke='%23160c03' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 
   <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;500;600;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Syne:wght@700;800&display=swap"
     rel="stylesheet"
   />
 
   <link rel="stylesheet" href="style.css" />
+  <script>
+    try { var t = localStorage.getItem('codequest:theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
 </head>
 <body>
   <div class="app">
 
     <!-- ============================ HUD / CABEÇALHO ============================ -->
     <header class="hud">
-      <div class="brand">
-        <span class="brand__mark" aria-hidden="true">&lt;/&gt;</span>
-        <div class="brand__text">
-          <h1>Code<span>Quest</span></h1>
-          <p>Desafios de Front-End</p>
+      <div class="hud__top">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true">&lt;/&gt;</span>
+          <div class="brand__text">
+            <h1>Code<span>Quest</span></h1>
+            <p>Desafios de Front-End</p>
+          </div>
         </div>
+
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Alternar tema claro/escuro">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
       </div>
 
       <div class="stats" role="status" aria-live="polite">
-        <div class="stat">
+        <div class="stat stat--level">
           <span class="stat__label">Nível</span>
           <strong class="stat__value" id="levelValue">1</strong>
+          <span class="stat__sub" id="levelTotal">de 10</span>
         </div>
         <div class="stat">
           <span class="stat__label">Score</span>
-          <strong class="stat__value stat__value--cyan" id="scoreValue">0</strong>
+          <strong class="stat__value stat__value--accent" id="scoreValue">0</strong>
+          <span class="stat__sub">pontos</span>
         </div>
         <div class="stat">
           <span class="stat__label">Recorde</span>
-          <strong class="stat__value stat__value--purple" id="highScoreValue">0</strong>
+          <strong class="stat__value stat__value--gold" id="highScoreValue">0</strong>
+          <span class="stat__sub">melhor partida</span>
         </div>
         <div class="stat">
           <span class="stat__label">Vidas</span>
-          <strong class="stat__value stat__value--red" id="livesValue">♥♥♥</strong>
+          <strong class="stat__value stat__value--red" id="livesValue" aria-label="Vidas restantes">♥♥♥</strong>
+          <span class="stat__sub">erros permitidos</span>
         </div>
       </div>
+
+      <!-- Trilha de progresso dos níveis -->
+      <ol class="track" id="progressTrack" aria-label="Progresso dos desafios"></ol>
     </header>
 
     <!-- ================================ PALCO ================================= -->
@@ -58,6 +76,7 @@
       <section class="panel challenge" id="challengePanel" aria-labelledby="questionText">
         <!-- Barra de tempo -->
         <div class="timer" aria-hidden="true">
+          <svg class="timer__icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
           <div class="timer__track">
             <div class="timer__fill" id="timerFill"></div>
           </div>
@@ -87,6 +106,7 @@
 
         <!-- Alternativas -->
         <div class="options" id="optionsList" role="group" aria-label="Alternativas de resposta"></div>
+        <p class="kbd-hint">Atalho: use as teclas <kbd>1</kbd>–<kbd>4</kbd> para responder.</p>
       </section>
 
       <!-- --------------------------- Painel Console -------------------------- -->
@@ -99,6 +119,15 @@
         <div class="console__body" id="consoleBody" aria-live="polite"></div>
 
         <div class="console__actions" id="consoleActions"></div>
+
+        <div class="rules">
+          <h3>Como pontuar</h3>
+          <ul>
+            <li><b>+100</b> por acerto</li>
+            <li><b>+5</b> por segundo restante</li>
+            <li><b>−1 vida</b> por erro ou tempo esgotado</li>
+          </ul>
+        </div>
       </aside>
 
     </main>
@@ -109,7 +138,7 @@
         Desenvolvido por <strong>Matheus Macário</strong> · CodeQuest © <span id="year">2025</span>
       </p>
       <nav class="footer__links" aria-label="Redes sociais">
-        <a href="https://github.com/ryueik/Projetos/tree/main" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/ryueik/Projetos/tree/main/CodeQuest" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a href="https://www.linkedin.com/in/dev-matheus-macario/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         <a href="https://dev-matheus-macario.vercel.app/" target="_blank" rel="noopener noreferrer">Portfólio</a>
       </nav>
@@ -122,6 +151,7 @@
       <div class="modal__icon" id="modalIcon" aria-hidden="true">🏆</div>
       <h2 class="modal__title" id="modalTitle">Parabéns!</h2>
       <p class="modal__text" id="modalText">Você concluiu todos os desafios.</p>
+      <p class="modal__rank" id="modalRank"></p>
 
       <div class="modal__stats">
         <div>
@@ -143,5 +173,6 @@
   </div>
 
   <script src="script.js" defer></script>
+  <script src="../assets/js/hub.js" defer></script>
 </body>
 </html>

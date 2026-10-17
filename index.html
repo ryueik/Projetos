@@ -40,7 +40,7 @@
       border: 1px solid var(--line); background: var(--surface); text-decoration: none; transition: box-shadow .3s, transform .3s, border-color .3s;
     }
     .feat:hover { box-shadow: var(--glow); transform: translateY(-4px); border-color: var(--line-strong); }
-    .feat .shot { aspect-ratio: 16 / 9; }
+    .feat .shot { aspect-ratio: 16 / 10; }
     .feat .body { padding: 24px; }
     .feat h3 { font-size: 1.8rem; margin-bottom: 8px; }
 
@@ -113,7 +113,7 @@
 
     <section class="section container" id="destaques">
       <div class="sec-head">
-        <div><span class="eyebrow">Destaques</span><h2>Plataformas completas</h2></div>
+        <div><span class="eyebrow">Destaques</span><h2>Plataformas <em>completas</em></h2></div>
         <p class="muted" style="max-width:40ch;margin:0">Produtos maiores, cada um no seu próprio repositório.</p>
       </div>
       <div class="featured" id="featured"></div>
@@ -121,7 +121,7 @@
 
     <section class="section container" id="projetos">
       <div class="sec-head">
-        <div><span class="eyebrow">Todos os projetos</span><h2>Explore por área</h2></div>
+        <div><span class="eyebrow">Todos os projetos</span><h2>Explore por <em>área</em></h2></div>
       </div>
       <div class="toolbar">
         <div class="filters" id="filters" role="group" aria-label="Filtrar por área"></div>
@@ -133,7 +133,7 @@
 
     <section class="section container cta">
       <span class="eyebrow">Vamos conversar</span>
-      <h2 class="mt-1">Precisa automatizar algo no seu <span class="grad-text">dia a dia</span>?</h2>
+      <h2 class="mt-1">Precisa automatizar algo no seu <em>dia a dia</em>?</h2>
       <p class="lead" style="margin-inline:auto">Veja experiência, certificações e contato no portfólio.</p>
       <div class="row" style="justify-content:center">
         <a class="btn btn-primary" href="https://dev-matheus-macario.vercel.app/" target="_blank" rel="noopener">Abrir portfólio</a>
@@ -167,16 +167,20 @@
         var s = el("div", "shot");
         var ph = el("div", "ph", p.title.split(/\s+/).slice(0, 2).map(function (w) { return w[0]; }).join("").toUpperCase());
         s.append(ph);
-        if (p.thumb) {
+        if (p.cover || p.thumb) {
           var img = new Image();
           img.loading = "lazy";
           img.alt = "Captura de tela de " + p.title;
           img.onload = function () { ph.remove(); };
-          img.onerror = function () { img.remove(); };
-          img.src = p.thumb;
+          // Capa composta (assets/covers); se ainda não existir, cai para a captura simples.
+          img.onerror = function () {
+            if (p.cover && p.thumb && img.src.indexOf(p.thumb) === -1) img.src = p.thumb;
+            else img.remove();
+          };
+          img.src = p.cover || p.thumb;
           s.append(img);
         }
-        if (idx != null) s.append(el("span", "num", "[" + String(idx).padStart(2, "0") + "]"));
+        if (idx != null && !p.cover) s.append(el("span", "num", "[" + String(idx).padStart(2, "0") + "]"));
         if (p.origin === "portfolio") s.append(el("span", "origin", "Portfólio"));
         return s;
       }

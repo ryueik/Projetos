@@ -16,6 +16,7 @@ const enc = (p) => p.split("/").map(encodeURIComponent).join("/");
 const projects = ctx.window.PROJECTS.map((p) => ({
   ...p,
   thumbUrl: p.thumb ? RAW + p.thumb : null,
+  coverUrl: p.cover ? RAW + p.cover : null,
   codeUrl: p.code || (p.path ? TREE + enc(p.path.replace(/\/$/, "")) : null),
 }));
 

@@ -90,6 +90,14 @@
       });
     }
 
+    // Barra de navegação entre projetos (anterior / painel / portfólio / próximo).
+    var self = document.querySelector('script[src$="assets/js/theme.js"]');
+    if (self && !document.querySelector('script[src*="assets/js/hub.js"]')) {
+      var hub = document.createElement("script");
+      hub.src = self.getAttribute("src").replace("theme.js", "hub.js");
+      document.body.appendChild(hub);
+    }
+
     var items = document.querySelectorAll(".reveal");
     if ("IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (entries) {

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img">
+<defs>
+<filter id="g19" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .17 0 0 0 0 .13 0 0 0 0 .1 0 0 0 .55 0"/></filter>
+<filter id="s19" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="10" stdDeviation="0" flood-color="#2b211a" flood-opacity=".14"/></filter>
+<pattern id="dots19" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2.2" fill="#2b211a" opacity=".12"/></pattern>
+
+</defs>
+<rect width="600" height="750" fill="#f5ead8"/>
+<rect width="600" height="750" fill="url(#dots19)"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690 Z" fill="#2f6f6a"/>
+<path d="M90 690 V300 A210 210 0 0 1 510 300 V690" fill="none" stroke="#2b211a" stroke-width="2" opacity=".35" transform="translate(-12 -12)"/>
+<ellipse cx="300" cy="668" rx="170" ry="16" fill="#2b211a" opacity=".12"/>
+<g filter="url(#s19)" stroke="#2b211a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(210 300) scale(1)"><path d="M60 40 Q110 40 104 90 Q100 120 60 116" fill="none" stroke="#c46a1a" stroke-width="12"/><path d="M-60 0 H70 L58 130 Q0 150 -48 130 Z" fill="#d98c2b" opacity=".92"/><path d="M-60 0 H70" fill="none"/><path d="M-40 20 V110" fill="none" stroke="#f7efe2" stroke-width="6" opacity=".55"/><ellipse cx="5" cy="146" rx="96" ry="14" fill="#d98c2b" opacity=".9"/></g><g transform="translate(390 330) scale(1)"><path d="M60 40 Q110 40 104 90 Q100 120 60 116" fill="none" stroke="#c46a1a" stroke-width="12"/><path d="M-60 0 H70 L58 130 Q0 150 -48 130 Z" fill="#d98c2b" opacity=".92"/><path d="M-60 0 H70" fill="none"/><path d="M-40 20 V110" fill="none" stroke="#f7efe2" stroke-width="6" opacity=".55"/><ellipse cx="5" cy="146" rx="96" ry="14" fill="#d98c2b" opacity=".9"/></g><g transform="translate(300 450) scale(1.1)"><path d="M60 40 Q110 40 104 90 Q100 120 60 116" fill="none" stroke="#c46a1a" stroke-width="12"/><path d="M-60 0 H70 L58 130 Q0 150 -48 130 Z" fill="#d98c2b" opacity=".92"/><path d="M-60 0 H70" fill="none"/><path d="M-40 20 V110" fill="none" stroke="#f7efe2" stroke-width="6" opacity=".55"/><ellipse cx="5" cy="146" rx="96" ry="14" fill="#d98c2b" opacity=".9"/></g></g>
+
+<rect width="600" height="750" filter="url(#g19)" opacity=".35"/>
+</svg>

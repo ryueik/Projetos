@@ -4,7 +4,7 @@
    Usado pelo painel (index.html da raiz) e pelas páginas de cada projeto.
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
 :root {
   --gold: #e3b341;
@@ -33,6 +33,7 @@
   --radius-lg: 22px;
   --font-display: "Syne", "Inter", system-ui, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
   --max: 1200px;
   color-scheme: dark;
@@ -277,3 +278,14 @@ pre.code {
 .mt-0 { margin-top: 0; } .mt-1 { margin-top: 12px; } .mt-2 { margin-top: 24px; } .mt-3 { margin-top: 40px; }
 @media (max-width: 640px) { .nav .hide-sm { display: none; } }
 .grid > *, .step > div { min-width: 0; }
+
+/* Acento editorial (referência Al Razi Siam): palavra em serifa itálica dentro de títulos */
+.serif, h1 em, h2 em { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+h1 em, h2 em { color: var(--gold); }
+/* Imagens e mídias nunca estouram a largura no celular */
+img, video, canvas, svg { max-width: 100%; }
+@media (max-width: 640px) {
+  .card { padding: 18px; border-radius: var(--radius); }
+  .btn { padding: 12px 18px; }
+  .table-wrap { max-height: 360px; }
+}

@@ -280,7 +280,8 @@ const state = {
   highScore:    0,                    // recorde carregado do localStorage
   canAnswer:    false,                // trava para evitar duplo clique
   timerId:      null,                 // id do setInterval do timer
-  timeLeft:     CONFIG.timePerQuestion
+  timeLeft:     CONFIG.timePerQuestion,
+  results:      []                    // 'ok' | 'fail' por desafio (trilha de progresso)
 };
 
 /* ============================================================
@@ -292,6 +293,10 @@ const dom = {
   scoreValue:      document.getElementById('scoreValue'),
   highScoreValue:  document.getElementById('highScoreValue'),
   livesValue:      document.getElementById('livesValue'),
+  levelTotal:      document.getElementById('levelTotal'),
+  progressTrack:   document.getElementById('progressTrack'),
+  themeBtn:        document.getElementById('themeBtn'),
+  modalRank:       document.getElementById('modalRank'),
 
   // Desafio
   techBadge:        document.getElementById('techBadge'),
@@ -414,7 +419,42 @@ function updateHUD() {
   dom.levelValue.textContent     = String(state.currentIndex + 1);
   dom.scoreValue.textContent     = formatNumber(state.score);
   dom.highScoreValue.textContent = formatNumber(state.highScore);
-  dom.livesValue.textContent     = state.lives > 0 ? '♥'.repeat(state.lives) : '—';
+  dom.livesValue.textContent     = state.lives > 0 ? '♥'.repeat(state.lives) + '♡'.repeat(CONFIG.maxLives - state.lives) : '—';
+  dom.livesValue.setAttribute('aria-label', `${state.lives} de ${CONFIG.maxLives} vidas`);
+  dom.levelTotal.textContent     = `de ${CHALLENGES.length}`;
+  renderTrack();
+}
+
+/** Desenha a trilha de níveis: concluídos (acerto/erro), atual e bloqueados. */
+function renderTrack() {
+  const track = dom.progressTrack;
+  if (!track) return;
+  if (track.children.length !== CHALLENGES.length) {
+    track.textContent = '';
+    CHALLENGES.forEach((c, i) => {
+      const li = document.createElement('li');
+      li.className = 'track__step';
+      const n = document.createElement('span');
+      n.className = 'track__n';
+      n.textContent = String(i + 1);
+      const t = document.createElement('span');
+      t.className = 'track__tech';
+      t.textContent = c.tech;
+      li.append(n, t);
+      track.appendChild(li);
+    });
+  }
+  Array.from(track.children).forEach((li, i) => {
+    const res = state.results[i];
+    li.className = 'track__step' +
+      (res === 'ok' ? ' is-ok' : res === 'fail' ? ' is-fail' : '') +
+      (i === state.currentIndex && !res ? ' is-current' : '');
+    li.setAttribute('aria-label',
+      `Desafio ${i + 1} (${CHALLENGES[i].tech}): ` +
+      (res === 'ok' ? 'acertou' : res === 'fail' ? 'errou' : i === state.currentIndex ? 'atual' : 'pendente'));
+    if (i === state.currentIndex) li.setAttribute('aria-current', 'step');
+    else li.removeAttribute('aria-current');
+  });
 }
 
 /* ============================================================
@@ -568,6 +608,7 @@ function resolveAnswer(selectedIndex) {
 
   const challenge = CHALLENGES[state.currentIndex];
   const isCorrect = selectedIndex !== null && selectedIndex === challenge.correct;
+  state.results[state.currentIndex] = isCorrect ? 'ok' : 'fail';
 
   // Marca visualmente as alternativas
   const optionEls = dom.optionsList.querySelectorAll('.option');
@@ -732,6 +773,13 @@ function endGame(reason) {
   dom.modalHits.textContent  = `${state.hits}/${total}`;
   dom.modalHigh.textContent  = formatNumber(state.highScore);
 
+  const pct = state.hits / total;
+  dom.modalRank.textContent =
+    pct === 1  ? 'Rank S · Mestre do Front-End' :
+    pct >= 0.7 ? 'Rank A · Dev Pleno' :
+    pct >= 0.4 ? 'Rank B · Dev Júnior' :
+                 'Rank C · Estagiário em treinamento';
+
   openModal();
 }
 
@@ -762,6 +810,7 @@ function resetGame() {
   state.lives        = CONFIG.maxLives;
   state.hits         = 0;
   state.canAnswer    = false;
+  state.results      = [];
 
   // Recarrega o high score (pode ter mudado em outra aba)
   loadHighScore();
@@ -801,6 +850,12 @@ function init() {
 
   // Eventos
   dom.playAgainBtn.addEventListener('click', resetGame);
+  dom.themeBtn.addEventListener('click', () => {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('codequest:theme', next); } catch { /* sem storage */ }
+  });
   document.addEventListener('keydown', handleKeyboard);
 
   // Fecha o modal com ESC (quando aberto)
